@@ -1,53 +1,55 @@
 // src/quiz/components/ResumeBanner.jsx
 import React from "react";
 
-export default function ResumeBanner({ resume, onResume, onDiscard }) {
-  if (!resume) return null;
-
+export default function ResumeBanner({ index, onResume, onRestart }) {
   return (
     <div
       style={{
-        background: "#eef4ff",
-        border: "1px solid #c7d2fe",
+        background: "#fff3cd",
+        border: "1px solid #ffeeba",
         padding: 14,
-        borderRadius: 10,
-        marginBottom: 20,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 12,
+        borderRadius: 12,
+        marginBottom: 16,
+        color: "#856404",
+        boxShadow: "0 6px 16px rgba(0,0,0,0.06)",
       }}
     >
-      <div style={{ fontWeight: 600 }}>
-        ▶ Resume {resume.category} / {resume.difficulty} — Level {resume.level}
+      <div style={{ fontWeight: 700, marginBottom: 6 }}>
+        ⏸️ Quiz Paused
       </div>
 
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ fontSize: 14, marginBottom: 10 }}>
+        You stopped at <b>Question {index + 1}</b>. Want to continue?
+      </div>
+
+      <div style={{ display: "flex", gap: 10 }}>
         <button
           onClick={onResume}
           style={{
-            padding: "6px 12px",
+            padding: "8px 14px",
             background: "#6C63FF",
             color: "#fff",
-            borderRadius: 6,
             border: "none",
+            borderRadius: 8,
+            fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          Resume
+          Resume Quiz
         </button>
 
         <button
-          onClick={onDiscard}
+          onClick={onRestart}
           style={{
-            padding: "6px 12px",
+            padding: "8px 14px",
             background: "#f5f6fb",
-            borderRadius: 6,
             border: "1px solid #ddd",
+            borderRadius: 8,
+            fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          Dismiss
+          Start Over
         </button>
       </div>
     </div>

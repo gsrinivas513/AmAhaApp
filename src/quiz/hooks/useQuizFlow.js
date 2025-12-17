@@ -13,6 +13,8 @@ export function useQuizFlow({
   const [selected, setSelected] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
+  const [coinsEarned, setCoinsEarned] = useState(0);
 
   const current = questions[index];
 
@@ -52,6 +54,9 @@ async function nextQuestion() {
     if (user) {
       await clearResumeState(user);
     }
+    // 🔹 ADD THESE 2 LINES HERE (Phase 7.6 – Step 3)
+    setXpEarned(50);
+    setCoinsEarned(20);
     setFinished(true);
   }
 }
@@ -79,14 +84,18 @@ async function nextQuestion() {
     isLast: index + 1 === questions.length,
   };
 
-  return {
-    index,
-    current,
-    submitted,
-    finished,
-    progressPct,
-    setIndex,
-    questionProps,
-    actionProps,
-  };
+return {
+  index,
+  current,
+  submitted,
+  finished,
+  progressPct,
+
+  xpEarned,
+  coinsEarned,
+
+  setIndex,
+  questionProps,
+  actionProps,
+};
 }

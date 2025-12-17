@@ -8,6 +8,7 @@ import QuizProgressTimer from "./components/QuizProgressTimer";
 import QuizQuestionCard from "./components/QuizQuestionCard";
 import QuizActions from "./components/QuizActions";
 import QuizFinish from "./components/QuizFinish";
+import LevelCompleteSummary from "./components/LevelCompleteSummary";
 
 import { useQuizQuestions } from "./hooks/useQuizQuestions";
 import { useQuizFlow } from "./hooks/useQuizFlow";
@@ -83,13 +84,23 @@ export default function QuizPage() {
       )}
 
       {/* FINISH */}
-      {flow.finished && (
-        <QuizFinish
-          onBack={() =>
-            navigate(`/quiz/${category}/${difficulty}`)
-          }
-        />
-      )}
+
+{flow.finished && (
+  <LevelCompleteSummary
+    level={Number(level)}
+xpEarned={flow.xpEarned}
+coinsEarned={flow.coinsEarned}
+    showNext={true}
+    onBack={() =>
+      navigate(`/quiz/${category}/${difficulty}`)
+    }
+    onNext={() =>
+      navigate(`/quiz/${category}/${difficulty}/${Number(level) + 1}`)
+    }
+  />
+)}
+
+
     </SiteLayout>
   );
 }

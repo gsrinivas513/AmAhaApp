@@ -18,7 +18,6 @@ export async function saveResumeState({
     difficulty,
     level,
     index,
-    hasProgress: true,   // ✅ ADD THIS
     updatedAt: serverTimestamp(),
   });
 }
