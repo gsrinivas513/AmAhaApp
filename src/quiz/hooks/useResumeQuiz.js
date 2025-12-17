@@ -21,13 +21,15 @@ export function useResumeQuiz({ user, category, difficulty, setIndex }) {
 
   if (loading) return { banner: null };
 
-  if (
-    !resumeData ||
-    resumeData.category !== category ||
-    resumeData.difficulty !== difficulty
-  ) {
-    return { banner: null };
-  }
+const canResume =
+  resumeData &&
+  resumeData.hasProgress === true &&
+  resumeData.category === category &&
+  resumeData.difficulty === difficulty;
+
+if (!canResume) {
+  return { banner: null };
+}
 
   return {
     banner: (
@@ -43,20 +45,25 @@ export function useResumeQuiz({ user, category, difficulty, setIndex }) {
       >
         ⏸️ You have an unfinished quiz.
         <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-          <button
-            onClick={() => setIndex(resumeData.index)}
-          >
-            Resume
-          </button>
 
-          <button
-            onClick={async () => {
-              await clearResumeState(user);
-              setResumeData(null);
-            }}
-          >
-            Start Over
-          </button>
+<button
+  onClick={() => {
+    setIndex(resumeData.index);
+    setResumeData(null); // ✅ hide banner immediately
+  }}
+>
+  Resume
+</button>
+
+<button
+  onClick={async () => {
+    await clearResumeState(user);
+    setResumeData(null); // ✅ hide banner immediately
+  }}
+>
+  Start Over
+</button>
+
         </div>
       </div>
     ),

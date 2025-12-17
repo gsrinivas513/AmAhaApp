@@ -28,32 +28,33 @@ export function useQuizFlow({
     setSubmitted(true);
   }
 
-  async function nextQuestion() {
-    const nextIndex = index + 1;
+async function nextQuestion() {
+  const nextIndex = index + 1;
+  const hasMoreQuestions = nextIndex < questions.length;
 
-    if (nextIndex < questions.length) {
-      // ✅ SAVE RESUME STATE HERE (THIS WAS MISSING)
-      if (user) {
-        await saveResumeState({
-          user,
-          category,
-          difficulty,
-          level,
-          index: nextIndex,
-        });
-      }
-
-      setIndex(nextIndex);
-      setSelected(null);
-      setSubmitted(false);
-    } else {
-      // ✅ QUIZ FINISHED → CLEAR RESUME
-      if (user) {
-        await clearResumeState(user);
-      }
-      setFinished(true);
+  if (hasMoreQuestions) {
+    // ✅ SAVE RESUME ONLY IF QUIZ CONTINUES
+    if (user) {
+      await saveResumeState({
+        user,
+        category,
+        difficulty,
+        level,
+        index: nextIndex,
+      });
     }
+
+    setIndex(nextIndex);
+    setSelected(null);
+    setSubmitted(false);
+  } else {
+    // ✅ LAST QUESTION → CLEAR RESUME
+    if (user) {
+      await clearResumeState(user);
+    }
+    setFinished(true);
   }
+}
 
   function skipQuestion() {
     nextQuestion();
