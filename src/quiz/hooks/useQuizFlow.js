@@ -1,5 +1,6 @@
 // src/quiz/hooks/useQuizFlow.js
 import { useMemo, useState } from "react";
+import { saveResumeState, clearResumeState } from "../services/resumeService";
 
 export function useQuizFlow({
   questions,
@@ -13,28 +14,43 @@ export function useQuizFlow({
   const [submitted, setSubmitted] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // ✅ Current question
   const current = questions[index];
 
-  // ✅ Progress %
   const progressPct = useMemo(() => {
     if (!questions.length) return 0;
     return ((index + (submitted ? 1 : 0)) / questions.length) * 100;
   }, [index, submitted, questions.length]);
 
-  /* ---------------- ACTION HANDLERS ---------------- */
+  /* ---------- ACTIONS ---------- */
 
   function submitAnswer() {
     if (submitted) return;
     setSubmitted(true);
   }
 
-  function nextQuestion() {
-    if (index + 1 < questions.length) {
-      setIndex((i) => i + 1);
+  async function nextQuestion() {
+    const nextIndex = index + 1;
+
+    if (nextIndex < questions.length) {
+      // ✅ SAVE RESUME STATE HERE (THIS WAS MISSING)
+      if (user) {
+        await saveResumeState({
+          user,
+          category,
+          difficulty,
+          level,
+          index: nextIndex,
+        });
+      }
+
+      setIndex(nextIndex);
       setSelected(null);
-      setSubmitted(false); // ✅ VERY IMPORTANT (timer restarts)
+      setSubmitted(false);
     } else {
+      // ✅ QUIZ FINISHED → CLEAR RESUME
+      if (user) {
+        await clearResumeState(user);
+      }
       setFinished(true);
     }
   }
@@ -42,8 +58,6 @@ export function useQuizFlow({
   function skipQuestion() {
     nextQuestion();
   }
-
-  /* ---------------- PROPS FOR UI ---------------- */
 
   const questionProps = {
     question: current?.question,
@@ -65,17 +79,12 @@ export function useQuizFlow({
   };
 
   return {
-    // state
     index,
     current,
     submitted,
     finished,
     progressPct,
-
-    // setters (used by resume)
     setIndex,
-
-    // ui bindings
     questionProps,
     actionProps,
   };

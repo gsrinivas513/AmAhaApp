@@ -10,8 +10,8 @@ import QuizActions from "./components/QuizActions";
 import QuizFinish from "./components/QuizFinish";
 
 import { useQuizQuestions } from "./hooks/useQuizQuestions";
-import { useQuizTimer } from "./hooks/useQuizTimer";
 import { useQuizFlow } from "./hooks/useQuizFlow";
+import { useQuizTimer } from "./hooks/useQuizTimer";
 import { useResumeQuiz } from "./hooks/useResumeQuiz";
 
 export default function QuizPage() {
@@ -19,10 +19,10 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  /* ---------------- LOAD QUESTIONS ---------------- */
+  /* 1️⃣ LOAD QUESTIONS (FIRST) */
   const { questions, loading } = useQuizQuestions(category, difficulty);
 
-  /* ---------------- QUIZ FLOW (STATE ONLY) ---------------- */
+  /* 2️⃣ QUIZ FLOW (DEPENDS ON QUESTIONS) */
   const flow = useQuizFlow({
     questions,
     user,
@@ -31,13 +31,13 @@ export default function QuizPage() {
     level,
   });
 
-  /* ---------------- TIMER ---------------- */
+  /* 3️⃣ TIMER (DEPENDS ON FLOW) */
   const timer = useQuizTimer(
     !flow.submitted && !flow.finished,
     flow.index
   );
 
-  /* ---------------- RESUME ---------------- */
+  /* 4️⃣ RESUME (DEPENDS ON setIndex) */
   const resume = useResumeQuiz({
     user,
     category,
@@ -45,6 +45,7 @@ export default function QuizPage() {
     setIndex: flow.setIndex,
   });
 
+  /* 5️⃣ LOADING STATE */
   if (loading) {
     return (
       <SiteLayout>

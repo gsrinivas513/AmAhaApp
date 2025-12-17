@@ -1,3 +1,4 @@
+// src/quiz/services/resumeService.js
 import { doc, setDoc, getDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
@@ -7,7 +8,6 @@ export async function saveResumeState({
   difficulty,
   level,
   index,
-  timeMs
 }) {
   if (!user) return;
 
@@ -18,7 +18,6 @@ export async function saveResumeState({
     difficulty,
     level,
     index,
-    timeMs,
     updatedAt: serverTimestamp(),
   });
 }
