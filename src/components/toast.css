@@ -1,0 +1,33 @@
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 180px;
+  max-width: 260px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  z-index: 5000;
+  animation-duration: 0.4s;
+}
+
+.toast-container.error {
+  background: #e53935;
+  box-shadow: 0 4px 14px rgba(229, 57, 53, 0.3);
+}
+
+/* SHAKE ANIMATION */
+@keyframes shakeAnim {
+  0% { transform: translateX(0px); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0px); }
+}
+
+.shake {
+  animation-name: shakeAnim;
+}

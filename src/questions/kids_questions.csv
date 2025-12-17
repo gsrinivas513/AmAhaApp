@@ -1,0 +1,54 @@
+id,question,category,options,correctAnswer,level
+K1,What color is the sky?,kids,Red;Blue;Green;Yellow,Blue,easy
+K2,How many legs does a cat have?,kids,2;3;4;6,4,easy
+K3,Which one is a fruit?,kids,Apple;Onion;Potato;Carrot,Apple,easy
+K4,What do bees make?,kids,Honey;Milk;Juice;Bread,Honey,easy
+K5,Which is the biggest animal?,kids,Elephant;Dog;Cat;Cow,Elephant,easy
+K6,What do cows drink?,kids,Milk;Water;Juice;Tea,Water,easy
+K7,Which shape has 3 sides?,kids,Square;Triangle;Circle;Rectangle,Triangle,easy
+K8,Which animal says “Meow”?,kids,Dog;Cat;Cow;Lion,Cat,easy
+K9,What planet do we live on?,kids,Mars;Earth;Venus;Jupiter,Earth,easy
+K10,What comes after number 4?,kids,3;5;6;8,5,easy
+K11,Which is a primary color?,kids,Pink;Purple;Red;Brown,Red,easy
+K12,Which animal cannot fly?,kids,Duck;Sparrow;Eagle;Elephant,Elephant,easy
+K13,Which is used to write?,kids,Pencil;Plate;Spoon;Cup,Pencil,easy
+K14,What color are bananas?,kids,Red;Blue;Yellow;Black,Yellow,easy
+K15,What do you wear on your feet?,kids,Hat;Shoes;Gloves;Scarf,Shoes,easy
+K16,Which one is a bird?,kids,Cat;Dog;Parrot;Tiger,Parrot,easy
+K17,What do plants need to grow?,kids,Milk;Soda;Water;Oil,Water,easy
+K18,Which one is hot?,kids,Ice;Fire;Snow;Rain,Fire,easy
+K19,How many days are in a week?,kids,5;6;7;8,7,easy
+K20,Which is used to cut paper?,kids,Knife;Spoon;Scissors;Fork,Scissors,easy
+
+K21,Which animal has a trunk?,kids,Duck;Lion;Elephant;Horse,Elephant,medium
+K22,Which season is cold?,kids,Summer;Winter;Rainy;Spring,Winter,medium
+K23,Which fruit is red?,kids,Orange;Banana;Apple;Grapes,Apple,medium
+K24,What is the opposite of hot?,kids,Cold;Warm;Dry;Wet,Cold,medium
+K25,Which is used to tell time?,kids,Clock;Ball;Pencil;Book,Clock,medium
+K26,Where do fish live?,kids,Trees;Sky;Water;Sand,Water,medium
+K27,Which animal hops?,kids,Elephant;Rabbit;Cow;Dog,Rabbit,medium
+K28,What shape is a ball?,kids,Square;Triangle;Circle;Rectangle,Circle,medium
+K29,How many eyes do humans have?,kids,1;2;3;4,2,medium
+K30,Which is a vehicle?,kids,Table;Car;Plate;Bottle,Car,medium
+
+K31,Which is the fastest land animal?,kids,Cat;Cheetah;Horse;Dog,Cheetah,hard
+K32,Which animal is known as “King of the Jungle”?,kids,Lion;Tiger;Bear;Wolf,Lion,hard
+K33,Which gas do plants release?,kids,Carbon dioxide;Oxygen;Nitrogen;Helium,Oxygen,hard
+K34,Which is heavier?,kids,Feather;Stone;Leaf;Paper,Stone,hard
+K35,Which shape has no sides?,kids,Circle;Square;Triangle;Hexagon,Circle,hard
+K36,Which star is closest to Earth?,kids,Moon;Sun;Venus;Mars,Sun,hard
+K37,How many continents are there?,kids,5;6;7;8,7,hard
+K38,Which planet is known as the Red Planet?,kids,Earth;Mars;Jupiter;Mercury,Mars,hard
+K39,Which animal can live both in water and on land?,kids,Dog;Cat;Frog;Tiger,Frog,hard
+K40,Which bird cannot fly?,kids,Crow;Parrot;Penguin;Sparrow,Penguin,hard
+
+K41,Which part of the plant makes food?,kids,Root;Stem;Leaf;Flower,Leaf,medium
+K42,What do humans breathe in?,kids,Oxygen;Nitrogen;Helium;Hydrogen,Oxygen,medium
+K43,Which is a dairy product?,kids,Bread;Butter;Rice;Apple,Butter,medium
+K44,How many letters are in the English alphabet?,kids,20;24;26;28,26,medium
+K45,Which festival is known as Festival of Lights?,kids,Holi;Diwali;Eid;Christmas,Diwali,medium
+K46,Which animal carries its baby in a pouch?,kids,Rabbit;Kangaroo;Cat;Dog,Kangaroo,medium
+K47,Which direction does the sun rise?,kids,West;North;East;South,East,medium
+K48,Which one is a natural satellite?,kids,Sun;Mars;Moon;Venus,Moon,medium
+K49,Which is the smallest month (days)?,kids,February;June;October;March,February,easy
+K50,Which animal has black and white stripes?,kids,Tiger;Zebra;Lion;Deer,Zebra,easy

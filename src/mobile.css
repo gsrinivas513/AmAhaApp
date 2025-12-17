@@ -1,0 +1,65 @@
+/* src/mobile.css
+   SAFE mobile-only overrides. Classes are additive (mobile-*) and won't affect desktop.
+*/
+
+@media only screen and (max-width: 480px) {
+
+  /* HOME PAGE CARDS */
+  .mobile-card {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .mobile-card-icon {
+    font-size: 30px !important;
+  }
+
+  .mobile-card-title {
+    font-size: 16px !important;
+  }
+
+  .mobile-grid {
+    gap: 12px !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+  }
+
+  /* QUIZ */
+  .mobile-option {
+    padding: 10px !important;
+    font-size: 14px !important;
+  }
+
+  .mobile-question-text {
+    font-size: 17px !important;
+  }
+
+  .mobile-timer-number {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+  }
+
+  .mobile-result-card {
+    width: 90% !important;
+    padding: 18px !important;
+  }
+
+  /* NAVBAR */
+  .mobile-navbar {
+    padding: 0 12px !important;
+    height: 60px !important;
+  }
+
+  .mobile-navbar-title {
+    font-size: 17px !important;
+  }
+
+  /* ADMIN SIDEBAR (if collapsed into mobile) */
+  .mobile-sidebar {
+    width: 200px !important;
+  }
+
+  .mobile-admin-area {
+    margin-left: 200px !important;
+  }
+}

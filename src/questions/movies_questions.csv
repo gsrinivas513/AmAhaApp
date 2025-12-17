@@ -1,0 +1,110 @@
+id,question,category,options,correctAnswer,level
+M1,Who is known as the "Megastar" of Telugu cinema?,movies,Mahesh Babu;Prabhas;Chiranjeevi;Pawan Kalyan,Chiranjeevi,easy
+M2,Who played Baahubali in the movie Baahubali?,movies,Rana;Prabhas;Nani;Allu Arjun,Prabhas,easy
+M3,Which movie features the character “Pushpa Raj”?,movies,KGF;Pushpa;Bahubali;RRR,Pushpa,easy
+M4,Who directed the movie RRR?,movies,Rajamouli;Shankar;Lokesh Kanagaraj;Trivikram,Rajamouli,easy
+M5,Who is known as "Power Star"?,movies,Nagarjuna;Venkatesh;Pawan Kalyan;Ram Charan,Pawan Kalyan,easy
+M6,Which actor is called "Rebel Star"?,movies,Prabhas;Allu Arjun;Ram Charan;Jr NTR,Prabhas,easy
+M7,Which movie has the song “Naatu Naatu”?,movies,Bahubali;RRR;Pushpa;KGF,RRR,easy
+M8,Who played the role of Bheem in RRR?,movies,Ram Charan;Prabhas;Jr NTR;Nani,Jr NTR,easy
+M9,Which movie features “Rocky Bhai”?,movies,KGF;Pushpa;Salaar;Leo,KGF,easy
+M10,Who directed Baahubali?,movies,Rajamouli;Boyapati;Sukumar;Koratal Siva,Rajamouli,easy
+
+M11,Which actress starred in “Ala Vaikunthapuramulo”?,movies,Samantha;Pooja Hegde;Rashmika;Tamanna,Pooja Hegde,easy
+M12,Which is India’s first Oscar-winning song?,movies,Jai Ho;Naatu Naatu;Vande Mataram;Aye Mere Watan,Jai Ho,easy
+M13,Who played “Singham” in Bollywood?,movies,Ajay Devgan;Salman Khan;Akshay Kumar;Ranveer Singh,Ajay Devgan,easy
+M14,Who played “Iron Man” in Marvel movies?,movies,Chris Evans;Tom Holland;Robert Downey Jr;Chris Hemsworth,Robert Downey Jr,easy
+M15,Who directed Avatar?,movies,James Cameron;Nolan;Spielberg;Russo Brothers,James Cameron,easy
+M16,Which fictional school does Harry Potter attend?,movies,Hogwarts;Ilvermorny;Durmstrang;Beauxbatons,Hogwarts,easy
+M17,Who played “Jack Sparrow”?,movies,Tom Cruise;Brad Pitt;Johnny Depp;Keanu Reeves,Johnny Depp,easy
+M18,Which movie features “Thanos”?,movies,Iron Man;Avengers;Hulk;Thor,Avengers,easy
+M19,Which film won Best Picture at Oscars 2020?,movies,Parasite;Joker;1917;Ford v Ferrari,Parasite,easy
+M20,Who played Batman in The Dark Knight?,movies,Christian Bale;Ben Affleck;Pattinson;Clooney,Christian Bale,easy
+
+M21,Which Telugu movie stars Mahesh Babu as a spy?,movies,Spyder;Okkadu;Pokiri;Maharshi,Spyder,medium
+M22,Which director is known for “mass action” films?,movies,Trivikram;Boyapati;Sukumar;Shekar Kammula,Boyapati,medium
+M23,Who composed music for Pushpa?,movies,DSP;ARR;Keeravani;Anirudh,DSP,medium
+M24,Which movie is based on the KGF gold mines?,movies,KGF;Salaar;Leo;Vikram,KGF,medium
+M25,Who acted as “Alluri Sitarama Raju” in RRR?,movies,Ram Charan;Nani;Nagarjuna;Prabhas,Ram Charan,medium
+M26,Which Marvel hero uses a hammer?,movies,Iron Man;Thor;Hulk;Cap,Thor,medium
+M27,Which movie features “Black Panther”?,movies,Thor;Avengers;Black Panther;Hulk,Black Panther,medium
+M28,Which Indian actor starred in “3 Idiots”?,movies,Aamir Khan;SRK;Salman;Hrithik,Aamir Khan,medium
+M29,Who directed Inception?,movies,James Cameron;Christopher Nolan;Spielberg;Ridley Scott,Christopher Nolan,medium
+M30,Which movie has the quote “May the Force be with you”?,movies,Harry Potter;Star Wars;Avatar;Matrix,Star Wars,medium
+
+M31,Who played “Jersey” lead actor?,movies,Nani;Ram Charan;Vijay;Nagarjuna,Nani,medium
+M32,Which Telugu actor is known as “Natural Star”?,movies,Nani;Allu Arjun;Prabhas;Nagarjuna,Nani,medium
+M33,Who played the Joker in The Dark Knight?,movies,Heath Ledger;Joaquin Phoenix;Jared Leto;Bale,Heath Ledger,medium
+M34,Which movie features dinosaurs?,movies,Avatar;Jurassic Park;Titanic;Interstellar,Jurassic Park,medium
+M35,Which is a Pixar movie?,movies,Minions;Cars;Shrek;Kung Fu Panda,Cars,medium
+M36,Which Bollywood actor played “Kabir Singh”?,movies,Shahid Kapoor;Ranbir;Salman;Akshay,Shahid Kapoor,medium
+M37,Which movie stars Rajinikanth as a robot?,movies,Robot;Vikram;Leo;Kaala,Robot,medium
+M38,Which Tamil director made “Vikram” (2022)?,movies,Shankar;Rajamouli;Lokesh Kanagaraj;Atlee,Lokesh Kanagaraj,medium
+M39,Which movie shows dreams within dreams?,movies,Inception;Interstellar;Memento;Matrix,Inception,medium
+M40,Who played Thor?,movies,Chris Evans;Chris Pratt;Chris Hemsworth;Tom Holland,Chris Hemsworth,medium
+
+M41,Which film features “Kattappa killed Baahubali”?,movies,KGF;RRR;Baahubali;Pushpa,Baahubali,medium
+M42,Which Telugu movie stars Allu Arjun as DJ?,movies,Ala Vaikunthapuramulo;DJ;Pushpa;Race Gurram,DJ,medium
+M43,Which film stars Prabhas and Shraddha together?,movies,Saaho;Baahubali;Darling;Mirchi,Saaho,medium
+M44,Which movie features “Wakanda Forever”?,movies,Black Panther;Thor;Iron Man;Avengers,Black Panther,medium
+M45,Which Spider-Man actor is from MCU?,movies,Tobey Maguire;Andrew Garfield;Tom Holland;Ben,JTom Holland,medium
+M46,Who directed “Bahubali”? ,movies,Rajamouli;Sukumar;Shankar;Atlee,Rajamouli,medium
+M47,Which Bollywood movie stars Ranveer as Padmavati’s Rajput king?,movies,Bajirao Mastani;Padmaavat;Ram Leela;Jodha Akbar,Padmaavat,medium
+M48,Who voiced Mufasa in Lion King?,movies,James Earl Jones;Samuel L Jackson;Morgan Freeman;Idris Elba,James Earl Jones,medium
+M49,Which movie stars Leonardo DiCaprio on a sinking ship?,movies,Titanic;Inception;Shutter Island;Revenant,Titanic,medium
+M50,Which movie won Best Actor Oscar 2020?,movies,Joker;Irishman;Once Upon a Time;Ford v Ferrari,Joker,medium
+
+M51,Who played “Sarkaru Vaari Paata” lead?,movies,Mahesh Babu;Allu Arjun;Nani;Jr NTR,Mahesh Babu,hard
+M52,Who plays John Wick?,movies,Tom Cruise;Keanu Reeves;Matt Damon;Christian Bale,Keanu Reeves,hard
+M53,Which Telugu movie stars Ram Charan as a boxer?,movies,Ghani;Liger;Bruce Lee;Orange,Bruce Lee,hard
+M54,Which film used “de-aging” on actors?,movies,Inception;Irishman;Avatar;Joker,Irishman,hard
+M55,Which actor plays “Doctor Strange”?,movies,Benedict Cumberbatch;Chris Pratt;Hiddleston;Ruffalo,Benedict Cumberbatch,hard
+M56,Which Christopher Nolan movie is about time inversion?,movies,Interstellar;Dunkirk;Tenet;Memento,Tenet,hard
+M57,Which movie is based on mathematician Ramanujan?,movies,The Man Who Knew Infinity;A Beautiful Mind;Imitation Game;Theory of Everything,The Man Who Knew Infinity,hard
+M58,Which actress starred in “Baahubali” as Devasena?,movies,Samantha;Anushka Shetty;Tamanna;Kajal,Anushka Shetty,hard
+M59,Which movie features “Navi blue aliens”?,movies,WALL-E;Up;Avatar;Dune,Avatar,hard
+M60,Which film stars Christian Bale as a magician?,movies,The Prestige;Inception;Memento;Dark Knight,The Prestige,hard
+
+M61,Which Telugu actor starred in “Arjun Reddy”?,movies,Vijay Deverakonda;Nani;Nagarjuna;Pawan,Vijay Deverakonda,medium
+M62,Who directed KGF?,movies,Prashanth Neel;Rajamouli;Boyapati;Sukumar,Prashanth Neel,medium
+M63,Which is a Marvel villain?,movies,Thanos;Buzz;Scooby;Shrek,Thanos,easy
+M64,In which film does Simba appear?,movies,Lion King;Ice Age;Kung Fu Panda;Cars,Lion King,easy
+M65,Who composed music for RRR?,movies,Keeravani;DSP;Anirudh;ARR,Keeravani,medium
+M66,Which Bollywood movie stars Aishwarya Rai as Nandini?,movies,Devdas;Hum Dil De Chuke Sanam;Jodha Akbar;Ponniyin Selvan,Hum Dil De Chuke Sanam,medium
+M67,Which movie is about time travel?,movies,Inception;Interstellar;Tenet;Back to the Future,Back to the Future,medium
+M68,Which film stars Hrithik & Tiger together?,movies,War;Bang Bang;Krrish;Dhoom 2,War,medium
+M69,Which movie has the dialogue “Why so serious?”?,movies,Avengers;The Dark Knight;Joker;Deadpool,The Dark Knight,medium
+M70,Which movie has time loops?,movies,Groundhog Day;Avatar;Titanic;Matrix,Groundhog Day,medium
+
+M71,Who directed Avatar 2?,movies,James Cameron;Nolan;Russo Brothers;Spielberg,James Cameron,easy
+M72,Who acted as “Katniss Everdeen”?,movies,Jennifer Lawrence;Emma Watson;Scarlett Johansson;Anne Hathaway,Jennifer Lawrence,medium
+M73,Who acted as “Shiva” in Brahmāstra?,movies,Ranbir Kapoor;Vicky Kaushal;Aamir Khan;Varun Dhawan,Ranbir Kapoor,medium
+M74,Which film won Oscar Best Picture 2023?,movies,Everything Everywhere All at Once;Avatar 2;Top Gun;Elvis,Everything Everywhere All at Once,hard
+M75,Which movie stars Dhanush in Hollywood?,movies,The Gray Man;Extraction;Avatar;Mission Impossible,The Gray Man,hard
+M76,Which Pixar film is about emotions?,movies,Inside Out;Up;Soul;Cars,Inside Out,medium
+M77,Who played Neo in The Matrix?,movies,Keanu Reeves;Brad Pitt;Tom Cruise;Matt Damon,Keanu Reeves,easy
+M78,Which movie has the character "Woody"?,movies,Toy Story;Cars;Frozen;Shrek,Toy Story,easy
+M79,Who directed Titanic?,movies,James Cameron;Spielberg;Ridley Scott;Nolan,James Cameron,easy
+M80,Which superhero is from DC?,movies,Iron Man;Captain America;Batman;Thor,Batman,easy
+
+M81,Who acted as Komaram Bheem in RRR?,movies,Jr NTR;Ram Charan;Allu Arjun;Mahesh Babu,Jr NTR,easy
+M82,Which film is based on Kohinoor diamond?,movies,Sultan;Manikarnika;Bajirao Mastani;Kohinoor,Kohinoor,hard
+M83,In which movie does “Dr. Strange” first appear?,movies,Thor;Iron Man 3;Doctor Strange;Avengers,Doctor Strange,medium
+M84,Which movie stars Tom Cruise as Ethan Hunt?,movies,Top Gun;Mission Impossible;Jack Reacher;Collateral,Mission Impossible,medium
+M85,Who played “Tony Stark”?,movies,Chris Evans;Robert Downey Jr;Mark Ruffalo;Hugh Jackman,Robert Downey Jr,easy
+M86,Which is a Bollywood sports biopic?,movies,MS Dhoni;Dangal;Sultan;All,Dangal,medium
+M87,Which movie features dinosaurs?,movies,Jurassic Park;Avatar;Lion King;Hulk,Jurassic Park,easy
+M88,Which director made “Interstellar”?,movies,Spielberg;Nolan;James Cameron;Ridley Scott,Nolan,medium
+M89,Which film stars Allu Arjun dancing to “Butta Bomma”?,movies,Ala Vaikunthapuramulo;DJ;Julayi;Sarrainodu,Ala Vaikunthapuramulo,medium
+M90,Which movie ends with Titanic sinking?,movies,Titanic;Avatar;Lion King;Interstellar,Titanic,easy
+
+M91,Which actor played “Gondu” in Balagam?,movies,Karim;Priyadarshi;Allu Arjun;Chiranjeevi,Priyadarshi,hard
+M92,Which Tollywood film is set in Bangladesh?,movies,Kanche;Naa Peru Surya;Ghazi Attack;Major,Ghazi Attack,hard
+M93,Which movie has “I’ll be back” dialogue?,movies,Terminator;Avatar;Titanic;Gladiator,Terminator,medium
+M94,Which film stars Rajnikanth as a scientist?,movies,Robot;Kaala;Petta;Kabali,Robot,medium
+M95,Which movie won Best VFX Oscar 2023?,movies,Avatar 2;RRR;Inception;Dune,Dune,hard
+M96,Which film stars Balakrishna roaring?,movies,Akhanda;Legend;Veer Simha Reddy;All,Akhanda,medium
+M97,Which is Salman Khan’s debut?,movies,Bajrangi;Maine Pyar Kiya;Dabangg;Kick,Maine Pyar Kiya,medium
+M98,Who acted as Srinivas in “Hi Nanna”?,movies,Nani;Sharwanand;Ram Charan;Varun Tej,Nani,medium
+M99,Which film is India’s first 3D movie?,movies,My Dear Kuttichathan;Robot;Kochadaiiyaan;Apoorva,My Dear Kuttichathan,hard
+M100,Who directed "Baahubali: The Conclusion"?,movies,Rajamouli;Koratala;Boyapati;Sukumar,Rajamouli,easy

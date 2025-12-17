@@ -1,0 +1,3 @@
+export const QUESTIONS_PER_LEVEL = 5;
+export const QUESTION_TIME_SECONDS = 20;
+export const TICK_MS = 100;

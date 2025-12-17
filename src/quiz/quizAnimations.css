@@ -1,0 +1,60 @@
+/* QUESTION SLIDE-IN */
+.slide-in {
+  animation: slideIn 0.4s ease forwards;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* LIGHT SHAKE */
+.shake-light {
+  animation: shakeLight 0.35s ease;
+}
+
+@keyframes shakeLight {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+/* CORRECT FLASH */
+.flash-correct {
+  animation: flashCorrect 0.45s ease;
+}
+
+@keyframes flashCorrect {
+  0% { background-color: #e6ffed; }
+  50% { background-color: #c9ffd8; }
+  100% { background-color: #e6ffed; }
+}
+
+/* RIPPLE */
+.option-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease;
+}
+
+.option-btn:hover {
+  transform: scale(1.02);
+}
+
+.option-btn:active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(180, 180, 255, 0.3);
+  border-radius: inherit;
+  animation: ripple 0.3s ease;
+}
+
+@keyframes ripple {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
