@@ -11,14 +11,25 @@ export function useResumeQuiz({ user, category, difficulty, setIndex }) {
   useEffect(() => {
     if (!user) {
       setResumeData(null);
+      setLoading(false);
       return;
     }
 
     loadResumeState(user).then((data) => {
       console.log("📦 Resume loaded RAW:", data);
       setResumeData(data || null);
+      setLoading(false);
+      setDismissed(false); // reset on reload
     });
   }, [user]);
+
+  // ⛔ While loading → not paused
+  if (loading) {
+    return {
+      banner: null,
+      isPaused: false,
+    };
+  }
 
   const canResume =
     resumeData &&
@@ -26,24 +37,30 @@ export function useResumeQuiz({ user, category, difficulty, setIndex }) {
     resumeData.category === category &&
     resumeData.difficulty === difficulty;
 
-if (!canResume || dismissed) {
-  return { banner: null };
-}
+  // ⛔ No resume OR dismissed → not paused
+  if (!canResume || dismissed) {
+    return {
+      banner: null,
+      isPaused: false,
+    };
+  }
 
+  // ✅ Resume exists → quiz is paused
   return {
+    isPaused: true,
     banner: (
-        <ResumeBanner
-          index={resumeData.index}
-          onResume={() => {
-            setIndex(resumeData.index);
-            setDismissed(true); // ✅ HIDE BANNER AFTER RESUME
-          }}
-          onRestart={async () => {
-            await clearResumeState(user);
-            setResumeData(null);
-            setDismissed(true); // ✅ HIDE BANNER AFTER RESTART
-          }}
-        />
+      <ResumeBanner
+        index={resumeData.index}
+        onResume={() => {
+          setIndex(resumeData.index);
+          setDismissed(true); // hide banner after resume
+        }}
+        onRestart={async () => {
+          await clearResumeState(user);
+          setResumeData(null);
+          setDismissed(true); // hide banner after restart
+        }}
+      />
     ),
   };
 }

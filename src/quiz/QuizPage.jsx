@@ -68,7 +68,8 @@ export default function QuizPage() {
         level={level}
       />
 
-    {!flow.finished && (
+{/* PROGRESS + TIMER (hide when resume banner is active) */}
+{!shouldBlockQuiz && !flow.finished && (
   <QuizProgressTimer
     progressPct={flow.progressPct}
     timeMs={timer.timeMs}
@@ -77,13 +78,13 @@ export default function QuizPage() {
   />
 )}
 
-      {/* QUIZ UI (BLOCKED until resume decision) */}
-      {!shouldBlockQuiz && !flow.finished && flow.current && (
-        <>
-          <QuizQuestionCard {...flow.questionProps} />
-          <QuizActions {...flow.actionProps} />
-        </>
-      )}
+{/* QUIZ UI (BLOCKED until resume decision) */}
+{!shouldBlockQuiz && !flow.finished && flow.current && (
+  <>
+    <QuizQuestionCard {...flow.questionProps} />
+    <QuizActions {...flow.actionProps} />
+  </>
+)}
 
 {flow.finished && (
   <QuizFinish
