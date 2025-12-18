@@ -13,6 +13,7 @@ export function useQuizFlow({
   const [selected, setSelected] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [correctCount, setCorrectCount] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
   const [coinsEarned, setCoinsEarned] = useState(0);
 
@@ -25,10 +26,15 @@ export function useQuizFlow({
 
   /* ---------- ACTIONS ---------- */
 
-  function submitAnswer() {
-    if (submitted) return;
-    setSubmitted(true);
+function submitAnswer() {
+  if (submitted) return;
+
+  if (selected === current?.correctAnswer) {
+    setCorrectCount((c) => c + 1);
   }
+
+  setSubmitted(true);
+}
 
 async function nextQuestion() {
   const nextIndex = index + 1;
@@ -85,16 +91,19 @@ async function nextQuestion() {
   };
 
 return {
+  // state
   index,
   current,
   submitted,
   finished,
   progressPct,
+  correctCount,
+  totalQuestions: questions.length,
 
-  xpEarned,
-  coinsEarned,
-
+  // setters
   setIndex,
+
+  // ui bindings
   questionProps,
   actionProps,
 };

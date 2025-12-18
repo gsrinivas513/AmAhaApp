@@ -5,6 +5,8 @@ import ResumeBanner from "../components/ResumeBanner";
 
 export function useResumeQuiz({ user, category, difficulty, setIndex }) {
   const [resumeData, setResumeData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -24,22 +26,24 @@ export function useResumeQuiz({ user, category, difficulty, setIndex }) {
     resumeData.category === category &&
     resumeData.difficulty === difficulty;
 
-  if (!canResume) {
-    return { banner: null };
-  }
+if (!canResume || dismissed) {
+  return { banner: null };
+}
 
   return {
     banner: (
-      <ResumeBanner
-        index={resumeData.index}
-onResume={() => {
-  // wait for questions to exist
-  setIndex((prev) => resumeData.index);
-}}        onRestart={async () => {
-          await clearResumeState(user);
-          setResumeData(null);
-        }}
-      />
+        <ResumeBanner
+          index={resumeData.index}
+          onResume={() => {
+            setIndex(resumeData.index);
+            setDismissed(true); // ✅ HIDE BANNER AFTER RESUME
+          }}
+          onRestart={async () => {
+            await clearResumeState(user);
+            setResumeData(null);
+            setDismissed(true); // ✅ HIDE BANNER AFTER RESTART
+          }}
+        />
     ),
   };
 }

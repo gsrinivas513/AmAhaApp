@@ -20,10 +20,10 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  /* 1️⃣ LOAD QUESTIONS (FIRST) */
+  /* 1️⃣ Load questions */
   const { questions, loading } = useQuizQuestions(category, difficulty);
 
-  /* 2️⃣ QUIZ FLOW (DEPENDS ON QUESTIONS) */
+  /* 2️⃣ Quiz flow */
   const flow = useQuizFlow({
     questions,
     user,
@@ -32,13 +32,13 @@ export default function QuizPage() {
     level,
   });
 
-  /* 3️⃣ TIMER (DEPENDS ON FLOW) */
+  /* 3️⃣ Timer */
   const timer = useQuizTimer(
     !flow.submitted && !flow.finished,
     flow.index
   );
 
-  /* 4️⃣ RESUME (DEPENDS ON setIndex) */
+  /* 4️⃣ Resume hook */
   const resume = useResumeQuiz({
     user,
     category,
@@ -46,7 +46,9 @@ export default function QuizPage() {
     setIndex: flow.setIndex,
   });
 
-  /* 5️⃣ LOADING STATE */
+  /* 5️⃣ Derived UI flag (AFTER resume exists) */
+  const shouldBlockQuiz = resume.banner !== null;
+
   if (loading) {
     return (
       <SiteLayout>
@@ -60,47 +62,40 @@ export default function QuizPage() {
       {/* RESUME BANNER */}
       {resume.banner}
 
-      {/* HEADER */}
       <QuizHeader
         category={category}
         difficulty={difficulty}
         level={level}
       />
 
-      {/* PROGRESS + TIMER */}
-      <QuizProgressTimer
-        progressPct={flow.progressPct}
-        timeMs={timer.timeMs}
-        totalMs={timer.totalMs}
-        warn={timer.warn}
-      />
+    {!flow.finished && (
+  <QuizProgressTimer
+    progressPct={flow.progressPct}
+    timeMs={timer.timeMs}
+    totalMs={timer.totalMs}
+    warn={timer.warn}
+  />
+)}
 
-      {/* QUESTION + ACTIONS */}
-      {!flow.finished && flow.current && (
+      {/* QUIZ UI (BLOCKED until resume decision) */}
+      {!shouldBlockQuiz && !flow.finished && flow.current && (
         <>
           <QuizQuestionCard {...flow.questionProps} />
           <QuizActions {...flow.actionProps} />
         </>
       )}
 
-      {/* FINISH */}
-
 {flow.finished && (
-  <LevelCompleteSummary
-    level={Number(level)}
-xpEarned={flow.xpEarned}
-coinsEarned={flow.coinsEarned}
-    showNext={true}
+  <QuizFinish
+    totalQuestions={flow.totalQuestions}
+    correctAnswers={flow.correctCount}
+    xpEarned={flow.correctCount * 10}     // temporary
+    coinsEarned={flow.correctCount * 2}   // temporary
     onBack={() =>
       navigate(`/quiz/${category}/${difficulty}`)
     }
-    onNext={() =>
-      navigate(`/quiz/${category}/${difficulty}/${Number(level) + 1}`)
-    }
   />
 )}
-
-
     </SiteLayout>
   );
 }
