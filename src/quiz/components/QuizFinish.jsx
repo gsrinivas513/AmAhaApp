@@ -1,43 +1,43 @@
 // src/quiz/components/QuizFinish.jsx
+import React from "react";
+
 export default function QuizFinish({
+  correctCount,
+  totalQuestions,
+  xpEarned,
+  coinsEarned,
   onBack,
-  totalQuestions = 0,
-  correctAnswers = 0,
-  xpEarned = 0,
-  coinsEarned = 0,
 }) {
   return (
     <div
       style={{
         maxWidth: 420,
         margin: "40px auto",
-        background: "#fff",
         padding: 24,
-        borderRadius: 16,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+        background: "#fff",
+        borderRadius: 14,
+        boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
         textAlign: "center",
       }}
     >
       <h2 style={{ marginBottom: 12 }}>Level Complete 🎉</h2>
 
-      <div style={{ fontSize: 15, color: "#555", marginBottom: 20 }}>
+      <p style={{ color: "#555", marginBottom: 20 }}>
         Great job! Here’s how you did:
-      </div>
+      </p>
 
-      {/* SUMMARY STATS */}
       <div style={{ textAlign: "left", marginBottom: 20 }}>
         <div style={{ marginBottom: 8 }}>
-          ✅ Correct Answers: <b>{correctAnswers}</b> / {totalQuestions}
+          ✅ <b>Correct Answers:</b> {correctCount} / {totalQuestions}
         </div>
         <div style={{ marginBottom: 8 }}>
-          ⭐ XP Earned: <b>{xpEarned}</b>
+          ⭐ <b>XP Earned:</b> {xpEarned}
         </div>
         <div>
-          🪙 Coins Earned: <b>{coinsEarned}</b>
+          🪙 <b>Coins Earned:</b> {coinsEarned}
         </div>
       </div>
 
-      {/* ACTION */}
       <button
         onClick={onBack}
         style={{

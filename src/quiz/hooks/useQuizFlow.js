@@ -1,6 +1,7 @@
 // src/quiz/hooks/useQuizFlow.js
 import { useMemo, useState } from "react";
 import { saveResumeState, clearResumeState } from "../services/resumeService";
+import saveLevelCompletion from "../services/levelProgressService";
 
 export function useQuizFlow({
   questions,
@@ -29,8 +30,10 @@ export function useQuizFlow({
 function submitAnswer() {
   if (submitted) return;
 
-  if (selected === current?.correctAnswer) {
-    setCorrectCount((c) => c + 1);
+  if (selected === current.correctAnswer) {
+    setCorrectCount(c => c + 1);
+    setXpEarned(x => x + 10);     // example
+    setCoinsEarned(c => c + 5);   // example
   }
 
   setSubmitted(true);
@@ -47,7 +50,7 @@ async function nextQuestion() {
         user,
         category,
         difficulty,
-        level,
+        level, 
         index: nextIndex,
       });
     }
@@ -57,9 +60,18 @@ async function nextQuestion() {
     setSubmitted(false);
   } else {
     // ✅ LAST QUESTION → CLEAR RESUME
-    if (user) {
-      await clearResumeState(user);
-    }
+      // ✅ CLEAR RESUME
+  if (user) {
+    await clearResumeState(user);
+
+    // ✅ SAVE LEVEL COMPLETION (THIS WAS MISSING)
+    await saveLevelCompletion({
+      user,
+      category,
+      difficulty,
+      level: Number(level),
+    });
+  }
     // 🔹 ADD THESE 2 LINES HERE (Phase 7.6 – Step 3)
     setXpEarned(50);
     setCoinsEarned(20);
@@ -99,6 +111,8 @@ return {
   progressPct,
   correctCount,
   totalQuestions: questions.length,
+  xpEarned,
+  coinsEarned,
 
   // setters
   setIndex,

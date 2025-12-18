@@ -157,42 +157,85 @@ export default function CategoryLevelsPage() {
             marginTop: 20,
           }}
         >
-          {levels.map((lvl) => (
+          {levels.map((lvl) => {
+            const isCompleted = lvl.level <= highestCompleted;
+            const isNext =
+              lvl.level === highestCompleted + 1 &&
+              !isCompleted;
+
+              return (
+
             <div
               key={lvl.level}
               style={{
                 padding: 16,
                 borderRadius: 12,
-                background: lvl.unlocked ? "#ffffff" : "#f2f2f2",
+                background: isCompleted
+                  ? "#e8ffed"
+                  : isNext
+                  ? "#eef4ff"
+                  : "#f2f2f2",
                 boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-                opacity: lvl.unlocked ? 1 : 0.7,
+                opacity: 1,
                 textAlign: "center",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                cursor: lvl.unlocked ? "pointer" : "default",
+              }}
+              onMouseEnter={(e) => {
+                if (lvl.unlocked) {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 12px 32px rgba(0,0,0,0.12)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow =
+                  "0 8px 24px rgba(0,0,0,0.06)";
               }}
             >
               <div style={{ fontSize: 20, fontWeight: 700 }}>
                 Level {lvl.level}
               </div>
 
+              {isCompleted && (
+                <div style={{ marginTop: 6, color: "#4caf50", fontWeight: 600 }}>
+                  ✓ Completed
+                </div>
+              )}
+
+              {!isCompleted && isNext && (
+                <div style={{ marginTop: 6, color: "#ff9800", fontWeight: 600 }}>
+                  ⭐ Next Level
+                </div>
+              )}
+
               {lvl.unlocked ? (
                 <button
                   onClick={() =>
-                    navigate(
-                      `/quiz/${category}/${difficulty}/${lvl.level}`
-                    )
+                    navigate(`/quiz/${category}/${difficulty}/${lvl.level}`)
                   }
                   style={{
                     marginTop: 12,
                     padding: "10px 14px",
-                    background: "#6C63FF",
+                    background: isCompleted
+                      ? "#4caf50"
+                      : isNext
+                      ? "#6C63FF"
+                      : "#9e9e9e",
                     color: "#fff",
                     borderRadius: 8,
                     border: "none",
                     cursor: "pointer",
                     width: "100%",
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
-                  Start
+                  {isCompleted
+                    ? "Replay"
+                    : isNext
+                    ? "Start Next"
+                    : "Locked"}
                 </button>
               ) : (
                 <LockedLevelCard
@@ -204,10 +247,10 @@ export default function CategoryLevelsPage() {
                 />
               )}
             </div>
-          ))}
+              );
+           })}
         </div>
       )}
-
     </div>
   </SiteLayout>
 );

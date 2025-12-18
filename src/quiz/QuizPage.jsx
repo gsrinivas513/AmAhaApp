@@ -88,15 +88,14 @@ export default function QuizPage() {
 
 {flow.finished && (
   <QuizFinish
+    correctCount={flow.correctCount}
     totalQuestions={flow.totalQuestions}
-    correctAnswers={flow.correctCount}
-    xpEarned={flow.correctCount * 10}     // temporary
-    coinsEarned={flow.correctCount * 2}   // temporary
-    onBack={() =>
-      navigate(`/quiz/${category}/${difficulty}`)
-    }
+    xpEarned={flow.xpEarned}
+    coinsEarned={flow.coinsEarned}
+    onBack={() => navigate(`/quiz/${category}/${difficulty}`)}
   />
 )}
+
     </SiteLayout>
   );
 }
