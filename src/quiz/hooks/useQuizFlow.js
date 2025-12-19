@@ -13,6 +13,7 @@ export function useQuizFlow({
   initialIndex = 0,
 }) {
   const levelNumber = Number(level);
+  const [transitioning, setTransitioning] = useState(false);
 
   // 🔹 Slice questions for THIS level
   const levelQuestions = useMemo(() => {
@@ -75,32 +76,34 @@ export function useQuizFlow({
     setSubmitted(true);
   }
 
-  async function nextQuestion() {
-    // 🛑 GUARD: do nothing if already finished
-    if (finished) return;
+async function nextQuestion() {
+  // 🛑 GUARD: block spam & post-finish
+  if (transitioning || finished) return;
 
-    const hasMore = index + 1 < levelQuestions.length;
+  setTransitioning(true); // 🔒 lock
 
-    if (hasMore) {
-      if (user) {
-        await saveResumeState({
-          user,
-          category,
-          difficulty,
-          level,
-          index: index + 1,
-        });
-      }
+  const hasMore = index + 1 < levelQuestions.length;
 
-      setIndex(i => i + 1);
-      setSelected(null);
-      setSubmitted(false);
+  if (hasMore) {
+    if (user) {
+      await saveResumeState({
+        user,
+        category,
+        difficulty,
+        level,
+        index: index + 1,
+      });
+    }
+
+    setIndex(i => i + 1);
+    setSelected(null);
+    setSubmitted(false);
   } else {
-    // last question
+    // ✅ LAST QUESTION
     if (user) {
       await clearResumeState(user);
 
-      // ✅ ONLY complete level if ALL answers are correct
+      // ✅ Complete level ONLY if all answers correct
       if (correctCount === levelQuestions.length) {
         await saveLevelCompletion({
           user,
@@ -112,14 +115,19 @@ export function useQuizFlow({
         setXpEarned(50);
         setCoinsEarned(20);
       } else {
-        // ❌ Level failed → no rewards
         setXpEarned(0);
         setCoinsEarned(0);
       }
-       setFinished(true);
     }
+
+    setFinished(true);
   }
+
+  // 🔓 ALWAYS unlock (both paths)
+  setTimeout(() => setTransitioning(false), 250);
 }
+
+const canSubmit = selected !== null && !submitted;
 
   return {
     index,
@@ -132,7 +140,8 @@ export function useQuizFlow({
     xpEarned,
     coinsEarned,
     setIndex,
-      reset, // ✅ ADD THIS
+    reset, // ✅ ADD THIS
+    transitioning,
     questionProps: {
       question: current?.question,
       options: current?.options || [],
@@ -143,11 +152,12 @@ export function useQuizFlow({
       index,
       total: levelQuestions.length,
     },
-    actionProps: {
-      submitted,
-      onSubmit: submitAnswer,
-      onNext: nextQuestion,
-      isLast: index + 1 === levelQuestions.length,
-    },
+      actionProps: {
+        submitted,
+        canSubmit,          // ✅ THIS WAS MISSING / WRONG
+        onSubmit: submitAnswer,
+        onNext: nextQuestion,
+        isLast: index + 1 === levelQuestions.length,
+      },
   };
 }

@@ -22,6 +22,8 @@ export default function QuizQuestionCard({
 }) {
   if (!question) return null;
 
+  const isCorrect = selected === correctAnswer;
+
   return (
     <div
       className="slide-in"
@@ -46,31 +48,51 @@ export default function QuizQuestionCard({
       <div style={{ display: "grid", gap: 10 }}>
         {Array.isArray(options) &&
           options.map((opt, i) => {
-            let state = "idle";
+            let state = "default";
 
-            if (submitted) {
-              if (opt === correctAnswer) {
-                state = "correct";      // ✅ always green
-              } else if (opt === selected) {
-                state = "wrong";        // ❌ only wrong answer is red
+            if (!submitted) {
+              if (opt === selected) {
+                state = "selected";
               }
             } else {
-              if (opt === selected) {
-                state = "selected";     // only before submit
+              if (opt === correctAnswer) {
+                state = "correct"; // ✅ green
+              } else if (opt === selected) {
+                state = "wrong"; // ❌ red
+              } else {
+                state = "disabled"; // muted
               }
             }
 
-    return (
-      <OptionButton
-        key={opt}
-        label={String.fromCharCode(65 + i)}
-        text={opt}
-        state={state}
-        onClick={() => !submitted && onSelect(opt)}
-      />
-    );
-  })}
+            return (
+              <OptionButton
+                key={`${opt}-${i}`}
+                label={String.fromCharCode(65 + i)}
+                text={opt}
+                state={state}
+                onClick={() => {
+                  if (!submitted) onSelect(opt);
+                }}
+              />
+            );
+          })}
       </div>
+
+      {/* ✅ A2.3 — Answer feedback message */}
+      {submitted && (
+        <div
+          style={{
+            marginTop: 14,
+            fontSize: 14,
+            fontWeight: 600,
+            color: isCorrect ? "#2e7d32" : "#c62828",
+          }}
+        >
+          {isCorrect
+            ? "Correct! Nice work 👏"
+            : "Oops! The correct answer is highlighted above."}
+        </div>
+      )}
     </div>
   );
 }

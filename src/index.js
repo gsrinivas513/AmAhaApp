@@ -4,7 +4,6 @@ import "./index.css";
 import "./mobile.css";       // <-- keep this one
 import App from "./App";
 import { AuthProvider } from "./components/AuthProvider";
-import { ToastProvider } from "./components/Toast";
 import { ThemeProvider } from "./theme/ThemeProvider";
 
 

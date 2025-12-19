@@ -1,41 +1,53 @@
 import React from "react";
 
-/* 🔒 UI BASELINE — DO NOT CHANGE WITHOUT APPROVAL */
+/* 🔒 UI BASELINE — QUIZ ACTION BUTTONS
+   Matches OptionButton style (curved, modern, consistent)
+*/
 
 const baseStyle = {
-  padding: "10px 16px",
-  borderRadius: 8,          // ✅ CURVED
-  border: "none",
+  padding: "12px 16px",
+  borderRadius: 12,              // ✅ same curve as OptionButton
+  border: "1px solid #e6e6e6",
   fontWeight: 600,
   cursor: "pointer",
   fontSize: 15,
+  transition: "all 0.2s ease",
+  textAlign: "center",
 };
 
-export function SubmitButton({ onClick }) {
+/* ---------- SUBMIT ---------- */
+export function SubmitButton({ onClick, disabled }) {
   return (
     <button
-      onClick={onClick}
+      onClick={!disabled ? onClick : undefined}
+      disabled={disabled}
       style={{
-        padding: "20px",
-        borderRadius: "999px",   // 👈 EXTREME ROUND
-        background: "red",       // 👈 VERY OBVIOUS
-        color: "white",
-        fontSize: 18,
+        padding: "10px 16px",
+        borderRadius: 12,
+        background: disabled ? "#dcdcdc" : "#6C63FF",
+        color: disabled ? "#888" : "#fff",
+        border: "none",
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.7 : 1,
+        transition: "all 0.2s ease",
       }}
     >
-      SUBMIT TEST
+      Submit
     </button>
   );
 }
 
+/* ---------- NEXT / FINISH ---------- */
 export function NextButton({ onClick, isLast }) {
   return (
     <button
       onClick={onClick}
       style={{
         ...baseStyle,
-        background: "#4caf50",
+        background: "#4caf50",    // green
         color: "#fff",
+        border: "none",
       }}
     >
       {isLast ? "Finish" : "Next"}
@@ -43,6 +55,7 @@ export function NextButton({ onClick, isLast }) {
   );
 }
 
+/* ---------- SKIP ---------- */
 export function SkipButton({ onClick }) {
   return (
     <button
@@ -50,7 +63,6 @@ export function SkipButton({ onClick }) {
       style={{
         ...baseStyle,
         background: "#f5f6fb",
-        border: "1px solid #ddd",
         color: "#333",
       }}
     >

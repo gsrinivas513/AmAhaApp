@@ -7,8 +7,8 @@ import { useAuth } from "../components/AuthProvider";
 import QuizHeader from "./components/QuizHeader";
 import QuizProgressTimer from "./components/QuizProgressTimer";
 import QuizQuestionCard from "./components/QuizQuestionCard";
-import QuizActions from "./components/QuizActions";
 import QuizFinish from "./components/QuizFinish";
+import QuizActions from "./ui/QuizActions";
 
 import { useQuizQuestions } from "./hooks/useQuizQuestions";
 import { useQuizFlow } from "./hooks/useQuizFlow";
