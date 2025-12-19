@@ -50,7 +50,7 @@ function AdminScoresPage() {
 
   // CSV Export
   const exportCSV = () => {
-    const header = ["id", "category", "level", "score", "total", "createdAt"];
+    const header = ["id", "category", "difficulty", "score", "total", "createdAt"];
     const rows = filtered.map((r) => {
       const created = r.createdAt?.toDate ? r.createdAt.toDate().toISOString() : r.createdAt || "";
       return [r.id, r.category, r.level || "", r.score, r.total, created];

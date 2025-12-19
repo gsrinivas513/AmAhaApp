@@ -1,110 +1,112 @@
-id,question,category,options,correctAnswer,level
-M1,Who is known as the "Megastar" of Telugu cinema?,movies,Mahesh Babu;Prabhas;Chiranjeevi;Pawan Kalyan,Chiranjeevi,easy
-M2,Who played Baahubali in the movie Baahubali?,movies,Rana;Prabhas;Nani;Allu Arjun,Prabhas,easy
-M3,Which movie features the character “Pushpa Raj”?,movies,KGF;Pushpa;Bahubali;RRR,Pushpa,easy
-M4,Who directed the movie RRR?,movies,Rajamouli;Shankar;Lokesh Kanagaraj;Trivikram,Rajamouli,easy
-M5,Who is known as "Power Star"?,movies,Nagarjuna;Venkatesh;Pawan Kalyan;Ram Charan,Pawan Kalyan,easy
-M6,Which actor is called "Rebel Star"?,movies,Prabhas;Allu Arjun;Ram Charan;Jr NTR,Prabhas,easy
-M7,Which movie has the song “Naatu Naatu”?,movies,Bahubali;RRR;Pushpa;KGF,RRR,easy
-M8,Who played the role of Bheem in RRR?,movies,Ram Charan;Prabhas;Jr NTR;Nani,Jr NTR,easy
-M9,Which movie features “Rocky Bhai”?,movies,KGF;Pushpa;Salaar;Leo,KGF,easy
-M10,Who directed Baahubali?,movies,Rajamouli;Boyapati;Sukumar;Koratal Siva,Rajamouli,easy
-
-M11,Which actress starred in “Ala Vaikunthapuramulo”?,movies,Samantha;Pooja Hegde;Rashmika;Tamanna,Pooja Hegde,easy
-M12,Which is India’s first Oscar-winning song?,movies,Jai Ho;Naatu Naatu;Vande Mataram;Aye Mere Watan,Jai Ho,easy
-M13,Who played “Singham” in Bollywood?,movies,Ajay Devgan;Salman Khan;Akshay Kumar;Ranveer Singh,Ajay Devgan,easy
-M14,Who played “Iron Man” in Marvel movies?,movies,Chris Evans;Tom Holland;Robert Downey Jr;Chris Hemsworth,Robert Downey Jr,easy
-M15,Who directed Avatar?,movies,James Cameron;Nolan;Spielberg;Russo Brothers,James Cameron,easy
-M16,Which fictional school does Harry Potter attend?,movies,Hogwarts;Ilvermorny;Durmstrang;Beauxbatons,Hogwarts,easy
-M17,Who played “Jack Sparrow”?,movies,Tom Cruise;Brad Pitt;Johnny Depp;Keanu Reeves,Johnny Depp,easy
-M18,Which movie features “Thanos”?,movies,Iron Man;Avengers;Hulk;Thor,Avengers,easy
-M19,Which film won Best Picture at Oscars 2020?,movies,Parasite;Joker;1917;Ford v Ferrari,Parasite,easy
-M20,Who played Batman in The Dark Knight?,movies,Christian Bale;Ben Affleck;Pattinson;Clooney,Christian Bale,easy
-
-M21,Which Telugu movie stars Mahesh Babu as a spy?,movies,Spyder;Okkadu;Pokiri;Maharshi,Spyder,medium
-M22,Which director is known for “mass action” films?,movies,Trivikram;Boyapati;Sukumar;Shekar Kammula,Boyapati,medium
-M23,Who composed music for Pushpa?,movies,DSP;ARR;Keeravani;Anirudh,DSP,medium
-M24,Which movie is based on the KGF gold mines?,movies,KGF;Salaar;Leo;Vikram,KGF,medium
-M25,Who acted as “Alluri Sitarama Raju” in RRR?,movies,Ram Charan;Nani;Nagarjuna;Prabhas,Ram Charan,medium
-M26,Which Marvel hero uses a hammer?,movies,Iron Man;Thor;Hulk;Cap,Thor,medium
-M27,Which movie features “Black Panther”?,movies,Thor;Avengers;Black Panther;Hulk,Black Panther,medium
-M28,Which Indian actor starred in “3 Idiots”?,movies,Aamir Khan;SRK;Salman;Hrithik,Aamir Khan,medium
-M29,Who directed Inception?,movies,James Cameron;Christopher Nolan;Spielberg;Ridley Scott,Christopher Nolan,medium
-M30,Which movie has the quote “May the Force be with you”?,movies,Harry Potter;Star Wars;Avatar;Matrix,Star Wars,medium
-
-M31,Who played “Jersey” lead actor?,movies,Nani;Ram Charan;Vijay;Nagarjuna,Nani,medium
-M32,Which Telugu actor is known as “Natural Star”?,movies,Nani;Allu Arjun;Prabhas;Nagarjuna,Nani,medium
-M33,Who played the Joker in The Dark Knight?,movies,Heath Ledger;Joaquin Phoenix;Jared Leto;Bale,Heath Ledger,medium
-M34,Which movie features dinosaurs?,movies,Avatar;Jurassic Park;Titanic;Interstellar,Jurassic Park,medium
-M35,Which is a Pixar movie?,movies,Minions;Cars;Shrek;Kung Fu Panda,Cars,medium
-M36,Which Bollywood actor played “Kabir Singh”?,movies,Shahid Kapoor;Ranbir;Salman;Akshay,Shahid Kapoor,medium
-M37,Which movie stars Rajinikanth as a robot?,movies,Robot;Vikram;Leo;Kaala,Robot,medium
-M38,Which Tamil director made “Vikram” (2022)?,movies,Shankar;Rajamouli;Lokesh Kanagaraj;Atlee,Lokesh Kanagaraj,medium
-M39,Which movie shows dreams within dreams?,movies,Inception;Interstellar;Memento;Matrix,Inception,medium
-M40,Who played Thor?,movies,Chris Evans;Chris Pratt;Chris Hemsworth;Tom Holland,Chris Hemsworth,medium
-
-M41,Which film features “Kattappa killed Baahubali”?,movies,KGF;RRR;Baahubali;Pushpa,Baahubali,medium
-M42,Which Telugu movie stars Allu Arjun as DJ?,movies,Ala Vaikunthapuramulo;DJ;Pushpa;Race Gurram,DJ,medium
-M43,Which film stars Prabhas and Shraddha together?,movies,Saaho;Baahubali;Darling;Mirchi,Saaho,medium
-M44,Which movie features “Wakanda Forever”?,movies,Black Panther;Thor;Iron Man;Avengers,Black Panther,medium
-M45,Which Spider-Man actor is from MCU?,movies,Tobey Maguire;Andrew Garfield;Tom Holland;Ben,JTom Holland,medium
-M46,Who directed “Bahubali”? ,movies,Rajamouli;Sukumar;Shankar;Atlee,Rajamouli,medium
-M47,Which Bollywood movie stars Ranveer as Padmavati’s Rajput king?,movies,Bajirao Mastani;Padmaavat;Ram Leela;Jodha Akbar,Padmaavat,medium
-M48,Who voiced Mufasa in Lion King?,movies,James Earl Jones;Samuel L Jackson;Morgan Freeman;Idris Elba,James Earl Jones,medium
-M49,Which movie stars Leonardo DiCaprio on a sinking ship?,movies,Titanic;Inception;Shutter Island;Revenant,Titanic,medium
-M50,Which movie won Best Actor Oscar 2020?,movies,Joker;Irishman;Once Upon a Time;Ford v Ferrari,Joker,medium
-
-M51,Who played “Sarkaru Vaari Paata” lead?,movies,Mahesh Babu;Allu Arjun;Nani;Jr NTR,Mahesh Babu,hard
-M52,Who plays John Wick?,movies,Tom Cruise;Keanu Reeves;Matt Damon;Christian Bale,Keanu Reeves,hard
-M53,Which Telugu movie stars Ram Charan as a boxer?,movies,Ghani;Liger;Bruce Lee;Orange,Bruce Lee,hard
-M54,Which film used “de-aging” on actors?,movies,Inception;Irishman;Avatar;Joker,Irishman,hard
-M55,Which actor plays “Doctor Strange”?,movies,Benedict Cumberbatch;Chris Pratt;Hiddleston;Ruffalo,Benedict Cumberbatch,hard
-M56,Which Christopher Nolan movie is about time inversion?,movies,Interstellar;Dunkirk;Tenet;Memento,Tenet,hard
-M57,Which movie is based on mathematician Ramanujan?,movies,The Man Who Knew Infinity;A Beautiful Mind;Imitation Game;Theory of Everything,The Man Who Knew Infinity,hard
-M58,Which actress starred in “Baahubali” as Devasena?,movies,Samantha;Anushka Shetty;Tamanna;Kajal,Anushka Shetty,hard
-M59,Which movie features “Navi blue aliens”?,movies,WALL-E;Up;Avatar;Dune,Avatar,hard
-M60,Which film stars Christian Bale as a magician?,movies,The Prestige;Inception;Memento;Dark Knight,The Prestige,hard
-
-M61,Which Telugu actor starred in “Arjun Reddy”?,movies,Vijay Deverakonda;Nani;Nagarjuna;Pawan,Vijay Deverakonda,medium
-M62,Who directed KGF?,movies,Prashanth Neel;Rajamouli;Boyapati;Sukumar,Prashanth Neel,medium
-M63,Which is a Marvel villain?,movies,Thanos;Buzz;Scooby;Shrek,Thanos,easy
-M64,In which film does Simba appear?,movies,Lion King;Ice Age;Kung Fu Panda;Cars,Lion King,easy
-M65,Who composed music for RRR?,movies,Keeravani;DSP;Anirudh;ARR,Keeravani,medium
-M66,Which Bollywood movie stars Aishwarya Rai as Nandini?,movies,Devdas;Hum Dil De Chuke Sanam;Jodha Akbar;Ponniyin Selvan,Hum Dil De Chuke Sanam,medium
-M67,Which movie is about time travel?,movies,Inception;Interstellar;Tenet;Back to the Future,Back to the Future,medium
-M68,Which film stars Hrithik & Tiger together?,movies,War;Bang Bang;Krrish;Dhoom 2,War,medium
-M69,Which movie has the dialogue “Why so serious?”?,movies,Avengers;The Dark Knight;Joker;Deadpool,The Dark Knight,medium
-M70,Which movie has time loops?,movies,Groundhog Day;Avatar;Titanic;Matrix,Groundhog Day,medium
-
-M71,Who directed Avatar 2?,movies,James Cameron;Nolan;Russo Brothers;Spielberg,James Cameron,easy
-M72,Who acted as “Katniss Everdeen”?,movies,Jennifer Lawrence;Emma Watson;Scarlett Johansson;Anne Hathaway,Jennifer Lawrence,medium
-M73,Who acted as “Shiva” in Brahmāstra?,movies,Ranbir Kapoor;Vicky Kaushal;Aamir Khan;Varun Dhawan,Ranbir Kapoor,medium
-M74,Which film won Oscar Best Picture 2023?,movies,Everything Everywhere All at Once;Avatar 2;Top Gun;Elvis,Everything Everywhere All at Once,hard
-M75,Which movie stars Dhanush in Hollywood?,movies,The Gray Man;Extraction;Avatar;Mission Impossible,The Gray Man,hard
-M76,Which Pixar film is about emotions?,movies,Inside Out;Up;Soul;Cars,Inside Out,medium
-M77,Who played Neo in The Matrix?,movies,Keanu Reeves;Brad Pitt;Tom Cruise;Matt Damon,Keanu Reeves,easy
-M78,Which movie has the character "Woody"?,movies,Toy Story;Cars;Frozen;Shrek,Toy Story,easy
-M79,Who directed Titanic?,movies,James Cameron;Spielberg;Ridley Scott;Nolan,James Cameron,easy
-M80,Which superhero is from DC?,movies,Iron Man;Captain America;Batman;Thor,Batman,easy
-
-M81,Who acted as Komaram Bheem in RRR?,movies,Jr NTR;Ram Charan;Allu Arjun;Mahesh Babu,Jr NTR,easy
-M82,Which film is based on Kohinoor diamond?,movies,Sultan;Manikarnika;Bajirao Mastani;Kohinoor,Kohinoor,hard
-M83,In which movie does “Dr. Strange” first appear?,movies,Thor;Iron Man 3;Doctor Strange;Avengers,Doctor Strange,medium
-M84,Which movie stars Tom Cruise as Ethan Hunt?,movies,Top Gun;Mission Impossible;Jack Reacher;Collateral,Mission Impossible,medium
-M85,Who played “Tony Stark”?,movies,Chris Evans;Robert Downey Jr;Mark Ruffalo;Hugh Jackman,Robert Downey Jr,easy
-M86,Which is a Bollywood sports biopic?,movies,MS Dhoni;Dangal;Sultan;All,Dangal,medium
-M87,Which movie features dinosaurs?,movies,Jurassic Park;Avatar;Lion King;Hulk,Jurassic Park,easy
-M88,Which director made “Interstellar”?,movies,Spielberg;Nolan;James Cameron;Ridley Scott,Nolan,medium
-M89,Which film stars Allu Arjun dancing to “Butta Bomma”?,movies,Ala Vaikunthapuramulo;DJ;Julayi;Sarrainodu,Ala Vaikunthapuramulo,medium
-M90,Which movie ends with Titanic sinking?,movies,Titanic;Avatar;Lion King;Interstellar,Titanic,easy
-
-M91,Which actor played “Gondu” in Balagam?,movies,Karim;Priyadarshi;Allu Arjun;Chiranjeevi,Priyadarshi,hard
-M92,Which Tollywood film is set in Bangladesh?,movies,Kanche;Naa Peru Surya;Ghazi Attack;Major,Ghazi Attack,hard
-M93,Which movie has “I’ll be back” dialogue?,movies,Terminator;Avatar;Titanic;Gladiator,Terminator,medium
-M94,Which film stars Rajnikanth as a scientist?,movies,Robot;Kaala;Petta;Kabali,Robot,medium
-M95,Which movie won Best VFX Oscar 2023?,movies,Avatar 2;RRR;Inception;Dune,Dune,hard
-M96,Which film stars Balakrishna roaring?,movies,Akhanda;Legend;Veer Simha Reddy;All,Akhanda,medium
-M97,Which is Salman Khan’s debut?,movies,Bajrangi;Maine Pyar Kiya;Dabangg;Kick,Maine Pyar Kiya,medium
-M98,Who acted as Srinivas in “Hi Nanna”?,movies,Nani;Sharwanand;Ram Charan;Varun Tej,Nani,medium
-M99,Which film is India’s first 3D movie?,movies,My Dear Kuttichathan;Robot;Kochadaiiyaan;Apoorva,My Dear Kuttichathan,hard
-M100,Who directed "Baahubali: The Conclusion"?,movies,Rajamouli;Koratala;Boyapati;Sukumar,Rajamouli,easy
+question,optionA,optionB,optionC,optionD,correctAnswer,category,difficulty
+What color is the sky?,Blue,Green,Red,Yellow,Blue,kids,easy
+How many legs does a dog have?,2,3,4,5,4,kids,easy
+Which animal says Meow?,Dog,Cow,Cat,Sheep,Cat,kids,easy
+Which fruit is red?,Apple,Banana,Grapes,Orange,Apple,kids,easy
+How many days are in a week?,5,6,7,8,7,kids,easy
+What shape is a ball?,Square,Triangle,Round,Rectangle,Round,kids,easy
+Which animal is king of jungle?,Tiger,Elephant,Lion,Deer,Lion,kids,easy
+What comes after 9?,10,11,8,12,10,kids,easy
+Which one can fly?,Dog,Cat,Bird,Cow,Bird,kids,easy
+Which color is banana?,Red,Blue,Yellow,Green,Yellow,kids,easy
+How many eyes do humans have?,1,2,3,4,2,kids,easy
+Which animal gives milk?,Dog,Cat,Cow,Lion,Cow,kids,easy
+Which is a vegetable?,Apple,Carrot,Banana,Grapes,Carrot,kids,easy
+Which is hot?,Ice,Fire,Water,Rain,Fire,kids,easy
+What sound does a cow make?,Meow,Moo,Bark,Roar,Moo,kids,easy
+How many wheels does a bicycle have?,1,2,3,4,2,kids,easy
+Which animal has a long trunk?,Dog,Cat,Elephant,Horse,Elephant,kids,easy
+Which fruit is yellow?,Apple,Mango,Grapes,Cherry,Mango,kids,easy
+What color is grass?,Blue,Red,Green,Yellow,Green,kids,easy
+Which is big?,Ant,Mouse,Elephant,Cat,Elephant,kids,easy
+What comes before 5?,3,4,6,7,4,kids,easy
+Which animal can swim?,Dog,Fish,Lion,Cow,Fish,kids,easy
+Which is sweet?,Salt,Sugar,Chili,Lemon,Sugar,kids,easy
+What do bees make?,Milk,Honey,Water,Juice,Honey,kids,easy
+Which shape has 3 sides?,Circle,Square,Triangle,Rectangle,Triangle,kids,easy
+Which animal barks?,Cat,Cow,Dog,Sheep,Dog,kids,easy
+Which is cold?,Fire,Ice,Sun,Steam,Ice,kids,easy
+Which fruit is orange?,Apple,Orange,Grapes,Banana,Orange,kids,easy
+How many fingers on one hand?,3,4,5,6,5,kids,easy
+Which animal jumps?,Snake,Frog,Cow,Dog,Frog,kids,easy
+Which is round?,Box,Table,Ball,Book,Ball,kids,easy
+What do birds have?,Hands,Legs,Wings,Tails,Wings,kids,easy
+Which animal lives in water?,Dog,Cat,Fish,Goat,Fish,kids,easy
+What color is snow?,White,Blue,Red,Green,White,kids,easy
+Which animal is slow?,Tiger,Horse,Snail,Dog,Snail,kids,easy
+What do we drink?,Sand,Water,Stone,Wood,Water,kids,easy
+Which is tall?,Ant,Tree,Book,Pencil,Tree,kids,easy
+Which animal says quack?,Dog,Cow,Duck,Cat,Duck,kids,easy
+Which fruit has seeds?,Stone,Apple,Chair,Glass,Apple,kids,easy
+What do plants need?,Toys,Sunlight,Music,Books,Sunlight,kids,easy
+Which animal is small?,Elephant,Mouse,Horse,Cow,Mouse,kids,easy
+What color is the sun?,Green,Blue,Yellow,Black,Yellow,kids,easy
+Which animal runs fast?,Snail,Turtle,Cheetah,Dog,Cheetah,kids,easy
+Which is soft?,Rock,Pillow,Table,Wall,Pillow,kids,easy
+Which fruit is green?,Apple,Banana,Cherry,Grapes,Grapes,kids,easy
+How many ears do humans have?,1,2,3,4,2,kids,easy
+Which animal lives on farm?,Lion,Tiger,Cow,Bear,Cow,kids,easy
+Which is heavy?,Feather,Stone,Paper,Leaf,Stone,kids,easy
+Which fruit is sweet?,Lemon,Apple,Chili,Salt,Apple,kids,easy
+Which animal has stripes?,Dog,Cat,Tiger,Cow,Tiger,kids,easy
+Which is used to write?,Book,Pen,Chair,Plate,Pen,kids,easy
+Which animal is wild?,Cow,Goat,Lion,Dog,Lion,kids,easy
+Which color is apple?,Blue,Green,Red,Yellow,Red,kids,easy
+Which is a bird?,Dog,Cat,Parrot,Cow,Parrot,kids,easy
+Which animal has horns?,Dog,Goat,Cat,Horse,Goat,kids,easy
+Which is hot in sky?,Moon,Sun,Star,Cloud,Sun,kids,easy
+Which animal crawls?,Dog,Cat,Snake,Cow,Snake,kids,easy
+Which fruit is juicy?,Apple,Orange,Bread,Cheese,Orange,kids,easy
+Which is used to eat?,Pen,Spoon,Book,Chair,Spoon,kids,easy
+Which animal has tail?,Fish,Dog,Cat,All,All,kids,easy
+Which is a flower?,Rose,Tree,Grass,Leaf,Rose,kids,easy
+Which animal lives in forest?,Cow,Dog,Lion,Goat,Lion,kids,easy
+Which is a color?,Table,Chair,Red,Book,Red,kids,easy
+Which animal has feathers?,Dog,Cat,Bird,Cow,Bird,kids,easy
+Which is used to sleep?,Chair,Bed,Table,Door,Bed,kids,easy
+Which fruit is sour?,Apple,Lemon,Mango,Grapes,Lemon,kids,easy
+Which animal has long ears?,Dog,Rabbit,Cat,Horse,Rabbit,kids,easy
+Which is a toy?,Ball,Stone,Knife,Plate,Ball,kids,easy
+Which animal eats grass?,Lion,Dog,Cow,Cat,Cow,kids,easy
+Which is light?,Stone,Feather,Book,Chair,Feather,kids,easy
+Which animal has a shell?,Dog,Cat,Turtle,Horse,Turtle,kids,easy
+Which is a vehicle?,Tree,Car,House,Dog,Car,kids,easy
+Which animal can climb?,Fish,Cow,Monkey,Dog,Monkey,kids,easy
+Which is used to see?,Ear,Nose,Eye,Hand,Eye,kids,easy
+Which animal is pet?,Lion,Tiger,Dog,Bear,Dog,kids,easy
+Which is sweet fruit?,Apple,Mango,Chili,Lemon,Mango,kids,easy
+Which animal is big?,Cat,Dog,Elephant,Rabbit,Elephant,kids,easy
+Which is a drink?,Water,Stone,Paper,Chair,Water,kids,easy
+Which animal hops?,Dog,Frog,Cow,Cat,Frog,kids,easy
+Which is round fruit?,Banana,Apple,Carrot,Potato,Apple,kids,easy
+Which animal has mane?,Dog,Cat,Lion,Cow,Lion,kids,easy
+Which number is missing: 2, 4, ?, 8, 10?,6,kids,hard
+If you have 3 apples and give 1 away, how many left?,1,2,3,4,2,kids,hard
+Which is the odd one?,Apple,Banana,Carrot,Mango,Carrot,kids,hard
+What comes next: A, C, E, ?, G?,F,kids,hard
+How many sides do 2 triangles have together?,4,5,6,7,6,kids,hard
+Which is heavier?,1kg cotton,1kg iron,Both same,None,Both same,kids,hard
+If today is Monday, tomorrow is?,Sunday,Tuesday,Friday,Saturday,Tuesday,kids,hard
+Which shape has more sides?,Triangle,Square,Circle,None,Square,kids,hard
+What comes next: 5, 10, 15, ?, 25?,20,kids,hard
+Which number is biggest?,19,21,18,20,21,kids,hard
+If you see a mirror image of 3, it looks like?,Ɛ,3,E,B,Ɛ,kids,hard
+How many minutes in 1 hour?,30,45,60,90,60,kids,hard
+Which one cannot roll?,Ball,Cylinder,Box,Wheel,Box,kids,hard
+What comes next: Sun, Mon, Tue, ?, Thu?,Wed,kids,hard
+Which animal is nocturnal?,Cow,Dog,Owl,Goat,Owl,kids,hard
+How many corners does a cube have?,4,6,8,10,8,kids,hard
+If you add 10 + 5, what is half of the result?,5,7.5,10,15,7.5,kids,hard
+Which one is not a fruit?,Apple,Banana,Potato,Mango,Potato,kids,hard
+Which month has least days?,January,February,March,April,February,kids,hard
+What comes next: 1, 1, 2, 3, ?, 5?,5,kids,hard
+Which is faster?,Snail,Turtle,Car,Bicycle,Car,kids,hard
+How many legs do 3 spiders have?,12,18,24,6,24,kids,hard
+Which one melts?,Stone,Ice,Wood,Plastic,Ice,kids,hard
+If 5 + 5 = 10, then 10 + 10 =?,15,20,25,30,20,kids,hard
+Which is a renewable resource?,Coal,Petrol,Sunlight,Gas,Sunlight,kids,hard
+How many letters in word “ELEPHANT”?,6,7,8,9,8,kids,hard
+Which one floats?,Stone,Iron,Wood,Brick,Wood,kids,hard
+If you count backwards from 10, what comes after 7?,6,5,8,9,6,kids,hard
+Which has more weight?,1kg apples,500g apples,Same,Depends,1kg apples,kids,hard
+Which animal uses echolocation?,Dog,Bat,Cow,Cat,Bat,kids,hard

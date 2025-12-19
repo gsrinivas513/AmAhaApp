@@ -1,17 +1,19 @@
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 
-/**
- * Save highest completed level for a category + difficulty
- * Path:
- * users/{uid}/progress/{category}_{difficulty}
- */
-export default async function saveLevelCompletion({
+export async function saveLevelCompletion({
   user,
   category,
   difficulty,
   level,
 }) {
+  console.log("🔥 saveLevelCompletion CALLED", {
+    uid: user?.uid,
+    category,
+    difficulty,
+    level,
+  });
+
   if (!user) return;
 
   const ref = doc(
@@ -24,19 +26,24 @@ export default async function saveLevelCompletion({
 
   const snap = await getDoc(ref);
 
-  const currentHighest = snap.exists()
-    ? snap.data().highestLevelCompleted || 0
-    : 0;
+  const data = snap.exists()
+    ? snap.data()
+    : {
+        highestCompleted: 0,
+        easyCompletedLevels: 0,
+        mediumCompletedLevels: 0,
+        hardCompletedLevels: 0,
+        trophyEarned: false,
+      };
 
-  // ✅ Only update if new level is higher
-  if (level > currentHighest) {
-    await setDoc(
-      ref,
-      {
-        highestLevelCompleted: level,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+  if (level > data.highestCompleted) {
+    data.highestCompleted = level;
   }
+
+  const field = `${difficulty}CompletedLevels`;
+  data[field] = Math.max(data[field], level);
+
+  await setDoc(ref, data, { merge: true });
+
+  console.log("✅ Progress saved", data);
 }

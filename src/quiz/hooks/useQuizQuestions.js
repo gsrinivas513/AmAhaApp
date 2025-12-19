@@ -1,26 +1,19 @@
+// src/quiz/hooks/useQuizQuestions.js
+// src/quiz/hooks/useQuizQuestions.js
 import { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  limit,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-import { QUESTIONS_PER_LEVEL } from "../constants";
-
-const shuffle = (arr) =>
-  arr
-    .map((v) => ({ v, r: Math.random() }))
-    .sort((a, b) => a.r - b.r)
-    .map((v) => v.v);
+import { getOrCreateQuestionOrder } from "../services/questionOrderService";
+import { useAuth } from "../../components/AuthProvider";
 
 export function useQuizQuestions(category, difficulty) {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
+
     let active = true;
     setLoading(true);
 
@@ -28,20 +21,34 @@ export function useQuizQuestions(category, difficulty) {
       const q = query(
         collection(db, "questions"),
         where("category", "==", category),
-        where("level", "==", difficulty),
-        orderBy("__name__"),
-        limit(QUESTIONS_PER_LEVEL)
+        where("difficulty", "==", difficulty)
       );
 
       const snap = await getDocs(q);
       if (!active) return;
 
-      setQuestions(shuffle(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+      const all = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+      }));
+
+      const order = await getOrCreateQuestionOrder({
+        user,
+        category,
+        difficulty,
+        questionIds: all.map(q => q.id),
+      });
+
+      const orderedQuestions = order
+        .map(id => all.find(q => q.id === id))
+        .filter(Boolean);
+
+      setQuestions(orderedQuestions);
       setLoading(false);
     })();
 
     return () => { active = false; };
-  }, [category, difficulty]);
+  }, [user, category, difficulty]);
 
   return { questions, loading };
 }

@@ -11,14 +11,14 @@ import OptionButton from "../ui/OptionButton";
  */
 
 export default function QuizQuestionCard({
-  question,        // string
-  options,         // array of strings
-  correctAnswer,   // string
-  selected,        // string | null
-  submitted,       // boolean
-  onSelect,        // function
-  index,           // number
-  total,           // number
+  question,
+  options,
+  correctAnswer,
+  selected,
+  submitted,
+  onSelect,
+  index,
+  total,
 }) {
   if (!question) return null;
 
@@ -44,31 +44,32 @@ export default function QuizQuestionCard({
 
       {/* Options */}
       <div style={{ display: "grid", gap: 10 }}>
-{Array.isArray(options) && options.map((opt, i) => {
-              let state = "idle";
+        {Array.isArray(options) &&
+          options.map((opt, i) => {
+            let state = "idle";
 
-          if (!submitted && selected === opt) {
-            state = "selected";
-          }
+            if (submitted) {
+              if (opt === correctAnswer) {
+                state = "correct";      // ✅ always green
+              } else if (opt === selected) {
+                state = "wrong";        // ❌ only wrong answer is red
+              }
+            } else {
+              if (opt === selected) {
+                state = "selected";     // only before submit
+              }
+            }
 
-          if (submitted && opt === correctAnswer) {
-            state = "correct";
-          }
-
-          if (submitted && selected === opt && opt !== correctAnswer) {
-            state = "wrong";
-          }
-
-          return (
-            <OptionButton
-              key={opt}
-              label={String.fromCharCode(65 + i)}
-              text={opt}
-              state={state}
-              onClick={() => !submitted && onSelect(opt)}
-            />
-          );
-        })}
+    return (
+      <OptionButton
+        key={opt}
+        label={String.fromCharCode(65 + i)}
+        text={opt}
+        state={state}
+        onClick={() => !submitted && onSelect(opt)}
+      />
+    );
+  })}
       </div>
     </div>
   );

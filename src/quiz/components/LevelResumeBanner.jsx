@@ -1,7 +1,6 @@
-// src/quiz/components/ResumeBanner.jsx
 import React from "react";
 
-export default function ResumeBanner({ level, index, onResume, onRestart }) {
+export default function LevelResumeBanner({ level, onResume, onDiscard }) {
   return (
     <div
       style={{
@@ -19,8 +18,7 @@ export default function ResumeBanner({ level, index, onResume, onRestart }) {
       </div>
 
       <div style={{ fontSize: 14, marginBottom: 10 }}>
-        You paused at <b>Level {level}</b>,
-<b>Question {index + 1}</b>
+        You paused at <b>Level {level}</b>.
       </div>
 
       <div style={{ display: "flex", gap: 10 }}>
@@ -36,11 +34,11 @@ export default function ResumeBanner({ level, index, onResume, onRestart }) {
             cursor: "pointer",
           }}
         >
-          Resume Quiz
+          Resume Level
         </button>
 
         <button
-          onClick={onRestart}
+          onClick={onDiscard}
           style={{
             padding: "8px 14px",
             background: "#f5f6fb",

@@ -6,11 +6,16 @@ export default function OptionButton({
   onClick,
   state, // "default" | "selected" | "correct" | "wrong"
 }) {
-  let background = "#fff";
 
-  if (state === "selected") background = "#eef4ff";
-  if (state === "correct") background = "#e8ffed";
-  if (state === "wrong") background = "#ffecec";
+  let background = "#ffffff";
+
+  if (state === "correct") {
+    background = "#e8ffed"; // ✅ green ALWAYS wins
+  } else if (state === "wrong") {
+    background = "#ffecec"; // ❌ red
+  } else if (state === "selected") {
+    background = "#eef4ff"; // 🔵 blue
+  }
 
   return (
     <button

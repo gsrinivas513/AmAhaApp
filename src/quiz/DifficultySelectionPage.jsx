@@ -10,9 +10,9 @@ export default function DifficultySelectionPage() {
   if (!category) return <AdminLayout><div style={{ padding: 16 }}>Category is required in URL</div></AdminLayout>;
 
   const difficulties = [
-    { id: "basic", label: "Basic" },
-    { id: "intermediate", label: "Intermediate" },
-    { id: "advanced", label: "Advanced" },
+    { id: "easy", label: "easy" },
+    { id: "medium", label: "medium" },
+    { id: "hard", label: "hard" },
   ];
 
   return (
@@ -23,7 +23,7 @@ export default function DifficultySelectionPage() {
           {difficulties.map((d) => (
             <div key={d.id} style={{ minWidth: 180, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 0 0 1px #eee inset" }}>
               <div style={{ fontSize: 18, fontWeight: 700 }}>{d.label}</div>
-              <div style={{ marginTop: 8, color: "#666" }}>{d.id === "basic" ? "Easy questions" : d.id === "intermediate" ? "Medium questions" : "Hard questions"}</div>
+              <div style={{ marginTop: 8, color: "#666" }}>{d.id === "easy" ? "Easy questions" : d.id === "medium" ? "Medium questions" : "Hard questions"}</div>
               <div style={{ marginTop: 12 }}>
                 <button
                   onClick={() => navigate(`/quiz/${category}/${d.id}`)}

@@ -1,54 +1,112 @@
-id,question,category,options,correctAnswer,level
-K1,What color is the sky?,kids,Red;Blue;Green;Yellow,Blue,easy
-K2,How many legs does a cat have?,kids,2;3;4;6,4,easy
-K3,Which one is a fruit?,kids,Apple;Onion;Potato;Carrot,Apple,easy
-K4,What do bees make?,kids,Honey;Milk;Juice;Bread,Honey,easy
-K5,Which is the biggest animal?,kids,Elephant;Dog;Cat;Cow,Elephant,easy
-K6,What do cows drink?,kids,Milk;Water;Juice;Tea,Water,easy
-K7,Which shape has 3 sides?,kids,Square;Triangle;Circle;Rectangle,Triangle,easy
-K8,Which animal says “Meow”?,kids,Dog;Cat;Cow;Lion,Cat,easy
-K9,What planet do we live on?,kids,Mars;Earth;Venus;Jupiter,Earth,easy
-K10,What comes after number 4?,kids,3;5;6;8,5,easy
-K11,Which is a primary color?,kids,Pink;Purple;Red;Brown,Red,easy
-K12,Which animal cannot fly?,kids,Duck;Sparrow;Eagle;Elephant,Elephant,easy
-K13,Which is used to write?,kids,Pencil;Plate;Spoon;Cup,Pencil,easy
-K14,What color are bananas?,kids,Red;Blue;Yellow;Black,Yellow,easy
-K15,What do you wear on your feet?,kids,Hat;Shoes;Gloves;Scarf,Shoes,easy
-K16,Which one is a bird?,kids,Cat;Dog;Parrot;Tiger,Parrot,easy
-K17,What do plants need to grow?,kids,Milk;Soda;Water;Oil,Water,easy
-K18,Which one is hot?,kids,Ice;Fire;Snow;Rain,Fire,easy
-K19,How many days are in a week?,kids,5;6;7;8,7,easy
-K20,Which is used to cut paper?,kids,Knife;Spoon;Scissors;Fork,Scissors,easy
-
-K21,Which animal has a trunk?,kids,Duck;Lion;Elephant;Horse,Elephant,medium
-K22,Which season is cold?,kids,Summer;Winter;Rainy;Spring,Winter,medium
-K23,Which fruit is red?,kids,Orange;Banana;Apple;Grapes,Apple,medium
-K24,What is the opposite of hot?,kids,Cold;Warm;Dry;Wet,Cold,medium
-K25,Which is used to tell time?,kids,Clock;Ball;Pencil;Book,Clock,medium
-K26,Where do fish live?,kids,Trees;Sky;Water;Sand,Water,medium
-K27,Which animal hops?,kids,Elephant;Rabbit;Cow;Dog,Rabbit,medium
-K28,What shape is a ball?,kids,Square;Triangle;Circle;Rectangle,Circle,medium
-K29,How many eyes do humans have?,kids,1;2;3;4,2,medium
-K30,Which is a vehicle?,kids,Table;Car;Plate;Bottle,Car,medium
-
-K31,Which is the fastest land animal?,kids,Cat;Cheetah;Horse;Dog,Cheetah,hard
-K32,Which animal is known as “King of the Jungle”?,kids,Lion;Tiger;Bear;Wolf,Lion,hard
-K33,Which gas do plants release?,kids,Carbon dioxide;Oxygen;Nitrogen;Helium,Oxygen,hard
-K34,Which is heavier?,kids,Feather;Stone;Leaf;Paper,Stone,hard
-K35,Which shape has no sides?,kids,Circle;Square;Triangle;Hexagon,Circle,hard
-K36,Which star is closest to Earth?,kids,Moon;Sun;Venus;Mars,Sun,hard
-K37,How many continents are there?,kids,5;6;7;8,7,hard
-K38,Which planet is known as the Red Planet?,kids,Earth;Mars;Jupiter;Mercury,Mars,hard
-K39,Which animal can live both in water and on land?,kids,Dog;Cat;Frog;Tiger,Frog,hard
-K40,Which bird cannot fly?,kids,Crow;Parrot;Penguin;Sparrow,Penguin,hard
-
-K41,Which part of the plant makes food?,kids,Root;Stem;Leaf;Flower,Leaf,medium
-K42,What do humans breathe in?,kids,Oxygen;Nitrogen;Helium;Hydrogen,Oxygen,medium
-K43,Which is a dairy product?,kids,Bread;Butter;Rice;Apple,Butter,medium
-K44,How many letters are in the English alphabet?,kids,20;24;26;28,26,medium
-K45,Which festival is known as Festival of Lights?,kids,Holi;Diwali;Eid;Christmas,Diwali,medium
-K46,Which animal carries its baby in a pouch?,kids,Rabbit;Kangaroo;Cat;Dog,Kangaroo,medium
-K47,Which direction does the sun rise?,kids,West;North;East;South,East,medium
-K48,Which one is a natural satellite?,kids,Sun;Mars;Moon;Venus,Moon,medium
-K49,Which is the smallest month (days)?,kids,February;June;October;March,February,easy
-K50,Which animal has black and white stripes?,kids,Tiger;Zebra;Lion;Deer,Zebra,easy
+question,optionA,optionB,optionC,optionD,correctAnswer,category,difficulty
+What color is the sky?,Blue,Green,Red,Yellow,Blue,kids,easy
+How many legs does a dog have?,2,3,4,5,4,kids,easy
+Which animal says Meow?,Dog,Cow,Cat,Sheep,Cat,kids,easy
+Which fruit is red?,Apple,Banana,Grapes,Orange,Apple,kids,easy
+How many days are in a week?,5,6,7,8,7,kids,easy
+What shape is a ball?,Square,Triangle,Round,Rectangle,Round,kids,easy
+Which animal is king of jungle?,Tiger,Elephant,Lion,Deer,Lion,kids,easy
+What comes after 9?,10,11,8,12,10,kids,easy
+Which one can fly?,Dog,Cat,Bird,Cow,Bird,kids,easy
+Which color is banana?,Red,Blue,Yellow,Green,Yellow,kids,easy
+How many eyes do humans have?,1,2,3,4,2,kids,easy
+Which animal gives milk?,Dog,Cat,Cow,Lion,Cow,kids,easy
+Which is a vegetable?,Apple,Carrot,Banana,Grapes,Carrot,kids,easy
+Which is hot?,Ice,Fire,Water,Rain,Fire,kids,easy
+What sound does a cow make?,Meow,Moo,Bark,Roar,Moo,kids,easy
+How many wheels does a bicycle have?,1,2,3,4,2,kids,easy
+Which animal has a long trunk?,Dog,Cat,Elephant,Horse,Elephant,kids,easy
+Which fruit is yellow?,Apple,Mango,Grapes,Cherry,Mango,kids,easy
+What color is grass?,Blue,Red,Green,Yellow,Green,kids,easy
+Which is big?,Ant,Mouse,Elephant,Cat,Elephant,kids,easy
+What comes before 5?,3,4,6,7,4,kids,easy
+Which animal can swim?,Dog,Fish,Lion,Cow,Fish,kids,easy
+Which is sweet?,Salt,Sugar,Chili,Lemon,Sugar,kids,easy
+What do bees make?,Milk,Honey,Water,Juice,Honey,kids,easy
+Which shape has 3 sides?,Circle,Square,Triangle,Rectangle,Triangle,kids,easy
+Which animal barks?,Cat,Cow,Dog,Sheep,Dog,kids,easy
+Which is cold?,Fire,Ice,Sun,Steam,Ice,kids,easy
+Which fruit is orange?,Apple,Orange,Grapes,Banana,Orange,kids,easy
+How many fingers on one hand?,3,4,5,6,5,kids,easy
+Which animal jumps?,Snake,Frog,Cow,Dog,Frog,kids,easy
+Which is round?,Box,Table,Ball,Book,Ball,kids,easy
+What do birds have?,Hands,Legs,Wings,Tails,Wings,kids,easy
+Which animal lives in water?,Dog,Cat,Fish,Goat,Fish,kids,easy
+What color is snow?,White,Blue,Red,Green,White,kids,easy
+Which animal is slow?,Tiger,Horse,Snail,Dog,Snail,kids,easy
+What do we drink?,Sand,Water,Stone,Wood,Water,kids,easy
+Which is tall?,Ant,Tree,Book,Pencil,Tree,kids,easy
+Which animal says quack?,Dog,Cow,Duck,Cat,Duck,kids,easy
+Which fruit has seeds?,Stone,Apple,Chair,Glass,Apple,kids,easy
+What do plants need?,Toys,Sunlight,Music,Books,Sunlight,kids,easy
+Which animal is small?,Elephant,Mouse,Horse,Cow,Mouse,kids,easy
+What color is the sun?,Green,Blue,Yellow,Black,Yellow,kids,easy
+Which animal runs fast?,Snail,Turtle,Cheetah,Dog,Cheetah,kids,easy
+Which is soft?,Rock,Pillow,Table,Wall,Pillow,kids,easy
+Which fruit is green?,Apple,Banana,Cherry,Grapes,Grapes,kids,easy
+How many ears do humans have?,1,2,3,4,2,kids,easy
+Which animal lives on farm?,Lion,Tiger,Cow,Bear,Cow,kids,easy
+Which is heavy?,Feather,Stone,Paper,Leaf,Stone,kids,easy
+Which fruit is sweet?,Lemon,Apple,Chili,Salt,Apple,kids,easy
+Which animal has stripes?,Dog,Cat,Tiger,Cow,Tiger,kids,easy
+Which is used to write?,Book,Pen,Chair,Plate,Pen,kids,easy
+Which animal is wild?,Cow,Goat,Lion,Dog,Lion,kids,easy
+Which color is apple?,Blue,Green,Red,Yellow,Red,kids,easy
+Which is a bird?,Dog,Cat,Parrot,Cow,Parrot,kids,easy
+Which animal has horns?,Dog,Goat,Cat,Horse,Goat,kids,easy
+Which is hot in sky?,Moon,Sun,Star,Cloud,Sun,kids,easy
+Which animal crawls?,Dog,Cat,Snake,Cow,Snake,kids,easy
+Which fruit is juicy?,Apple,Orange,Bread,Cheese,Orange,kids,easy
+Which is used to eat?,Pen,Spoon,Book,Chair,Spoon,kids,easy
+Which animal has tail?,Fish,Dog,Cat,All,All,kids,easy
+Which is a flower?,Rose,Tree,Grass,Leaf,Rose,kids,easy
+Which animal lives in forest?,Cow,Dog,Lion,Goat,Lion,kids,easy
+Which is a color?,Table,Chair,Red,Book,Red,kids,easy
+Which animal has feathers?,Dog,Cat,Bird,Cow,Bird,kids,easy
+Which is used to sleep?,Chair,Bed,Table,Door,Bed,kids,easy
+Which fruit is sour?,Apple,Lemon,Mango,Grapes,Lemon,kids,easy
+Which animal has long ears?,Dog,Rabbit,Cat,Horse,Rabbit,kids,easy
+Which is a toy?,Ball,Stone,Knife,Plate,Ball,kids,easy
+Which animal eats grass?,Lion,Dog,Cow,Cat,Cow,kids,easy
+Which is light?,Stone,Feather,Book,Chair,Feather,kids,easy
+Which animal has a shell?,Dog,Cat,Turtle,Horse,Turtle,kids,easy
+Which is a vehicle?,Tree,Car,House,Dog,Car,kids,easy
+Which animal can climb?,Fish,Cow,Monkey,Dog,Monkey,kids,easy
+Which is used to see?,Ear,Nose,Eye,Hand,Eye,kids,easy
+Which animal is pet?,Lion,Tiger,Dog,Bear,Dog,kids,easy
+Which is sweet fruit?,Apple,Mango,Chili,Lemon,Mango,kids,easy
+Which animal is big?,Cat,Dog,Elephant,Rabbit,Elephant,kids,easy
+Which is a drink?,Water,Stone,Paper,Chair,Water,kids,easy
+Which animal hops?,Dog,Frog,Cow,Cat,Frog,kids,easy
+Which is round fruit?,Banana,Apple,Carrot,Potato,Apple,kids,easy
+Which animal has mane?,Dog,Cat,Lion,Cow,Lion,kids,easy
+Which number is missing: 2, 4, ?, 8, 10?,6,kids,hard
+If you have 3 apples and give 1 away, how many left?,1,2,3,4,2,kids,hard
+Which is the odd one?,Apple,Banana,Carrot,Mango,Carrot,kids,hard
+What comes next: A, C, E, ?, G?,F,kids,hard
+How many sides do 2 triangles have together?,4,5,6,7,6,kids,hard
+Which is heavier?,1kg cotton,1kg iron,Both same,None,Both same,kids,hard
+If today is Monday, tomorrow is?,Sunday,Tuesday,Friday,Saturday,Tuesday,kids,hard
+Which shape has more sides?,Triangle,Square,Circle,None,Square,kids,hard
+What comes next: 5, 10, 15, ?, 25?,20,kids,hard
+Which number is biggest?,19,21,18,20,21,kids,hard
+If you see a mirror image of 3, it looks like?,Ɛ,3,E,B,Ɛ,kids,hard
+How many minutes in 1 hour?,30,45,60,90,60,kids,hard
+Which one cannot roll?,Ball,Cylinder,Box,Wheel,Box,kids,hard
+What comes next: Sun, Mon, Tue, ?, Thu?,Wed,kids,hard
+Which animal is nocturnal?,Cow,Dog,Owl,Goat,Owl,kids,hard
+How many corners does a cube have?,4,6,8,10,8,kids,hard
+If you add 10 + 5, what is half of the result?,5,7.5,10,15,7.5,kids,hard
+Which one is not a fruit?,Apple,Banana,Potato,Mango,Potato,kids,hard
+Which month has least days?,January,February,March,April,February,kids,hard
+What comes next: 1, 1, 2, 3, ?, 5?,5,kids,hard
+Which is faster?,Snail,Turtle,Car,Bicycle,Car,kids,hard
+How many legs do 3 spiders have?,12,18,24,6,24,kids,hard
+Which one melts?,Stone,Ice,Wood,Plastic,Ice,kids,hard
+If 5 + 5 = 10, then 10 + 10 =?,15,20,25,30,20,kids,hard
+Which is a renewable resource?,Coal,Petrol,Sunlight,Gas,Sunlight,kids,hard
+How many letters in word “ELEPHANT”?,6,7,8,9,8,kids,hard
+Which one floats?,Stone,Iron,Wood,Brick,Wood,kids,hard
+If you count backwards from 10, what comes after 7?,6,5,8,9,6,kids,hard
+Which has more weight?,1kg apples,500g apples,Same,Depends,1kg apples,kids,hard
+Which animal uses echolocation?,Dog,Bat,Cow,Cat,Bat,kids,hard

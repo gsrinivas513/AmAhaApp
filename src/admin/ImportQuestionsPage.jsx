@@ -113,7 +113,7 @@ function ImportQuestionsPage() {
     const cat = (row.category || row.Category || "").trim();
     const optionsRaw = row.options || row.Options || "";
     const correct = (row.correctAnswer || row.correct || row.answer || "").trim();
-    const level = (row.level || "").trim();
+    const difficulty = (row.difficulty || "").trim();
 
     if (!q) return { ok: false, msg: `Row ${rowIndex + 1}: question missing` };
     if (headerHasCategory && !cat) return { ok: false, msg: `Row ${rowIndex + 1}: category missing` };
@@ -133,7 +133,7 @@ function ImportQuestionsPage() {
         category: cat ? cat.toLowerCase() : null,
         options,
         correctAnswer: correct,
-        level: level || "easy",
+        difficulty: difficulty || "easy",
         externalId: row.id || null,
       },
     };
@@ -245,7 +245,7 @@ function ImportQuestionsPage() {
           category: finalCategory,
           options: docInfo.options,
           correctAnswer: docInfo.correctAnswer,
-          level: docInfo.level,
+          difficulty: docInfo.difficulty,
         };
         if (docInfo.externalId) finalDoc.externalId = docInfo.externalId;
 
@@ -397,7 +397,7 @@ function ImportQuestionsPage() {
       const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
       // build CSV
-      const header = ["id", "question", "category", "options", "correctAnswer", "level"];
+      const header = ["id", "question", "category", "options", "correctAnswer", "difficulty"];
       const lines = [];
       lines.push(header.join(","));
       docs.forEach((d) => {
@@ -416,7 +416,7 @@ function ImportQuestionsPage() {
           wrap(d.category || ""),
           wrap(options),
           wrap(d.correctAnswer || ""),
-          wrap(d.level || ""),
+          wrap(d.difficulty || ""),
         ];
         lines.push(row.join(","));
       });
@@ -496,7 +496,7 @@ function ImportQuestionsPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 12 }}>
         <div style={{ background: "#fff", padding: 14, borderRadius: 8 }}>
           <p>
-            CSV columns: <b>id, question, category, options, correctAnswer, level</b>.
+            CSV columns: <b>id, question, category, options, correctAnswer, difficulty</b>.
             Options: semicolon-separated (A;B;C;D).
           </p>
 
