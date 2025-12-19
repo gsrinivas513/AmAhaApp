@@ -1,0 +1,31 @@
+/* ===============================
+   QUIZ.COM STYLE TYPOGRAPHY
+   =============================== */
+
+.heading-xl {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.heading-lg {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.heading-md {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.text-muted {
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.section-spacing {
+  margin-top: 48px;
+  margin-bottom: 48px;
+}

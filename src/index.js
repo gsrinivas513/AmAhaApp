@@ -5,7 +5,8 @@ import "./mobile.css";       // <-- keep this one
 import App from "./App";
 import { AuthProvider } from "./components/AuthProvider";
 import { ThemeProvider } from "./theme/ThemeProvider";
-
+import "./styles/ui.css";
+import "./styles/typography.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 

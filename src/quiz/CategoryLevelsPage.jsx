@@ -17,6 +17,8 @@ import { loadResumeState, clearResumeState } from "./services/resumeService";
 
 import LockedLevelCard from "./components/LockedLevelCard";
 import LevelResumeBanner from "./components/LevelResumeBanner";
+import LevelCard from "./components/LevelCard";
+
 
 import { QUESTIONS_PER_LEVEL } from "./constants";
 
@@ -178,101 +180,42 @@ export default function CategoryLevelsPage() {
         {/* ---------- LOADING ---------- */}
         {loading && <div>Loading levels…</div>}
 
-        {/* ---------- LEVEL GRID ---------- */}
+        {/* LEVEL GRID */}
         {!loading && (
           <div
             style={{
+              marginTop: 32,
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-              gap: 16,
-              marginTop: 20,
+              gap: 20,
             }}
           >
             {levels.map((lvl) => {
-              const isCompleted = lvl.level <= highestCompleted;
-              const isNext =
-                lvl.level === highestCompleted + 1 && !isCompleted;
+              let status = "locked";
+
+              if (lvl.level <= highestCompleted) {
+                status = "completed";
+              } else if (lvl.level === highestCompleted + 1) {
+                status = "next";
+              }
 
               return (
-                <div
+                <LevelCard
                   key={lvl.level}
-                  style={{
-                    padding: 16,
-                    borderRadius: 12,
-                    background: isCompleted
-                      ? "#e8ffed"
-                      : isNext
-                      ? "#eef4ff"
-                      : "#f2f2f2",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ fontSize: 20, fontWeight: 700 }}>
-                    Level {lvl.level}
-                  </div>
-
-                  {isCompleted && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        color: "#4caf50",
-                        fontWeight: 600,
-                      }}
-                    >
-                      ✓ Completed
-                    </div>
-                  )}
-
-                  {!isCompleted && isNext && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        color: "#ff9800",
-                        fontWeight: 600,
-                      }}
-                    >
-                      ⭐ Next Level
-                    </div>
-                  )}
-
-                  {lvl.unlocked ? (
-                    <button
-                      onClick={() =>
-                        navigate(
-                          `/quiz/${category}/${difficulty}/${lvl.level}`
-                        )
-                      }
-                      style={{
-                        marginTop: 12,
-                        padding: "10px 14px",
-                        background: isCompleted
-                          ? "#4caf50"
-                          : "#6C63FF",
-                        color: "#fff",
-                        borderRadius: 8,
-                        border: "none",
-                        cursor: "pointer",
-                        width: "100%",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {isCompleted ? "Replay" : "Start"}
-                    </button>
-                  ) : (
-                    <LockedLevelCard
-                      reason={
-                        !user
-                          ? "Sign in to unlock more levels"
-                          : "Complete previous level to unlock"
-                      }
-                    />
-                  )}
-                </div>
+                  level={lvl.level}
+                  status={status}
+                  onClick={() =>
+                    navigate(
+                      `/quiz/${category}/${difficulty}/${lvl.level}`
+                    )
+                  }
+                />
               );
             })}
           </div>
         )}
+
+
       </div>
     </SiteLayout>
   );
