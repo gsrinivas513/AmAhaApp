@@ -169,18 +169,6 @@ export default function QuizPage() {
           xpEarned={flow.xpEarned}
           coinsEarned={flow.coinsEarned}
 
-          /* ⬅️ Back to level selection */
-          onBack={() =>
-            navigate(`/quiz/${category}/${difficulty}`)
-          }
-
-          /* 🔁 Retry SAME level */
-          onRetry={() => {
-              // reset quiz locally without navigation
-              flow.setIndex(0);
-              flow.reset(); // 👈 we will add this
-            }}
-
           /* ▶️ Go to NEXT level (only shown if passed) */
           onNextLevel={() => {
             const nextLevel = Number(level) + 1;
@@ -188,6 +176,19 @@ export default function QuizPage() {
               `/quiz/${category}/${difficulty}/${nextLevel}`
             );
           }}
+
+          /* 🔁 Retry SAME level */
+          onRetry={() => {
+              // reset quiz locally without navigation
+              flow.setIndex(0);
+              flow.reset(); // 👈 we will add this
+          }}
+
+          /* ⬅️ Back to level selection */
+          onBack={() =>
+            navigate(`/quiz/${category}/${difficulty}`)
+          }
+          
         />
       )}
     </SiteLayout>

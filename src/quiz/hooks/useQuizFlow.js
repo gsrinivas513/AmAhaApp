@@ -76,6 +76,9 @@ export function useQuizFlow({
   }
 
   async function nextQuestion() {
+    // 🛑 GUARD: do nothing if already finished
+    if (finished) return;
+
     const hasMore = index + 1 < levelQuestions.length;
 
     if (hasMore) {
@@ -113,11 +116,10 @@ export function useQuizFlow({
         setXpEarned(0);
         setCoinsEarned(0);
       }
+       setFinished(true);
     }
-
-    setFinished(true);
   }
-  }
+}
 
   return {
     index,
