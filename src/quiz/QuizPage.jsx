@@ -231,48 +231,60 @@ export default function QuizPage() {
       {/* 🔁 Resume */}
       {resume.banner}
 
-      <QuizHeader
-        category={category}
-        difficulty={difficulty}
-        level={currentLevel}
-        soundOn={soundOn}
-        onToggleSound={() => setSoundOn((s) => !s)}
-      />
+      {/* Main Quiz Container with Gradient Background */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #f0f4f8 0%, #e0e7ff 50%, #f0f9ff 100%)",
+          minHeight: "100vh",
+          padding: "32px 20px",
+          borderRadius: 0,
+        }}
+      >
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          <QuizHeader
+            category={category}
+            difficulty={difficulty}
+            level={currentLevel}
+            soundOn={soundOn}
+            onToggleSound={() => setSoundOn((s) => !s)}
+          />
 
-      {/* ⏱️ Timer */}
-      {!isQuizPaused && !flow.finished && (
-        <QuizProgressTimer
-          progressPct={flow.progressPct}
-          timeMs={timer.timeMs}
-          totalMs={timer.totalMs}
-          warn={timer.warn}
-        />
-      )}
+          {/* ⏱️ Timer */}
+          {!isQuizPaused && !flow.finished && (
+            <QuizProgressTimer
+              progressPct={flow.progressPct}
+              timeMs={timer.timeMs}
+              totalMs={timer.totalMs}
+              warn={timer.warn}
+            />
+          )}
 
-      {/* ❓ Quiz */}
-      {!isQuizPaused && !flow.finished && flow.current && (
-        <>
-          <QuizQuestionCard {...flow.questionProps} />
-          <QuizActions {...flow.actionProps} />
-        </>
-      )}
+          {/* ❓ Quiz */}
+          {!isQuizPaused && !flow.finished && flow.current && (
+            <>
+              <QuizQuestionCard {...flow.questionProps} />
+              <QuizActions {...flow.actionProps} />
+            </>
+          )}
 
-      {/* 🎉 Finish */}
-      {flow.finished && (
-        <QuizFinish
-          correctCount={flow.correctCount}
-          totalQuestions={flow.totalQuestions}
-          xpEarned={flow.xpEarned}
-          coinsEarned={flow.coinsEarned}
-          onNextLevel={() =>
-            navigate(`/quiz/${category}/${difficulty}/${currentLevel + 1}`)
-          }
-          onRetry={flow.reset}
-          onBack={() =>
-            navigate(`/quiz/${category}/${difficulty}`)
-          }
-        />
-      )}
+          {/* 🎉 Finish */}
+          {flow.finished && (
+            <QuizFinish
+              correctCount={flow.correctCount}
+              totalQuestions={flow.totalQuestions}
+              xpEarned={flow.xpEarned}
+              coinsEarned={flow.coinsEarned}
+              onNextLevel={() =>
+                navigate(`/quiz/${category}/${difficulty}/${currentLevel + 1}`)
+              }
+              onRetry={flow.reset}
+              onBack={() =>
+                navigate(`/quiz/${category}/${difficulty}`)
+              }
+            />
+          )}
+        </div>
+      </div>
     </SiteLayout>
   );
 }

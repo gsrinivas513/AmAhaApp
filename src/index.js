@@ -4,6 +4,9 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
+// Global styles (Tailwind + app overrides)
+import "./index.css";
+import "./App.css";
 import { AuthProvider } from "./components/AuthProvider";
 import { ToastProvider } from "./components/Toast";
 import { AdUnlockProvider } from "./ads/AdUnlockProvider";

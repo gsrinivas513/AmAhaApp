@@ -16,8 +16,8 @@ export default function QuizActions({
     <div
       style={{
         display: "flex",
-        gap: 10,
-        marginTop: 18,
+        gap: 14,
+        marginTop: 28,
         alignItems: "center",
       }}
     >
@@ -25,8 +25,8 @@ export default function QuizActions({
         <>
           <SubmitButton
             onClick={onSubmit}
-            disabled={!canSubmit}          // ✅ enable only after select
-            aria-disabled={!canSubmit}    // ♿ accessibility
+            disabled={!canSubmit}
+            aria-disabled={!canSubmit}
           />
 
           <SkipButton onClick={onNext} />

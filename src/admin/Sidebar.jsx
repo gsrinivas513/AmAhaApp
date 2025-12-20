@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { colors } from "../theme";
+import {
+  DashboardIcon,
+  CategoriesIcon,
+  TrophyIcon,
+  PaletteIcon,
+  PlusIcon,
+  DocumentIcon,
+  ChartIcon,
+  FilmIcon,
+  PuzzleIcon,
+  GearIcon,
+} from "../components/icons/Icons";
 
 function Sidebar() {
   const location = useLocation();
@@ -31,44 +43,47 @@ function Sidebar() {
 
   return (
     <div
-        style={{
-          width: SIDEBAR_WIDTH,
-          background: "#ffffff",
-          boxShadow: "2px 0 10px rgba(0,0,0,0.1)",
-          position: "fixed",
-          top: 64,
-          left: 0,
-          height: "calc(100vh - 64px)",
-          overflowY: "auto",
-
-          /* ✅ THIS IS THE FIX */
-          boxSizing: "border-box",
-          padding: 16, // keep padding, but inside width
-        }}
+      style={{
+        width: SIDEBAR_WIDTH,
+        background: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(250,250,255,0.7))",
+        boxShadow: "2px 8px 30px rgba(2,6,23,0.08)",
+        position: "fixed",
+        top: 64,
+        left: 0,
+        height: "calc(100vh - 64px)",
+        overflowY: "auto",
+        boxSizing: "border-box",
+        padding: 20,
+        borderRight: "1px solid rgba(2,6,23,0.04)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+      }}
     >
-      <h2
-        style={{
-          background: colors.gradient,
-          WebkitBackgroundClip: "text",
-          color: "transparent",
-          marginBottom: 24,
-          fontSize: 24,
-          fontWeight: 700,
-        }}
-      >
-        Admin Panel
-      </h2>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <div style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          background: "linear-gradient(135deg,#6C63FF,#8A78FF)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#fff",
+          fontWeight: 800,
+          boxShadow: "0 8px 20px rgba(108,99,255,0.2)",
+        }}>A</div>
+        <div>
+          <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>Admin</div>
+          <div style={{ fontSize: 14, color: "#0b1220", fontWeight: 800 }}>Panel</div>
+        </div>
+      </div>
 
       {/* ================= GLOBAL ================= */}
-      <Section
-        title="Global"
-        open={open.global}
-        onToggle={() => toggle("global")}
-      >
-        <Item icon="📊" label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
-        <Item icon="🗂️" label="Categories" path="/admin/categories" active={isActive("/admin/categories")} />
-        <Item icon="🏆" label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
-        <Item icon="🎨" label="UI Mode" path="/admin/ui-mode" active={isActive("/admin/ui-mode")} />
+      <Section title="Global" open={open.global} onToggle={() => toggle("global")}>
+        <Item icon={<DashboardIcon />} label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
+        <Item icon={<CategoriesIcon />} label="Categories" path="/admin/categories" active={isActive("/admin/categories")} />
+        <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
+        <Item icon={<PaletteIcon />} label="UI Mode" path="/admin/ui-mode" active={isActive("/admin/ui-mode")} />
       </Section>
 
       {/* ================= QUIZ ================= */}
@@ -77,10 +92,10 @@ function Sidebar() {
         open={open.quiz}
         onToggle={() => toggle("quiz")}
       >
-        <Item icon="➕" label="Add Question" path="/admin/add-question" active={isActive("/admin/add-question")} />
-        <Item icon="📄" label="View Questions" path="/admin/view-questions" active={isActive("/admin/view-questions")} />
-        <Item icon="📊" label="Quiz Analytics" path="/admin/quiz/analytics" active={isActive("/admin/quiz-analytics")} />
-        <Item icon="🎬" label="Quiz UI Animations" path="/admin/quiz-ui" active={isActive("/admin/quiz-ui")} />
+        <Item icon={<PlusIcon />} label="Add Question" path="/admin/add-question" active={isActive("/admin/add-question")} />
+        <Item icon={<DocumentIcon />} label="View Questions" path="/admin/view-questions" active={isActive("/admin/view-questions")} />
+        <Item icon={<ChartIcon />} label="Quiz Analytics" path="/admin/quiz/analytics" active={isActive("/admin/quiz-analytics")} />
+        <Item icon={<FilmIcon />} label="Quiz UI Animations" path="/admin/quiz-ui" active={isActive("/admin/quiz-ui")} />
       </Section>
 
       {/* ================= PUZZLES ================= */}
@@ -89,8 +104,8 @@ function Sidebar() {
         open={open.puzzles}
         onToggle={() => toggle("puzzles")}
       >
-        <DisabledItem icon="🧩" label="Dashboard (Coming soon)" />
-        <DisabledItem icon="⚙️" label="Config (Coming soon)" />
+        <DisabledItem icon={<PuzzleIcon />} label="Dashboard (Coming soon)" />
+        <DisabledItem icon={<GearIcon />} label="Config (Coming soon)" />
       </Section>
     </div>
   );
@@ -138,19 +153,29 @@ function Item({ icon, label, path, active }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 10,
+        gap: 12,
         padding: "10px 14px",
-        borderRadius: 10,
+        borderRadius: 12,
         textDecoration: "none",
         fontSize: 15,
-        fontWeight: 500,
+        fontWeight: 600,
         background: active ? colors.gradient : "transparent",
-        color: active ? "#fff" : "#333",
-        transition: "0.2s",
+        color: active ? "#fff" : "#0b1220",
+        transition: "all 180ms ease",
+        boxShadow: active ? "0 10px 30px rgba(108,99,255,0.12)" : "none",
       }}
     >
-      <span>{icon}</span>
-      {label}
+      <div style={{
+        width: 34,
+        height: 34,
+        borderRadius: "50%",
+        background: active ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.04)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 16,
+      }}>{icon}</div>
+      <div>{label}</div>
     </Link>
   );
 }
@@ -163,14 +188,23 @@ function DisabledItem({ icon, label }) {
         alignItems: "center",
         gap: 10,
         padding: "10px 14px",
-        borderRadius: 10,
+        borderRadius: 12,
         fontSize: 15,
-        color: "#aaa",
-        background: "#f5f5f5",
+        color: "#9aa3ad",
+        background: "rgba(0,0,0,0.03)",
         cursor: "not-allowed",
       }}
     >
-      <span>{icon}</span>
+      <div style={{
+        width: 34,
+        height: 34,
+        borderRadius: "50%",
+        background: "rgba(0,0,0,0.04)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 16,
+      }}>{icon}</div>
       {label}
     </div>
   );

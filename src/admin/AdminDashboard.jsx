@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { Card, Button } from "../components/ui";
 
 /**
  * AdminDashboard
@@ -120,50 +121,50 @@ function AdminDashboard() {
             {categories.map((c) => <option key={c.id} value={c.id}>{c.label || c.id}</option>)}
           </select>
 
-          <button onClick={exportCSV} style={primaryBtn}>Download CSV</button>
+          <Button variant="primary" onClick={exportCSV}>Download CSV</Button>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18, marginTop: 18 }}>
-        <div style={cardStyle}>
+        <Card>
           <h3 style={{ marginTop: 0 }}>Total Quiz Attempts</h3>
           <div style={{ fontSize: 28, fontWeight: 800 }}>{totalScores}</div>
           <div style={{ color: "#777", marginTop: 6 }}>Total saved quiz attempts</div>
-        </div>
+        </Card>
 
-        <div style={cardStyle}>
+        <Card>
           <h3 style={{ marginTop: 0 }}>Categories</h3>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
             {categories.length === 0 ? <div className="muted">No categories</div> : categories.map(c => (
               <div key={c.id} style={{ padding: "6px 10px", borderRadius: 8, background: "#f7f7fb", fontWeight: 600 }}>{c.label || c.id}</div>
             ))}
           </div>
-        </div>
+        </Card>
 
-        <div style={cardStyle}>
+        <Card>
           <h3 style={{ marginTop: 0 }}>Attempts (filtered)</h3>
           <div style={{ fontSize: 24, fontWeight: 700 }}>{filteredScores.length}</div>
           <div style={{ color: "#777", marginTop: 6 }}>Records matching current filter</div>
-        </div>
+        </Card>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 18 }}>
-        <div style={{ ...cardStyle, minHeight: 220 }}>
+        <Card className="min-h-[220px]">
           <h4 style={{ marginTop: 0 }}>Attempts per Category</h4>
           <ChartBarSvg data={attemptsData} color="#6C63FF" />
-        </div>
+        </Card>
 
-        <div style={{ ...cardStyle, minHeight: 220 }}>
+        <Card className="min-h-[220px]">
           <h4 style={{ marginTop: 0 }}>Average Score per Category</h4>
           <ChartBarSvg data={avgData} color="#4CAF50" isFloat />
-        </div>
+        </Card>
       </div>
 
       <div style={{ marginTop: 18 }}>
         <h3 style={{ marginBottom: 10 }}>Recent Scores (filtered)</h3>
 
         {loading ? <div style={{ padding: 18 }}>Loading...</div> : (
-          <div style={{ background: "#fff", borderRadius: 8, padding: 12 }}>
+          <Card>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead style={{ background: "#f6f6f6" }}>
@@ -198,7 +199,7 @@ function AdminDashboard() {
                 <button onClick={() => setLimitRows((n) => n + 5)} style={pageBtn}>+</button>
               </div>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </AdminLayout>
@@ -241,8 +242,6 @@ function ChartBarSvg({ data = [], color = "#6C63FF", isFloat = false }) {
 
 /* ---------- styles ---------- */
 const selectStyle = { padding: 10, borderRadius: 8, border: "1px solid #ddd" };
-const primaryBtn = { padding: "8px 12px", borderRadius: 8, background: "#6C63FF", color: "#fff", border: "none", cursor: "pointer" };
-const cardStyle = { background: "#fff", padding: 16, borderRadius: 10, boxShadow: "0 10px 30px rgba(10,10,30,0.05)" };
 const th = { padding: 12, textAlign: "left" };
 const td = { padding: 12 };
 const pageBtn = { padding: "6px 10px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer" };

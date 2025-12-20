@@ -6,8 +6,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
+import { auth, googleProvider } from "../firebase/firebaseConfig";
 
 // ✅ Guest → User progress merge
 import { mergeGuestProgressToUser } from "../quiz/services/progressService";
@@ -21,6 +21,31 @@ export function AuthProvider({ children }) {
 
   const { showToast } = useToast();
   const mergeOnceRef = useRef(false); // ✅ prevents duplicate merge
+
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      setUser(result.user);
+      return result.user;
+    } catch (error) {
+      console.error("Sign in with Google error:", error);
+      showToast("Failed to sign in with Google", "error");
+      throw error;
+    }
+  };
+
+  // Sign out
+  const signOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Sign out error:", error);
+      showToast("Failed to sign out", "error");
+      throw error;
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -57,7 +82,7 @@ export function AuthProvider({ children }) {
   }, [showToast]);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

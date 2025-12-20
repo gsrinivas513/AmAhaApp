@@ -3,6 +3,7 @@ import AdminLayout from "./AdminLayout";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { Card, Button } from "../components/ui";
 
 function ViewQuestionsPage() {
   const [selectedIds, setSelectedIds] = useState([]);
@@ -44,25 +45,19 @@ function ViewQuestionsPage() {
 
   return (
     <AdminLayout>
-      <h2>All Questions</h2>
-
-      {/* BULK ACTION BAR */}
-      {selectedIds.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <button
-            onClick={handleBulkDelete}
-            style={{ ...btnSmall, background: "#E57373" }}
-          >
-            Delete Selected ({selectedIds.length})
-          </button>
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <h2 style={{ margin: 0 }}>All Questions</h2>
+        {selectedIds.length > 0 && (
+          <Button variant="danger" size="sm" onClick={handleBulkDelete}>Delete Selected ({selectedIds.length})</Button>
+        )}
+      </div>
 
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", minWidth: "700px" }}>
+        <Card>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", minWidth: "700px" }}>
             <thead>
               <tr>
                 <th>
@@ -108,38 +103,20 @@ function ViewQuestionsPage() {
                   <td>{q.difficulty || "-"}</td>
                   <td>{q.correctAnswer}</td>
                   <td>
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/edit-question/${q.id}`)
-                      }
-                      style={btnSmall}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => remove(q.id)}
-                      style={{ ...btnSmall, background: "#E57373" }}
-                    >
-                      Delete
-                    </button>
+                    <Button size="sm" onClick={() => navigate(`/admin/edit-question/${q.id}`)}>Edit</Button>
+                    <Button variant="danger" size="sm" onClick={() => remove(q.id)} style={{ marginLeft: 8 }}>Delete</Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </Card>
       )}
     </AdminLayout>
   );
 }
 
-const btnSmall = {
-  padding: "6px 12px",
-  background: "#6C63FF",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  marginRight: "6px",
-};
+// replaced inline btn styles with shared Button component
 
 export default ViewQuestionsPage;

@@ -15,80 +15,115 @@ export default function OptionButton({
   /* ---------- SAFE FALLBACKS ---------- */
   const selectScale = enabled ? microAnimations.optionSelectScale : 1;
   const hoverScale = enabled ? microAnimations.optionHoverScale : 1;
-  const transitionMs = enabled ? microAnimations.transitionMs : 0;
+  const transitionMs = enabled ? microAnimations.transitionMs : 300;
   const pulseScale = enabled ? microAnimations.optionSelectScale : 1.04;
 
-  let background = "#fff";
-  let borderColor = "#e6e6e6";
-  let transform = "scale(1)";
-  let animation = "none";
-  let opacity = 1;
+  // Design system color mappings
+  const stateStyles = {
+    default: {
+      bg: "linear-gradient(135deg, #ffffff 0%, #f5f7fb 100%)",
+      border: "2px solid #e0e7ff",
+      text: "#0b1220",
+      labelBg: "#e8ecff",
+      labelText: "#0284c7",
+      shadow: "0 6px 16px rgba(15,23,42,0.1)",
+    },
+    selected: {
+      bg: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)",
+      border: "2px solid #0284c7",
+      text: "#1e40af",
+      labelBg: "#0284c7",
+      labelText: "#ffffff",
+      shadow: "0 10px 28px rgba(2,132,199,0.25)",
+    },
+    correct: {
+      bg: "linear-gradient(135deg, #bbf7d0 0%, #86efac 100%)",
+      border: "2px solid #047857",
+      text: "#065f46",
+      labelBg: "#047857",
+      labelText: "#ffffff",
+      shadow: "0 10px 28px rgba(4,120,87,0.25)",
+    },
+    wrong: {
+      bg: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)",
+      border: "2px solid #dc2626",
+      text: "#7f1d1d",
+      labelBg: "#dc2626",
+      labelText: "#ffffff",
+      shadow: "0 10px 28px rgba(220,38,38,0.25)",
+    },
+    disabled: {
+      bg: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+      border: "1px solid #d1d5db",
+      text: "#9ca3af",
+      labelBg: "#d1d5db",
+      labelText: "#9ca3af",
+      shadow: "0 3px 8px rgba(15,23,42,0.06)",
+    },
+  };
 
-  /* ---------- STATES ---------- */
-
-  if (state === "selected") {
-    background = "#eef4ff";
-    borderColor = "#6C63FF";
-    transform = `scale(${selectScale})`;
-  }
-
-  if (state === "correct") {
-    background = "#e8ffed";
-    borderColor = "#4caf50";
-
-    if (enabled && microAnimations.correctPulse) {
-      animation = "pulse 0.35s ease-out";
-    }
-  }
-
-  if (state === "wrong") {
-    background = "#ffecec";
-    borderColor = "#f44336";
-
-    if (enabled && microAnimations.wrongShake) {
-      animation = "shake 0.3s";
-    }
-  }
-
-  if (state === "disabled") {
-    opacity = 0.55;
-  }
+  const style = stateStyles[state] || stateStyles.default;
 
   return (
     <>
       <button
         onClick={onClick}
-        disabled={state === "disabled"}
+        disabled={state === "disabled" || state === "correct" || state === "wrong"}
         style={{
           width: "100%",
-          padding: "12px 14px",
-          borderRadius: 12,
-          border: `1px solid ${borderColor}`,
-          background,
-          textAlign: "left",
-          fontSize: 15,
-          cursor: state === "disabled" ? "default" : "pointer",
-          opacity,
-          transform,
-          animation,
-          transition: enabled
-            ? `transform ${transitionMs}ms ease,
-               background ${transitionMs}ms ease`
-            : "none",
+          padding: "16px 18px",
+          borderRadius: 14,
+          border: style.border,
+          background: style.bg,
+          color: style.text,
+          fontSize: 16,
+          fontWeight: 500,
+          cursor: state === "disabled" || state === "correct" || state === "wrong" ? "default" : "pointer",
+          boxShadow: style.shadow,
+          transition: enabled ? `all ${transitionMs}ms ease` : "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          outline: "none",
         }}
         onMouseEnter={(e) => {
           if (enabled && state === "default") {
             e.currentTarget.style.transform = `scale(${hoverScale})`;
+            e.currentTarget.style.boxShadow = "0 12px 28px rgba(15,23,42,0.15)";
           }
         }}
         onMouseLeave={(e) => {
-          if (enabled && state === "default") {
-            e.currentTarget.style.transform = "scale(1)";
-          }
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = style.shadow;
         }}
       >
-        <b style={{ marginRight: 8 }}>{label}.</b>
-        {text}
+        {/* Label circle */}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: 42,
+            height: 42,
+            borderRadius: "50%",
+            background: style.labelBg,
+            color: style.labelText,
+            fontWeight: "700",
+            fontSize: 16,
+            flexShrink: 0,
+          }}
+        >
+          {label}
+        </span>
+
+        {/* Option text */}
+        <span style={{ flex: 1, textAlign: "left", lineHeight: 1.4 }}>
+          {text}
+        </span>
+
+        {/* State indicator icons */}
+        {state === "correct" && <span style={{ fontSize: 20, marginLeft: "auto" }}>✅</span>}
+        {state === "wrong" && <span style={{ fontSize: 20, marginLeft: "auto" }}>❌</span>}
       </button>
 
       {/* 🎞 Animations */}

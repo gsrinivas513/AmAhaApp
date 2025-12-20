@@ -4,6 +4,7 @@ import { db } from "../firebase/firebaseConfig";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useParams } from "react-router-dom";
 import { colors } from "../theme";
+import { Card, Button } from "../components/ui";
 
 function EditQuestionPage() {
   const { id } = useParams();
@@ -72,50 +73,52 @@ function EditQuestionPage() {
 
   return (
     <AdminLayout>
-      <h2>Edit Question</h2>
+      <Card>
+        <h2>Edit Question</h2>
 
-      <label>Category:</label>
-      <input
-        type="text"
-        name="category"
-        value={form.category}
-        onChange={handleChange}
-        style={inputStyle}
-      />
+        <label>Category:</label>
+        <input
+          type="text"
+          name="category"
+          value={form.category}
+          onChange={handleChange}
+          style={inputStyle}
+        />
 
-      <label>Question:</label>
-      <input
-        type="text"
-        name="question"
-        value={form.question}
-        onChange={handleChange}
-        style={inputStyle}
-      />
+        <label>Question:</label>
+        <input
+          type="text"
+          name="question"
+          value={form.question}
+          onChange={handleChange}
+          style={inputStyle}
+        />
 
-      {form.options.map((opt, i) => (
-        <div key={i}>
-          <label>Option {i + 1}:</label>
-          <input
-            type="text"
-            value={opt}
-            onChange={(e) => handleOptionChange(i, e.target.value)}
-            style={inputStyle}
-          />
+        {form.options.map((opt, i) => (
+          <div key={i}>
+            <label>Option {i + 1}:</label>
+            <input
+              type="text"
+              value={opt}
+              onChange={(e) => handleOptionChange(i, e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+        ))}
+
+        <label>Correct Answer:</label>
+        <input
+          type="text"
+          name="correctAnswer"
+          value={form.correctAnswer}
+          onChange={handleChange}
+          style={inputStyle}
+        />
+
+        <div style={{ marginTop: 14 }}>
+          <Button variant="primary" onClick={handleUpdate}>Update Question</Button>
         </div>
-      ))}
-
-      <label>Correct Answer:</label>
-      <input
-        type="text"
-        name="correctAnswer"
-        value={form.correctAnswer}
-        onChange={handleChange}
-        style={inputStyle}
-      />
-
-      <button onClick={handleUpdate} style={buttonStyle}>
-        Update Question
-      </button>
+      </Card>
     </AdminLayout>
   );
 }
@@ -128,14 +131,6 @@ const inputStyle = {
   border: "1px solid #ccc",
 };
 
-const buttonStyle = {
-  padding: "14px",
-  background: colors.gradient,
-  color: "#fff",
-  border: "none",
-  borderRadius: "10px",
-  cursor: "pointer",
-  marginTop: "20px",
-};
+// Replaced local button styles with shared Button component
 
 export default EditQuestionPage;

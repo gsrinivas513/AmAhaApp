@@ -4,6 +4,7 @@ import { db } from "../firebase/firebaseConfig";
 import { addDoc, collection } from "firebase/firestore";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { Card, Button } from "../components/ui";
 
 function AddQuestionPage() {
   /* ---------------- MANUAL FORM ---------------- */
@@ -177,70 +178,70 @@ const normalizeQuestions = (rows) => {
 
   return (
     <AdminLayout>
-      <h2>Add Question (Manual)</h2>
+      <Card>
+        <h2>Add Question (Manual)</h2>
 
-      <input
-        style={fullWidth}
-        placeholder="Question"
-        value={form.question}
-        onChange={(e) => update("question", e.target.value)}
-      />
-
-      <h4>Options</h4>
-      {form.options.map((o, i) => (
         <input
-          key={i}
-          style={mediumWidth}
-          placeholder={`Option ${i + 1}`}
-          value={o}
-          onChange={(e) => updateOption(i, e.target.value)}
+          style={fullWidth}
+          placeholder="Question"
+          value={form.question}
+          onChange={(e) => update("question", e.target.value)}
         />
-      ))}
 
-      <input
-        style={mediumWidth}
-        placeholder="Correct Answer"
-        value={form.correctAnswer}
-        onChange={(e) => update("correctAnswer", e.target.value)}
-      />
+        <h4>Options</h4>
+        {form.options.map((o, i) => (
+          <input
+            key={i}
+            style={mediumWidth}
+            placeholder={`Option ${i + 1}`}
+            value={o}
+            onChange={(e) => updateOption(i, e.target.value)}
+          />
+        ))}
 
-      <select
-        style={mediumWidth}
-        value={form.category}
-        onChange={(e) => update("category", e.target.value)}
-      >
-        <option value="">Select Category</option>
-        <option value="kids">Kids</option>
-        <option value="students">Students</option>
-        <option value="programming">Programming</option>
-        <option value="movies">Movies</option>
-      </select>
+        <input
+          style={mediumWidth}
+          placeholder="Correct Answer"
+          value={form.correctAnswer}
+          onChange={(e) => update("correctAnswer", e.target.value)}
+        />
 
-      <select
-        style={mediumWidth}
-        value={form.difficulty}
-        onChange={(e) => update("difficulty", e.target.value)}
-      >
-        <option value="">Select Difficulty</option>
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
+        <select
+          style={mediumWidth}
+          value={form.category}
+          onChange={(e) => update("category", e.target.value)}
+        >
+          <option value="">Select Category</option>
+          <option value="kids">Kids</option>
+          <option value="students">Students</option>
+          <option value="programming">Programming</option>
+          <option value="movies">Movies</option>
+        </select>
 
-      <button style={btn} onClick={saveManual}>
-        Add Question
-      </button>
+        <select
+          style={mediumWidth}
+          value={form.difficulty}
+          onChange={(e) => update("difficulty", e.target.value)}
+        >
+          <option value="">Select Difficulty</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+
+        <div style={{ marginTop: 14 }}>
+          <Button onClick={saveManual}>Add Question</Button>
+        </div>
+      </Card>
 
       <hr style={{ margin: "40px 0" }} />
 
       <h2>Bulk Import (CSV / Excel)</h2>
 
-      <button style={btn} onClick={downloadCSVTemplate}>
-        Download CSV Template
-      </button>
-      <button style={btn} onClick={downloadExcelTemplate}>
-        Download Excel Template
-      </button>
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <Button variant="secondary" onClick={downloadCSVTemplate}>Download CSV Template</Button>
+        <Button variant="secondary" onClick={downloadExcelTemplate}>Download Excel Template</Button>
+      </div>
 
       <div
         onDragOver={(e) => {
@@ -272,13 +273,11 @@ const normalizeQuestions = (rows) => {
       </div>
 
       {importedQuestions.length > 0 && (
-        <button
-          onClick={saveImported}
-          disabled={importing}
-          style={btn}
-        >
-          {importing ? "Importing..." : "Save Imported Questions"}
-        </button>
+        <div style={{ marginTop: 12 }}>
+          <Button variant="primary" onClick={saveImported} disabled={importing}>
+            {importing ? "Importing..." : "Save Imported Questions"}
+          </Button>
+        </div>
       )}
     </AdminLayout>
   );
@@ -297,15 +296,6 @@ const fieldBase = {
 const fullWidth = { ...fieldBase, width: "80%" };
 const mediumWidth = { ...fieldBase, width: "60%" };
 
-const btn = {
-  marginTop: "20px",
-  padding: "12px 20px",
-  background: "#6C63FF",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  fontWeight: 600,
-  marginRight: 10,
-};
+// Buttons replaced with shared Button component from src/components/ui
 
 export default AddQuestionPage;
