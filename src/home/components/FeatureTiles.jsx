@@ -1,38 +1,35 @@
+// src/home/components/FeatureTiles.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const features = [
+const tiles = [
   {
-    key: "quiz",
-    title: "Quizzes",
-    desc: "Test your knowledge with fun levels",
-    emoji: "🧠",
-    path: "/quiz",
-    gradient: "linear-gradient(135deg, #6C63FF, #8B85FF)",
+    title: "Kids Quizzes",
+    desc: "Fun and engaging quizzes for kids.",
+    emoji: "🧸",
+    path: "/quiz/kids",
+    bg: "linear-gradient(135deg, #FDE7F3 0%, #FBCFE8 100%)",
   },
   {
-    key: "puzzle",
-    title: "Puzzles",
-    desc: "Sharpen logic & problem solving",
-    emoji: "🧩",
-    path: "/puzzles",
-    gradient: "linear-gradient(135deg, #00BFA6, #5CE1C6)",
+    title: "Student Quizzes",
+    desc: "Boost learning with smart questions.",
+    emoji: "🎓",
+    path: "/quiz/students",
+    bg: "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)",
   },
   {
-    key: "study",
-    title: "Studies",
-    desc: "Learn concepts step by step",
-    emoji: "📘",
-    path: "/studies",
-    gradient: "linear-gradient(135deg, #FF9800, #FFC107)",
+    title: "Programming",
+    desc: "Sharpen your coding skills.",
+    emoji: "💻",
+    path: "/quiz/programming",
+    bg: "linear-gradient(135deg, #ECFEFF 0%, #CFFAFE 100%)",
   },
   {
-    key: "art",
-    title: "Art & Literature",
-    desc: "Explore creativity & classics",
-    emoji: "🎨",
-    path: "/art",
-    gradient: "linear-gradient(135deg, #EC407A, #F48FB1)",
+    title: "Movies & Fun",
+    desc: "Test your movie knowledge.",
+    emoji: "🎬",
+    path: "/quiz/movies",
+    bg: "linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)",
   },
 ];
 
@@ -40,49 +37,63 @@ export default function FeatureTiles() {
   const navigate = useNavigate();
 
   return (
-    <section className="section">
+    <section style={{ marginTop: 48 }}>
       <div className="container">
-        <h2 style={{ textAlign: "center" }}>
-          Choose What You Want to Explore
-        </h2>
-
         <div
           style={{
-            marginTop: 32,
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(220px, 1fr))",
             gap: 24,
           }}
         >
-          {features.map((f) => (
+          {tiles.map((t) => (
             <div
-              key={f.key}
-              onClick={() => navigate(f.path)}
+              key={t.title}
+              onClick={() => navigate(t.path)}
               style={{
+                background: t.bg,
+                borderRadius: 24,
                 padding: 28,
-                borderRadius: 20,
-                color: "#fff",
-                background: f.gradient,
                 cursor: "pointer",
-                boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-                transition: "transform 0.2s ease",
+                boxShadow: "0 10px 26px rgba(0,0,0,0.06)",
+                transition:
+                  "transform 0.25s ease, box-shadow 0.25s ease",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform =
-                  "translateY(-8px)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "translateY(0)")
-              }
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform =
+                  "translateY(-6px)";
+                e.currentTarget.style.boxShadow =
+                  "0 18px 42px rgba(0,0,0,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform =
+                  "translateY(0)";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 26px rgba(0,0,0,0.06)";
+              }}
             >
-              <div style={{ fontSize: 36 }}>{f.emoji}</div>
+              <div style={{ fontSize: 34, marginBottom: 14 }}>
+                {t.emoji}
+              </div>
 
-              <h3 style={{ marginTop: 16, color: "#fff" }}>
-                {f.title}
+              <h3
+                style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                {t.title}
               </h3>
 
-              <p style={{ color: "rgba(255,255,255,0.9)" }}>
-                {f.desc}
+              <p
+                style={{
+                  fontSize: 14,
+                  color: "#4b5563",
+                }}
+              >
+                {t.desc}
               </p>
             </div>
           ))}

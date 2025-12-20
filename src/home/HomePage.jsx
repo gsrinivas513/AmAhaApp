@@ -11,16 +11,29 @@ import TestimonialsSection from "./components/TestimonialsSection";
 export default function HomePage() {
   return (
     <SiteLayout>
-      <HeroSection />
-      <FeatureTiles />
-      <FeatureGrid />
-      <StatsStrip />
+        <HeroSection />
 
-      {/* 🧡 Social proof */}
-      <TestimonialsSection />
+        <div style={{ marginTop: 72 }}>
+          <FeatureTiles />
+        </div>
 
-      <MotivationSection />
-      <Footer />
+        <div style={{ marginTop: 72 }}>
+          <FeatureGrid />
+        </div>
+
+        <div style={{ marginTop: 56 }}>
+          <StatsStrip />
+        </div>
+
+        <div style={{ marginTop: 56 }}>
+          <TestimonialsSection />
+        </div>
+
+        <div style={{ marginTop: 72 }}>
+          <MotivationSection />
+        </div>
+
+        <Footer />
     </SiteLayout>
   );
 }

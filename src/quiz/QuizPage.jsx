@@ -1,8 +1,12 @@
-// src/quiz/QuizPage.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import { useAuth } from "../components/AuthProvider";
+
+import {
+  getHighestCompletedLevel,
+  markLevelCompleted,
+} from "./services/progressService";
 
 import QuizHeader from "./components/QuizHeader";
 import QuizProgressTimer from "./components/QuizProgressTimer";
@@ -15,14 +19,18 @@ import { useQuizFlow } from "./hooks/useQuizFlow";
 import { useQuizTimer } from "./hooks/useQuizTimer";
 import { useResumeQuiz } from "./hooks/useResumeQuiz";
 import { useSoundFX } from "./hooks/useSoundFX";
-import { getHighestCompletedLevel } from "./services/progressService";
 
 import ConfettiBurst from "./ui/ConfettiBurst";
 import { useCelebration } from "./hooks/useCelebration";
 import { trackEvent } from "../analytics/trackEvent";
 
+import RewardToast from "./ui/RewardToast";
+import { useRewardToast } from "./ui/useRewardToast";
+
 export default function QuizPage() {
   const { category, difficulty, level } = useParams();
+  const currentLevel = Number(level);
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -30,32 +38,23 @@ export default function QuizPage() {
   const [soundOn, setSoundOn] = useState(true);
   const sound = useSoundFX(soundOn);
 
-  /* 🧠 Prevent duplicate analytics */
+  /* 🎁 Reward toast */
+  const { reward, showReward } = useRewardToast();
+
+  /* 🧠 Prevent duplicate completion logic */
   const completionTracked = useRef(false);
 
   /* --------------------------------------------------
-   * 🔍 Analytics — quiz start (FIXED)
+   * 📊 Analytics — quiz start
    * -------------------------------------------------- */
   useEffect(() => {
     trackEvent("quiz_start", {
       userId: user?.uid || "guest",
       category,
       difficulty,
-      level: Number(level),
+      level: currentLevel,
     });
-  }, [category, difficulty, level, user]);
-
-  /* --------------------------------------------------
-   * Normalize legacy difficulty URLs
-   * -------------------------------------------------- */
-  useEffect(() => {
-    if (difficulty === "basic")
-      navigate(`/quiz/${category}/easy`, { replace: true });
-    if (difficulty === "intermediate")
-      navigate(`/quiz/${category}/medium`, { replace: true });
-    if (difficulty === "advanced")
-      navigate(`/quiz/${category}/hard`, { replace: true });
-  }, [difficulty, category, navigate]);
+  }, [category, difficulty, currentLevel, user]);
 
   /* --------------------------------------------------
    * Load questions
@@ -65,7 +64,13 @@ export default function QuizPage() {
   /* --------------------------------------------------
    * Resume
    * -------------------------------------------------- */
-  const resume = useResumeQuiz({ user, category, difficulty, level });
+  const resume = useResumeQuiz({
+    user,
+    category,
+    difficulty,
+    level: currentLevel,
+  });
+
   const initialIndex = resume.resumeData?.index ?? 0;
 
   /* --------------------------------------------------
@@ -76,7 +81,7 @@ export default function QuizPage() {
     user,
     category,
     difficulty,
-    level,
+    level: currentLevel,
     initialIndex,
     sound,
   });
@@ -93,12 +98,15 @@ export default function QuizPage() {
   );
 
   /* --------------------------------------------------
-   * Level access guard
+   * 🔐 Level access guard
    * -------------------------------------------------- */
   useEffect(() => {
+    let cancelled = false;
+
     async function guard() {
+      // Guest: allow level 1 & 2 only
       if (!user) {
-        if (Number(level) !== 1) {
+        if (currentLevel > 2) {
           navigate(`/quiz/${category}/${difficulty}`, { replace: true });
         }
         return;
@@ -110,12 +118,18 @@ export default function QuizPage() {
         difficulty
       );
 
-      if (Number(level) > highest + 1) {
+      if (cancelled) return;
+
+      if (currentLevel > highest + 1) {
         navigate(`/quiz/${category}/${difficulty}`, { replace: true });
       }
     }
+
     guard();
-  }, [user, level, category, difficulty, navigate]);
+    return () => {
+      cancelled = true;
+    };
+  }, [user, currentLevel, category, difficulty, navigate]);
 
   /* --------------------------------------------------
    * Hard guard — no questions
@@ -136,32 +150,51 @@ export default function QuizPage() {
   );
 
   /* --------------------------------------------------
-   * 📊 Analytics — quiz completion (NEW)
+   * ✅ Completion logic (SAVE + TOAST + ANALYTICS)
    * -------------------------------------------------- */
   useEffect(() => {
     if (!flow.finished || completionTracked.current) return;
 
     const passed = flow.correctCount === flow.totalQuestions;
 
+    // 📊 Analytics
     trackEvent("quiz_complete", {
       userId: user?.uid || "guest",
       category,
       difficulty,
-      level: Number(level),
+      level: currentLevel,
       passed,
     });
 
-    trackEvent(passed ? "level_pass" : "level_fail", {
-      userId: user?.uid || "guest",
-      category,
-      difficulty,
-      level: Number(level),
-      correct: flow.correctCount,
-      total: flow.totalQuestions,
-    });
+    // ✅ Save progress (guest OR user)
+    if (passed) {
+      markLevelCompleted(
+        user,
+        category,
+        difficulty,
+        currentLevel
+      );
+
+      // 🎁 Show XP & Coins (guest + user)
+      showReward({
+        xp: flow.xpEarned,
+        coins: flow.coinsEarned,
+      });
+    }
 
     completionTracked.current = true;
-  }, [flow.finished]);
+  }, [
+    flow.finished,
+    flow.correctCount,
+    flow.totalQuestions,
+    flow.xpEarned,
+    flow.coinsEarned,
+    user,
+    category,
+    difficulty,
+    currentLevel,
+    showReward,
+  ]);
 
   /* --------------------------------------------------
    * Loading
@@ -182,6 +215,14 @@ export default function QuizPage() {
       {/* 🎉 CONFETTI */}
       {celebrate && <ConfettiBurst />}
 
+      {/* 🎁 XP / Coins Toast */}
+      {reward && (
+        <RewardToast
+          xp={reward.xp}
+          coins={reward.coins}
+        />
+      )}
+
       {/* 🔊 SOUND */}
       <audio ref={sound.bind.correct} src="/sounds/correct.mp3" />
       <audio ref={sound.bind.wrong} src="/sounds/wrong.mp3" />
@@ -193,9 +234,9 @@ export default function QuizPage() {
       <QuizHeader
         category={category}
         difficulty={difficulty}
-        level={level}
+        level={currentLevel}
         soundOn={soundOn}
-        onToggleSound={() => setSoundOn(s => !s)}
+        onToggleSound={() => setSoundOn((s) => !s)}
       />
 
       {/* ⏱️ Timer */}
@@ -224,10 +265,12 @@ export default function QuizPage() {
           xpEarned={flow.xpEarned}
           coinsEarned={flow.coinsEarned}
           onNextLevel={() =>
-            navigate(`/quiz/${category}/${difficulty}/${Number(level) + 1}`)
+            navigate(`/quiz/${category}/${difficulty}/${currentLevel + 1}`)
           }
           onRetry={flow.reset}
-          onBack={() => navigate(`/quiz/${category}/${difficulty}`)}
+          onBack={() =>
+            navigate(`/quiz/${category}/${difficulty}`)
+          }
         />
       )}
     </SiteLayout>

@@ -4,33 +4,35 @@ import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 
-// Public Pages
+/* PUBLIC */
 import HomePage from "./home/HomePage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 
-// Admin Pages
-import AdminDashboard from "./admin/AdminDashboard";
-import AddQuestionPage from "./admin/AddQuestionPage";
-import ViewQuestionsPage from "./admin/ViewQuestionsPage";
-import EditQuestionPage from "./admin/EditQuestionPage";
-import CategoriesPage from "./admin/CategoriesPage";
-import AdminScoresPage from "./admin/AdminScoresPage";
-import QuestionAnalyticsAdvanced from "./admin/QuestionAnalyticsAdvanced";
-import ImportQuestionsPage from "./admin/ImportQuestionsPage";
-import UiModeSettingsPage from "./admin/UiModeSettingsPage";
-
-// 🆕 NEW ANALYTICS DASHBOARD
-import QuizAnalyticsDashboard from "./admin/QuizAnalyticsDashboard";
-
-// Quiz Pages
+/* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
-import DifficultySelectionPage from "./quiz/DifficultySelectionPage";
 import CategoryLevelsPage from "./quiz/CategoryLevelsPage";
 import QuizPage from "./quiz/QuizPage";
 
-// User Pages
-import UserSettingsPage from "./pages/UserSettingsPage";
+/* USER */
 import ProfilePage from "./pages/ProfilePage";
+import UserSettingsPage from "./pages/UserSettingsPage";
+
+/* ADMIN — GENERAL */
+import AdminDashboard from "./admin/AdminDashboard";
+import CategoriesPage from "./admin/CategoriesPage";
+import AdminScoresPage from "./admin/AdminScoresPage";
+import ImportQuestionsPage from "./admin/ImportQuestionsPage";
+import UiModeSettingsPage from "./admin/UiModeSettingsPage";
+
+/* ADMIN — QUIZ */
+import AddQuestionPage from "./admin/AddQuestionPage";
+import ViewQuestionsPage from "./admin/ViewQuestionsPage";
+import EditQuestionPage from "./admin/EditQuestionPage";
+import QuizUIConfigPage from "./admin/quiz-ui/QuizUIConfigPage";
+import QuizAnalyticsPage from "./admin/quiz/QuizAnalyticsPage";
+
+/* ADMIN — PUZZLES */
+import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
 
 function App() {
   return (
@@ -38,14 +40,11 @@ function App() {
       <Navbar />
 
       <Routes>
-        {/* HOME */}
         <Route path="/" element={<HomePage />} />
 
-        {/* QUIZ HUB — MUST COME FIRST */}
+        {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
-
-        {/* QUIZ FLOW */}
-        <Route path="/quiz/:category" element={<DifficultySelectionPage />} />
+        <Route path="/quiz/:category" element={<CategoryLevelsPage />} />
         <Route path="/quiz/:category/:difficulty" element={<CategoryLevelsPage />} />
         <Route path="/quiz/:category/:difficulty/:level" element={<QuizPage />} />
 
@@ -56,25 +55,25 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<UserSettingsPage />} />
 
-        {/* ADMIN */}
+        {/* ADMIN — GENERAL */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/categories" element={<CategoriesPage />} />
+        <Route path="/admin/scores" element={<AdminScoresPage />} />
+        <Route path="/admin/import" element={<ImportQuestionsPage />} />
+        <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
+
+        {/* ADMIN — QUIZ */}
         <Route path="/admin/add-question" element={<AddQuestionPage />} />
         <Route path="/admin/view-questions" element={<ViewQuestionsPage />} />
         <Route path="/admin/edit-question/:id" element={<EditQuestionPage />} />
-        <Route path="/admin/categories" element={<CategoriesPage />} />
-        <Route path="/admin/scores" element={<AdminScoresPage />} />
+        <Route path="/admin/quiz-ui" element={<QuizUIConfigPage />} />
+        <Route path="/admin/quiz/analytics" element={<QuizAnalyticsPage />} />
 
-        {/* 🆕 NEW QUIZ ANALYTICS */}
+        {/* ADMIN — PUZZLES */}
         <Route
-          path="/admin/quiz-analytics"
-          element={<QuizAnalyticsDashboard />}
+          path="/admin/puzzles/dashboard"
+          element={<PuzzlesDashboardPage />}
         />
-
-        {/* OLD / ADVANCED ANALYTICS (UNCHANGED) */}
-        <Route path="/admin/analytics" element={<QuestionAnalyticsAdvanced />} />
-
-        <Route path="/admin/import" element={<ImportQuestionsPage />} />
-        <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
       </Routes>
     </div>
   );

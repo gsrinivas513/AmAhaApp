@@ -9,6 +9,7 @@ export default function MotivationSection() {
     <section
       style={{
         padding: "80px 20px",
+        marginBottom: 72, // ✅ ADD THIS
         background: "linear-gradient(135deg, #6C63FF, #8B85FF)",
         color: "#fff",
       }}

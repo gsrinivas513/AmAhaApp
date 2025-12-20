@@ -1,5 +1,6 @@
 // src/quiz/ui/OptionButton.jsx
 import React from "react";
+import { useUIConfig } from "../../ui/useUIConfig";
 
 export default function OptionButton({
   label,
@@ -7,27 +8,46 @@ export default function OptionButton({
   onClick,
   state, // "default" | "selected" | "correct" | "wrong" | "disabled"
 }) {
+  const { microAnimations, loading } = useUIConfig();
+
+  const enabled = microAnimations?.enabled && !loading;
+
+  /* ---------- SAFE FALLBACKS ---------- */
+  const selectScale = enabled ? microAnimations.optionSelectScale : 1;
+  const hoverScale = enabled ? microAnimations.optionHoverScale : 1;
+  const transitionMs = enabled ? microAnimations.transitionMs : 0;
+  const pulseScale = enabled ? microAnimations.optionSelectScale : 1.04;
+
   let background = "#fff";
   let borderColor = "#e6e6e6";
+  let transform = "scale(1)";
   let animation = "none";
   let opacity = 1;
-  let baseTransform = "scale(1)";
+
+  /* ---------- STATES ---------- */
 
   if (state === "selected") {
     background = "#eef4ff";
     borderColor = "#6C63FF";
+    transform = `scale(${selectScale})`;
   }
 
   if (state === "correct") {
     background = "#e8ffed";
     borderColor = "#4caf50";
-    animation = "pulse 0.35s ease-out";
+
+    if (enabled && microAnimations.correctPulse) {
+      animation = "pulse 0.35s ease-out";
+    }
   }
 
   if (state === "wrong") {
     background = "#ffecec";
     borderColor = "#f44336";
-    animation = "shake 0.3s";
+
+    if (enabled && microAnimations.wrongShake) {
+      animation = "shake 0.3s";
+    }
   }
 
   if (state === "disabled") {
@@ -48,30 +68,30 @@ export default function OptionButton({
           textAlign: "left",
           fontSize: 15,
           cursor: state === "disabled" ? "default" : "pointer",
-
           opacity,
+          transform,
           animation,
-          transform: baseTransform,
-
-          transition:
-            "background 0.2s ease, transform 0.15s ease, border 0.2s ease",
+          transition: enabled
+            ? `transform ${transitionMs}ms ease,
+               background ${transitionMs}ms ease`
+            : "none",
         }}
-        onMouseDown={(e) => {
-          if (state === "disabled") return;
-          e.currentTarget.style.transform = "scale(0.97)";
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = baseTransform;
+        onMouseEnter={(e) => {
+          if (enabled && state === "default") {
+            e.currentTarget.style.transform = `scale(${hoverScale})`;
+          }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = baseTransform;
+          if (enabled && state === "default") {
+            e.currentTarget.style.transform = "scale(1)";
+          }
         }}
       >
         <b style={{ marginRight: 8 }}>{label}.</b>
         {text}
       </button>
 
-      {/* Animations */}
+      {/* 🎞 Animations */}
       <style>
         {`
           @keyframes shake {
@@ -84,7 +104,7 @@ export default function OptionButton({
 
           @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.04); }
+            50% { transform: scale(${pulseScale}); }
             100% { transform: scale(1); }
           }
         `}

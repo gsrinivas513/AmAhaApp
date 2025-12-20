@@ -1,43 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ===============================
-   GLOBAL RESET & BASELINE
-   =============================== */
+   GLOBAL RESET
+=============================== */
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* 🔤 FONT SYSTEM */
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* 🎨 BASE COLORS */
   background: #f9fafc;
-  color: #1f2937;
+  color: #4b5563;
+
   line-height: 1.6;
 
-  /* smooth text like Quiz.com */
+  /* Smooth text like Quiz.com */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Code blocks (keep separate font) */
+/* Code stays technical */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
 /* ===============================
-   TYPOGRAPHY (Quiz.com style)
-   =============================== */
+   TYPOGRAPHY SYSTEM
+=============================== */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Nunito", system-ui, sans-serif;
+  color: #111827;
+}
 
 h1 {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 800;
-  margin-bottom: 12px;
+  line-height: 1.15;
+  margin-bottom: 14px;
 }
 
 h2 {
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 h3 {
@@ -51,101 +73,60 @@ p {
 }
 
 /* ===============================
-   BUTTONS
-   =============================== */
+   BUTTONS (BASE)
+=============================== */
 
 button {
-  font-family: inherit;
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  font-family: "Inter", sans-serif;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* ===============================
-   CARDS (Quiz / Levels / Panels)
-   =============================== */
+   CARDS
+=============================== */
 
 .card {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 20px;
   padding: 24px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
-}
-
-/* ===============================
-   LAYOUT UTILITIES
-   =============================== */
-
-.section {
-  padding: 32px 20px;
-}
-
-.container {
-  max-width: 1100px;
-  margin: auto;
-}
-
-/* ===============================
-   ANIMATIONS
-   =============================== */
-
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===============================
-   SOFT BACKGROUND GRADIENTS
-   =============================== */
-
-.app-bg {
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(108, 99, 255, 0.08),
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(76, 175, 80, 0.06),
-      transparent 40%
-    ),
-    #f9fafc;
-  min-height: 100vh;
-}
-
-/* ===============================
-   HOME PAGE POLISH
-   =============================== */
-
-/* Section rhythm */
-.section-spacing {
-  padding: 72px 20px;
-}
-
-/* Reduce padding on small screens */
-@media (max-width: 768px) {
-  .section-spacing {
-    padding: 48px 16px;
-  }
-}
-
-/* Smooth page feel */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Subtle hover lift for cards */
-.card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ===============================
+   LAYOUT HELPERS
+=============================== */
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.section-spacing {
+  padding: 72px 20px;
+}
+
+@media (max-width: 768px) {
+  .section-spacing {
+    padding: 48px 16px;
+  }
+}
+
+/* ===============================
+   SOFT APP BACKGROUND
+=============================== */
+
+.app-bg {
+  background:
+    radial-gradient(circle at top left, rgba(91, 95, 239, 0.08), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(224, 242, 254, 0.8), transparent 40%),
+    #f9fafc;
+  min-height: 100vh;
 }
