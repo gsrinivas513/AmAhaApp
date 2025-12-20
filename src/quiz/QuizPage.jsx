@@ -1,5 +1,5 @@
 // src/quiz/QuizPage.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import { useAuth } from "../components/AuthProvider";
@@ -14,50 +14,62 @@ import { useQuizQuestions } from "./hooks/useQuizQuestions";
 import { useQuizFlow } from "./hooks/useQuizFlow";
 import { useQuizTimer } from "./hooks/useQuizTimer";
 import { useResumeQuiz } from "./hooks/useResumeQuiz";
+import { useSoundFX } from "./hooks/useSoundFX";
 import { getHighestCompletedLevel } from "./services/progressService";
+
+import ConfettiBurst from "./ui/ConfettiBurst";
+import { useCelebration } from "./hooks/useCelebration";
+import { trackEvent } from "../analytics/trackEvent";
 
 export default function QuizPage() {
   const { category, difficulty, level } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  /* 🔊 Sound */
+  const [soundOn, setSoundOn] = useState(true);
+  const sound = useSoundFX(soundOn);
+
+  /* 🧠 Prevent duplicate analytics */
+  const completionTracked = useRef(false);
+
   /* --------------------------------------------------
-   * 1️⃣ Normalize legacy difficulty URLs
+   * 🔍 Analytics — quiz start (FIXED)
    * -------------------------------------------------- */
   useEffect(() => {
-    if (difficulty === "basic") {
+    trackEvent("quiz_start", {
+      userId: user?.uid || "guest",
+      category,
+      difficulty,
+      level: Number(level),
+    });
+  }, [category, difficulty, level, user]);
+
+  /* --------------------------------------------------
+   * Normalize legacy difficulty URLs
+   * -------------------------------------------------- */
+  useEffect(() => {
+    if (difficulty === "basic")
       navigate(`/quiz/${category}/easy`, { replace: true });
-    }
-    if (difficulty === "intermediate") {
+    if (difficulty === "intermediate")
       navigate(`/quiz/${category}/medium`, { replace: true });
-    }
-    if (difficulty === "advanced") {
+    if (difficulty === "advanced")
       navigate(`/quiz/${category}/hard`, { replace: true });
-    }
   }, [difficulty, category, navigate]);
 
   /* --------------------------------------------------
-   * 2️⃣ Load ALL questions for category + difficulty
+   * Load questions
    * -------------------------------------------------- */
   const { questions, loading } = useQuizQuestions(category, difficulty);
 
   /* --------------------------------------------------
-   * 3️⃣ Resume hook
+   * Resume
    * -------------------------------------------------- */
-  const resume = useResumeQuiz({
-    user,
-    category,
-    difficulty,
-    level,
-  });
-
-  /* --------------------------------------------------
-   * 4️⃣ Initial index (resume or fresh)
-   * -------------------------------------------------- */
+  const resume = useResumeQuiz({ user, category, difficulty, level });
   const initialIndex = resume.resumeData?.index ?? 0;
 
   /* --------------------------------------------------
-   * 5️⃣ Quiz flow (handles level slicing internally)
+   * Quiz flow
    * -------------------------------------------------- */
   const flow = useQuizFlow({
     questions,
@@ -66,13 +78,14 @@ export default function QuizPage() {
     difficulty,
     level,
     initialIndex,
+    sound,
   });
 
   const isQuizPaused = resume.isPaused;
   const isQuizActive = !flow.finished && !isQuizPaused;
 
   /* --------------------------------------------------
-   * 6️⃣ Timer
+   * Timer
    * -------------------------------------------------- */
   const timer = useQuizTimer(
     isQuizActive && !flow.submitted,
@@ -80,10 +93,10 @@ export default function QuizPage() {
   );
 
   /* --------------------------------------------------
-   * 7️⃣ Level access guard (CORRECT)
+   * Level access guard
    * -------------------------------------------------- */
   useEffect(() => {
-    async function guardLevelAccess() {
+    async function guard() {
       if (!user) {
         if (Number(level) !== 1) {
           navigate(`/quiz/${category}/${difficulty}`, { replace: true });
@@ -91,35 +104,67 @@ export default function QuizPage() {
         return;
       }
 
-      const highestCompleted = await getHighestCompletedLevel(
+      const highest = await getHighestCompletedLevel(
         user,
         category,
         difficulty
       );
 
-      if (Number(level) > highestCompleted + 1) {
+      if (Number(level) > highest + 1) {
         navigate(`/quiz/${category}/${difficulty}`, { replace: true });
       }
     }
-
-    guardLevelAccess();
-  }, [user, level, category, difficulty, navigate]); 
+    guard();
+  }, [user, level, category, difficulty, navigate]);
 
   /* --------------------------------------------------
-   * 8️⃣ HARD GUARD — only if NO questions exist at all
+   * Hard guard — no questions
    * -------------------------------------------------- */
   useEffect(() => {
-    if (loading) return;
-
-    // 🚫 No questions for this difficulty at all
-    if (questions.length === 0) {
-      console.warn("🚫 No questions found → redirecting");
+    if (!loading && questions.length === 0) {
       navigate(`/quiz/${category}/${difficulty}`, { replace: true });
     }
   }, [loading, questions.length, category, difficulty, navigate]);
- 
+
   /* --------------------------------------------------
-   * 9️⃣ Loading state
+   * 🎉 Celebration
+   * -------------------------------------------------- */
+  const celebrate = useCelebration(
+    flow.finished &&
+      flow.correctCount === flow.totalQuestions &&
+      flow.totalQuestions > 0
+  );
+
+  /* --------------------------------------------------
+   * 📊 Analytics — quiz completion (NEW)
+   * -------------------------------------------------- */
+  useEffect(() => {
+    if (!flow.finished || completionTracked.current) return;
+
+    const passed = flow.correctCount === flow.totalQuestions;
+
+    trackEvent("quiz_complete", {
+      userId: user?.uid || "guest",
+      category,
+      difficulty,
+      level: Number(level),
+      passed,
+    });
+
+    trackEvent(passed ? "level_pass" : "level_fail", {
+      userId: user?.uid || "guest",
+      category,
+      difficulty,
+      level: Number(level),
+      correct: flow.correctCount,
+      total: flow.totalQuestions,
+    });
+
+    completionTracked.current = true;
+  }, [flow.finished]);
+
+  /* --------------------------------------------------
+   * Loading
    * -------------------------------------------------- */
   if (loading) {
     return (
@@ -130,17 +175,27 @@ export default function QuizPage() {
   }
 
   /* --------------------------------------------------
-   * 10️⃣ Render
+   * Render
    * -------------------------------------------------- */
   return (
     <SiteLayout>
-      {/* 🔁 Resume banner (single confirmation) */}
+      {/* 🎉 CONFETTI */}
+      {celebrate && <ConfettiBurst />}
+
+      {/* 🔊 SOUND */}
+      <audio ref={sound.bind.correct} src="/sounds/correct.mp3" />
+      <audio ref={sound.bind.wrong} src="/sounds/wrong.mp3" />
+      <audio ref={sound.bind.success} src="/sounds/success.mp3" />
+
+      {/* 🔁 Resume */}
       {resume.banner}
 
       <QuizHeader
         category={category}
         difficulty={difficulty}
         level={level}
+        soundOn={soundOn}
+        onToggleSound={() => setSoundOn(s => !s)}
       />
 
       {/* ⏱️ Timer */}
@@ -153,7 +208,7 @@ export default function QuizPage() {
         />
       )}
 
-      {/* ❓ Quiz UI */}
+      {/* ❓ Quiz */}
       {!isQuizPaused && !flow.finished && flow.current && (
         <>
           <QuizQuestionCard {...flow.questionProps} />
@@ -168,27 +223,11 @@ export default function QuizPage() {
           totalQuestions={flow.totalQuestions}
           xpEarned={flow.xpEarned}
           coinsEarned={flow.coinsEarned}
-
-          /* ▶️ Go to NEXT level (only shown if passed) */
-          onNextLevel={() => {
-            const nextLevel = Number(level) + 1;
-            navigate(
-              `/quiz/${category}/${difficulty}/${nextLevel}`
-            );
-          }}
-
-          /* 🔁 Retry SAME level */
-          onRetry={() => {
-              // reset quiz locally without navigation
-              flow.setIndex(0);
-              flow.reset(); // 👈 we will add this
-          }}
-
-          /* ⬅️ Back to level selection */
-          onBack={() =>
-            navigate(`/quiz/${category}/${difficulty}`)
+          onNextLevel={() =>
+            navigate(`/quiz/${category}/${difficulty}/${Number(level) + 1}`)
           }
-          
+          onRetry={flow.reset}
+          onBack={() => navigate(`/quiz/${category}/${difficulty}`)}
         />
       )}
     </SiteLayout>

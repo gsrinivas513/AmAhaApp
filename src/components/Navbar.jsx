@@ -67,7 +67,7 @@ function Navbar() {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
         <Link to="/" style={{ fontWeight: 800, fontSize: 18, textDecoration: "none", color: "#333" }}>
-          AmAhaApp
+          AmAha.com
         </Link>
         <Link to="/" style={{ textDecoration: "none", color: "#444" }}>
           Home

@@ -1,19 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
-import "./mobile.css";       // <-- keep this one
+import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { AuthProvider } from "./components/AuthProvider";
-import { ThemeProvider } from "./theme/ThemeProvider";
-import "./styles/ui.css";
-import "./styles/typography.css";
+import { AdUnlockProvider } from "./ads/AdUnlockProvider";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
-  <ThemeProvider>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </ThemeProvider>
+  <React.StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <AdUnlockProvider>
+          <App />
+        </AdUnlockProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );

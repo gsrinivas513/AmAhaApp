@@ -2,28 +2,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { useAuth } from "../components/AuthProvider";
 
 import { getHighestCompletedLevel } from "./services/progressService";
-import { isLevelUnlocked } from "./services/levelUnlockService";
 import { loadResumeState, clearResumeState } from "./services/resumeService";
 
-import LockedLevelCard from "./components/LockedLevelCard";
 import LevelResumeBanner from "./components/LevelResumeBanner";
 import LevelCard from "./components/LevelCard";
-
+import LoginGate from "../auth/LoginGate";
+import AdCard from "../ads/AdCard";
 
 import { QUESTIONS_PER_LEVEL } from "./constants";
 
 export default function CategoryLevelsPage() {
-  
   const { category, difficulty } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -33,7 +26,24 @@ export default function CategoryLevelsPage() {
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* ---------------- LOAD USER PROGRESS ---------------- */
+  /* --------------------------------------------------
+   * Normalize legacy difficulty URLs
+   * -------------------------------------------------- */
+  useEffect(() => {
+    const map = {
+      basic: "easy",
+      intermediate: "medium",
+      advanced: "hard",
+    };
+
+    if (map[difficulty]) {
+      navigate(`/quiz/${category}/${map[difficulty]}`, { replace: true });
+    }
+  }, [difficulty, category, navigate]);
+
+  /* --------------------------------------------------
+   * Load user progress
+   * -------------------------------------------------- */
   useEffect(() => {
     async function loadProgress() {
       if (!user) {
@@ -53,7 +63,9 @@ export default function CategoryLevelsPage() {
     loadProgress();
   }, [user, category, difficulty]);
 
-  /* ---------------- LOAD RESUME ---------------- */
+  /* --------------------------------------------------
+   * Load resume state
+   * -------------------------------------------------- */
   useEffect(() => {
     async function loadResume() {
       if (!user) return;
@@ -75,17 +87,19 @@ export default function CategoryLevelsPage() {
     loadResume();
   }, [user, category, difficulty]);
 
-  /* ---------------- LOAD LEVELS ---------------- */
+  /* --------------------------------------------------
+   * Load levels (based on question count)
+   * -------------------------------------------------- */
   useEffect(() => {
     async function loadLevels() {
       setLoading(true);
 
       try {
         const q = query(
-        collection(db, "questions"),
-        where("category", "==", category),
-        where("difficulty", "==", difficulty)
-      );
+          collection(db, "questions"),
+          where("category", "==", category),
+          where("difficulty", "==", difficulty)
+        );
 
         const snap = await getDocs(q);
         const totalQuestions = snap.size;
@@ -95,20 +109,10 @@ export default function CategoryLevelsPage() {
           Math.ceil(totalQuestions / QUESTIONS_PER_LEVEL)
         );
 
-        const list = [];
-
-        for (let i = 1; i <= totalLevels; i++) {
-          list.push({
-            level: i,
-            unlocked: isLevelUnlocked({
-              user,
-              level: i,
-              highestCompleted,
-            }),
-          });
-        }
-
-        setLevels(list);
+        // ✅ LEVELS ARE NUMBERS ONLY (IMPORTANT)
+        setLevels(
+          Array.from({ length: totalLevels }, (_, i) => i + 1)
+        );
       } catch (err) {
         console.error("Failed to load levels", err);
         setLevels([]);
@@ -118,22 +122,11 @@ export default function CategoryLevelsPage() {
     }
 
     loadLevels();
-  }, [category, difficulty, user, highestCompleted]);
+  }, [category, difficulty]);
 
-   useEffect(() => {
-  const map = {
-    basic: "easy",
-    intermediate: "medium",
-    advanced: "hard",
-  };
-
-  if (map[difficulty]) {
-    navigate(`/quiz/${category}/${map[difficulty]}`, {
-      replace: true,
-    });
-  }
-}, [difficulty, category, navigate]);
-
+  /* --------------------------------------------------
+   * Render
+   * -------------------------------------------------- */
   return (
     <SiteLayout>
       <div>
@@ -142,7 +135,7 @@ export default function CategoryLevelsPage() {
           Select Level — {category} / {difficulty}
         </h2>
 
-        {/* ---------- RESUME BANNER ---------- */}
+        {/* RESUME BANNER */}
         {resume && (
           <LevelResumeBanner
             level={resume.level}
@@ -159,25 +152,14 @@ export default function CategoryLevelsPage() {
           />
         )}
 
-        {/* ---------- GUEST INFO ---------- */}
-        {!user && (
-          <div
-            style={{
-              background: "#fff3cd",
-              border: "1px solid #ffeeba",
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 16,
-              color: "#856404",
-            }}
-          >
-            🔒 Guest users can play <b>Level 1 only</b>.
-            <br />
-            Sign in to unlock more levels and save progress.
+        {/* 💰 AD — HIGH CTR, LOW ANNOYANCE */}
+        {!loading && levels.length > 0 && (
+          <div style={{ marginTop: 24 }}>
+            <AdCard slot="levels_page" />
           </div>
         )}
 
-        {/* ---------- LOADING ---------- */}
+        {/* LOADING */}
         {loading && <div>Loading levels…</div>}
 
         {/* LEVEL GRID */}
@@ -190,23 +172,36 @@ export default function CategoryLevelsPage() {
               gap: 20,
             }}
           >
-            {levels.map((lvl) => {
-              let status = "locked";
+            {levels.map((level) => {
+              const isCompleted = level <= highestCompleted;
+              const isNext = level === highestCompleted + 1;
+              const lockedForGuest = !user && level > 1;
 
-              if (lvl.level <= highestCompleted) {
-                status = "completed";
-              } else if (lvl.level === highestCompleted + 1) {
-                status = "next";
+              // 🔐 LOGIN WALL FOR GUESTS (LEVEL 2+)
+              if (lockedForGuest) {
+                return (
+                  <LoginGate
+                    key={level}
+                    title={`Unlock Level ${level}`}
+                    message="Sign in to unlock more levels, save progress, and earn rewards."
+                  />
+                );
               }
 
               return (
                 <LevelCard
-                  key={lvl.level}
-                  level={lvl.level}
-                  status={status}
+                  key={level}
+                  level={level}
+                  status={
+                    isCompleted
+                      ? "completed"
+                      : isNext
+                      ? "next"
+                      : "locked"
+                  }
                   onClick={() =>
                     navigate(
-                      `/quiz/${category}/${difficulty}/${lvl.level}`
+                      `/quiz/${category}/${difficulty}/${level}`
                     )
                   }
                 />
@@ -214,8 +209,6 @@ export default function CategoryLevelsPage() {
             })}
           </div>
         )}
-
-
       </div>
     </SiteLayout>
   );

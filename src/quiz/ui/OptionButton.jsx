@@ -1,3 +1,4 @@
+// src/quiz/ui/OptionButton.jsx
 import React from "react";
 
 export default function OptionButton({
@@ -8,9 +9,9 @@ export default function OptionButton({
 }) {
   let background = "#fff";
   let borderColor = "#e6e6e6";
-  let transform = "scale(1)";
   let animation = "none";
   let opacity = 1;
+  let baseTransform = "scale(1)";
 
   if (state === "selected") {
     background = "#eef4ff";
@@ -37,6 +38,7 @@ export default function OptionButton({
     <>
       <button
         onClick={onClick}
+        disabled={state === "disabled"}
         style={{
           width: "100%",
           padding: "12px 14px",
@@ -47,18 +49,29 @@ export default function OptionButton({
           fontSize: 15,
           cursor: state === "disabled" ? "default" : "pointer",
 
-          transform,
-          animation,
           opacity,
+          animation,
+          transform: baseTransform,
 
-          transition: "background 0.2s ease, transform 0.2s ease",
+          transition:
+            "background 0.2s ease, transform 0.15s ease, border 0.2s ease",
         }}
-        disabled={state === "disabled"}
+        onMouseDown={(e) => {
+          if (state === "disabled") return;
+          e.currentTarget.style.transform = "scale(0.97)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = baseTransform;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = baseTransform;
+        }}
       >
         <b style={{ marginRight: 8 }}>{label}.</b>
         {text}
       </button>
 
+      {/* Animations */}
       <style>
         {`
           @keyframes shake {

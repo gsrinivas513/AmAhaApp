@@ -1,5 +1,4 @@
 // src/quiz/hooks/useQuizQuestions.js
-// src/quiz/hooks/useQuizQuestions.js
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -12,42 +11,64 @@ export function useQuizQuestions(category, difficulty) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
     let active = true;
     setLoading(true);
 
-    (async () => {
-      const q = query(
-        collection(db, "questions"),
-        where("category", "==", category),
-        where("difficulty", "==", difficulty)
-      );
+    async function loadQuestions() {
+      try {
+        console.log("📦 Loading questions", { category, difficulty });
 
-      const snap = await getDocs(q);
-      if (!active) return;
+        const q = query(
+          collection(db, "questions"),
+          where("category", "==", category),
+          where("difficulty", "==", difficulty)
+        );
 
-      const all = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data(),
-      }));
+        const snap = await getDocs(q);
 
-      const order = await getOrCreateQuestionOrder({
-        user,
-        category,
-        difficulty,
-        questionIds: all.map(q => q.id),
-      });
+        console.log("🔥 Firestore snapshot size:", snap.size);
 
-      const orderedQuestions = order
-        .map(id => all.find(q => q.id === id))
-        .filter(Boolean);
+        if (!active) return;
 
-      setQuestions(orderedQuestions);
-      setLoading(false);
-    })();
+        const all = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+        }));
 
-    return () => { active = false; };
+        // 🔑 GUEST USERS → NO ORDERING
+        if (!user) {
+          setQuestions(all);
+          return;
+        }
+
+        // 🔐 LOGGED-IN USERS → ORDERED QUESTIONS
+        const order = await getOrCreateQuestionOrder({
+          user,
+          category,
+          difficulty,
+          questionIds: all.map(q => q.id),
+        });
+
+        const orderedQuestions = order
+          .map(id => all.find(q => q.id === id))
+          .filter(Boolean);
+
+        setQuestions(orderedQuestions);
+      } catch (err) {
+        console.error("❌ Failed to load questions", err);
+        setQuestions([]);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadQuestions();
+
+    return () => {
+      active = false;
+    };
   }, [user, category, difficulty]);
 
   return { questions, loading };
