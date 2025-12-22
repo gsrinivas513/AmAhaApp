@@ -5,6 +5,132 @@ import { Card } from "../../components/ui";
 import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
+// Topics carousel component
+function TopicsCarouselSection({ topics }) {
+  const navigate = useNavigate();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = React.useRef(null);
+  
+  const itemsPerView = 4;
+  const itemWidth = 240; // width of card + gap
+  const totalWidth = topics.length * itemWidth;
+  const containerWidth = itemsPerView * itemWidth;
+  const maxScroll = Math.max(0, totalWidth - containerWidth);
+
+  const scroll = (direction) => {
+    if (!containerRef.current) return;
+    
+    let newPosition = scrollPosition + (direction === "next" ? itemWidth : -itemWidth);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+    setScrollPosition(newPosition);
+    
+    containerRef.current.scrollTo({
+      left: newPosition,
+      behavior: "smooth",
+    });
+  };
+
+  const canScrollNext = scrollPosition < maxScroll;
+  const canScrollPrev = scrollPosition > 0;
+
+  return (
+    <div className="mb-16">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">📚</span>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
+            <p className="text-sm text-gray-600 mt-1">Browse all topics across categories</p>
+          </div>
+        </div>
+        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+          See all ({topics.length})
+          <span>→</span>
+        </button>
+      </div>
+
+      {topics.length > 0 ? (
+        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+          <div
+            ref={containerRef}
+            className="flex gap-6 overflow-x-hidden scroll-smooth"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {topics.map((topic) => (
+              <div key={topic.id} className="flex-shrink-0 w-56">
+                <div
+                  onClick={() => navigate(topic.path)}
+                  className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${topic.color}`}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
+                    {topic.icon}
+                  </div>
+                  
+                  <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+                </div>
+                
+                <div className="pt-3">
+                  <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                    {topic.title}
+                  </h3>
+                  
+                  <p className="text-xs text-gray-500 mb-1">
+                    {topic.categoryName}
+                  </p>
+                  
+                  <p className="text-xs text-gray-600 mb-2 font-medium">
+                    {topic.quizzes || 0} Quizzes
+                  </p>
+                  
+                  {/* Rating display */}
+                  <div className="flex items-center gap-1">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} className={`text-lg ${star <= Math.floor(topic.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500 ml-1">({(topic.rating || 4.0).toFixed(1)})</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {canScrollPrev && (
+            <button
+              onClick={() => scroll("prev")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              aria-label="Scroll left"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {canScrollNext && (
+            <button
+              onClick={() => scroll("next")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              aria-label="Scroll right"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-600">No topics published yet.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Feature carousel component
 function FeatureCarouselSection({ feature, categories }) {
   const navigate = useNavigate();
@@ -73,7 +199,7 @@ function FeatureCarouselSection({ feature, categories }) {
               return (
                 <div key={category.id} className="flex-shrink-0 w-56">
                   <div
-                    onClick={() => navigate(`/${feature.featureType || 'quiz'}/${encodeURIComponent(category.name || category.label)}`)}
+                    onClick={() => navigate(`/quiz/${encodeURIComponent(category.name || category.label)}`)}
                     className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${colorScheme.color}`}
                   >
                     <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
@@ -390,16 +516,18 @@ function CarouselSection({ section }) {
 
 export default function FeatureTiles() {
   const [categories, setCategories] = useState(defaultCategories);
+  const [topics, setTopics] = useState([]);
   const [featuresWithCategories, setFeaturesWithCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCategoriesAndFeatures = async () => {
       try {
-        // Load both categories and features
-        const [categorySnapshot, featureSnapshot] = await Promise.all([
+        // Load categories, features, and topics
+        const [categorySnapshot, featureSnapshot, topicSnapshot] = await Promise.all([
           getDocs(collection(db, "categories")),
-          getDocs(collection(db, "features"))
+          getDocs(collection(db, "features")),
+          getDocs(collection(db, "topics"))
         ]);
 
         // Create a map of feature IDs to feature labels
@@ -411,6 +539,43 @@ export default function FeatureTiles() {
           featuresData.push({ id: doc.id, ...data });
         });
 
+        // Create a map of category IDs to category data
+        const categoryMap = {};
+        categorySnapshot.docs.forEach(doc => {
+          categoryMap[doc.id] = { id: doc.id, ...doc.data() };
+        });
+
+        // Process topics
+        const topicsData = topicSnapshot.docs
+          .map(doc => {
+            const data = doc.data();
+            const category = categoryMap[data.categoryId];
+            const colorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+            
+            return {
+              id: doc.id,
+              title: data.name || data.label,
+              icon: data.icon || "📖",
+              quizzes: data.quizCount || 0,
+              categoryName: category?.name || category?.label || "Unknown",
+              categoryId: data.categoryId,
+              featureName: "Topics",
+              difficulty: "Medium",
+              path: `/quiz/${encodeURIComponent(category?.name || category?.label || '')}/${encodeURIComponent(data.name || data.label || '')}`,
+              color: colorScheme.color,
+              borderColor: colorScheme.borderColor,
+              isPublished: data.isPublished !== false,
+              createdAt: data.createdAt || new Date().toISOString(),
+              rating: generateRealisticRating(data.quizCount || 0, doc.id),
+            };
+          })
+          .filter((topic) => topic.isPublished && topic.categoryName !== "Unknown")
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        if (topicsData.length > 0) {
+          setTopics(topicsData);
+        }
+
         const categoriesData = categorySnapshot.docs
           .map((doc) => {
             const data = doc.data();
@@ -418,16 +583,17 @@ export default function FeatureTiles() {
             const featureData = featuresData.find(f => f.id === data.featureId);
             const featureType = featureData?.type || featureData?.name?.toLowerCase() || "quiz";
             const featureName = featureMap[data.featureId] || "Quizzes";
+            const categoryName = data.label || data.name;
             
             return {
               id: doc.id,
-              title: data.label || data.name,
+              title: categoryName,
               icon: data.icon || "📚",
               quizzes: data.quizCount || 0,
               featureName: featureName,
               featureType: featureType,
               difficulty: "Medium",
-              path: `/${featureType}/${doc.id}`,
+              path: `/quiz/${encodeURIComponent(categoryName)}`,
               color: colorScheme.color,
               borderColor: colorScheme.borderColor,
               isPublished: data.isPublished || false,
@@ -498,6 +664,13 @@ export default function FeatureTiles() {
         {!loading && sections.map((section) => (
           <CarouselSection key={section.title} section={section} />
         ))}
+
+        {/* All Topics section */}
+        {!loading && topics.length > 0 && (
+          <div className="mb-16 px-4">
+            <TopicsCarouselSection topics={topics} />
+          </div>
+        )}
 
         {/* Feature sections after Latest Added (no heading) */}
         {!loading && featuresWithCategories.length > 0 && (

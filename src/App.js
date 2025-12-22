@@ -11,6 +11,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 /* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
 import SubcategoryPage from "./quiz/SubcategoryPage";
+import TopicPage from "./quiz/TopicPage";
 import CategoryLevelsPage from "./quiz/CategoryLevelsPage";
 import QuizPage from "./quiz/QuizPage";
 
@@ -52,9 +53,10 @@ function App() {
 
         {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
-        <Route path="/:featureType/:categoryName" element={<SubcategoryPage />} />
-        <Route path="/:featureType/:categoryName/:topicName/:subtopicName/:difficulty" element={<CategoryLevelsPage />} />
-        <Route path="/:featureType/:categoryName/:topicName/:subtopicName/:difficulty/:level" element={<QuizPage />} />
+        <Route path="/quiz/:categoryName" element={<SubcategoryPage />} />
+        <Route path="/quiz/:categoryName/:topicName" element={<TopicPage />} />
+        <Route path="/quiz/:categoryName/:topicName/:subtopicName/:difficulty" element={<CategoryLevelsPage />} />
+        <Route path="/quiz/:categoryName/:topicName/:subtopicName/:difficulty/:level" element={<QuizPage />} />
 
         {/* LEADERBOARD */}
         <Route path="/leaderboard/:categoryId" element={<LeaderboardPage />} />

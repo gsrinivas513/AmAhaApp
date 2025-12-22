@@ -14,7 +14,7 @@ import {
  * User clicks on a subcategory to proceed to difficulty selection
  */
 export default function SubcategoryPage() {
-  const { featureType, categoryName } = useParams();
+  const { categoryName } = useParams();
   const navigate = useNavigate();
   const [category, setCategory] = useState(null);
   const [subcategories, setSubcategories] = useState([]);
@@ -28,43 +28,60 @@ export default function SubcategoryPage() {
     try {
       setLoading(true);
 
-      // Load the parent category by name
-      const { collection, getDocs, query, where } = await import("firebase/firestore");
+      // Load the parent category by name or label
+      const { collection, getDocs, query, where, orderBy, or } = await import("firebase/firestore");
       const { db } = await import("../firebase/firebaseConfig");
       
       const decodedCategoryName = decodeURIComponent(categoryName);
-      const categoryQuery = query(
-        collection(db, "categories"),
-        where("name", "==", decodedCategoryName)
-      );
-      const categorySnap = await getDocs(categoryQuery);
+      console.log("Looking for category:", decodedCategoryName);
       
-      if (categorySnap.empty) {
-        console.warn("Category not found:", decodedCategoryName);
+      // Try to find category by name or label
+      const categoriesRef = collection(db, "categories");
+      const allCategoriesSnap = await getDocs(categoriesRef);
+      
+      console.log("Total categories found:", allCategoriesSnap.docs.length);
+      allCategoriesSnap.docs.forEach(doc => {
+        const data = doc.data();
+        console.log("Category:", data.name, data.label);
+      });
+      
+      const categoryDoc = allCategoriesSnap.docs.find(doc => {
+        const data = doc.data();
+        return (data.name === decodedCategoryName || data.label === decodedCategoryName);
+      });
+      
+      if (!categoryDoc) {
+        console.error("Category not found:", decodedCategoryName);
+        console.log("Available categories:", allCategoriesSnap.docs.map(d => d.data().name || d.data().label));
         navigate("/");
         return;
       }
       
-      const categoryData = { id: categorySnap.docs[0].id, ...categorySnap.docs[0].data() };
+      const categoryData = { id: categoryDoc.id, ...categoryDoc.data() };
+      console.log("Category found:", categoryData);
       setCategory(categoryData);
 
-      // Load subcategories by categoryId (only published ones for users)
-      const subcatsQuery = query(
-        collection(db, "subtopics"),
+      // Load topics by categoryId
+      const topicsQuery = query(
+        collection(db, "topics"),
         where("categoryId", "==", categoryData.id)
       );
-      const subcatsSnap = await getDocs(subcatsQuery);
-      const subcatsData = subcatsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const topicsSnap = await getDocs(topicsQuery);
+      const topicsData = topicsSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(topic => topic.isPublished !== false)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
       
-      const publishedSubcats = subcatsData.filter(sub => sub.isPublished !== false);
-      const enrichedSubcats = publishedSubcats.map((subcat) => ({
-        ...subcat,
-        quizCount: subcat.quizCount || 0,
-        rating: generateRealisticRating(subcat.quizCount || 0, subcat.id),
+      console.log("Topics found:", topicsData.length);
+      
+      const enrichedTopics = topicsData.map((topic) => ({
+        ...topic,
+        quizCount: topic.quizCount || 0,
+        rating: generateRealisticRating(topic.quizCount || 0, topic.id),
       }));
-      setSubcategories(enrichedSubcats);
+      setSubcategories(enrichedTopics);
     } catch (error) {
-      console.error("Error loading subcategories:", error);
+      console.error("Error loading topics:", error);
       setCategory(null);
     } finally {
       setLoading(false);
@@ -189,7 +206,7 @@ export default function SubcategoryPage() {
           {/* Info banner */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
             <p className="text-sm text-blue-800 font-medium">
-              💡 Choose a topic below to start learning. Each topic has multiple difficulty levels and quizzes!
+              💡 Choose a topic below to explore subtopics and start learning!
             </p>
           </div>
           
@@ -266,6 +283,7 @@ export default function SubcategoryPage() {
   // Helper function to render subcategory card (defined inside the component)
   function renderSubcategoryCard(subcat, index) {
     const hasQuizzes = (subcat.quizCount || 0) > 0;
+    const topicName = subcat.name || subcat.label;
             
     return (
       <Card
@@ -275,7 +293,7 @@ export default function SubcategoryPage() {
             ? "cursor-pointer hover:shadow-xl hover:scale-105" 
             : "opacity-60 cursor-not-allowed"
         }`}
-        onClick={() => hasQuizzes && navigate(`/${featureType}/${encodeURIComponent(category.name)}/${encodeURIComponent(subcat.topic || 'general')}/${encodeURIComponent(subcat.name)}/easy`)}
+        onClick={() => hasQuizzes && navigate(`/quiz/${encodeURIComponent(category.name)}/${encodeURIComponent(topicName)}`)}
       >
         <div className="p-6">
           {/* Icon and Header */}
@@ -347,11 +365,11 @@ export default function SubcategoryPage() {
             onClick={(e) => {
               e.stopPropagation();
               if (hasQuizzes) {
-                navigate(`/${featureType}/${encodeURIComponent(category.name)}/${encodeURIComponent(subcat.topic || 'general')}/${encodeURIComponent(subcat.name)}/easy`);
+                navigate(`/quiz/${encodeURIComponent(category.name)}/${encodeURIComponent(topicName)}`);
               }
             }}
           >
-            {hasQuizzes ? "Start Learning →" : "Coming Soon"}
+            {hasQuizzes ? "Explore Topic →" : "Coming Soon"}
           </Button>
         </div>
       </Card>

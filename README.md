@@ -1,6 +1,6 @@
 # 🧠 AmAha – Learn Through Play & Earn Money
 
-**AmAha** is a **gamified learning platform** built to be a **income-generating product** for creators and learners. It combines the addictiveness of quiz games with the monetization potential of educational content.
+**AmAha** is a **gamified learning platform** built to be an **income-generating product** for creators and learners. It combines the addictiveness of quiz games with the monetization potential of educational content.
 
 ## 🎯 Vision
 
@@ -12,15 +12,32 @@ Transform learning into **earning**. Users can:
 
 ---
 
+## 📚 Documentation
+
+**Core Documentation (5 Files):**
+1. **README.md** (this file) - Project overview
+2. **DOCS_COMPREHENSIVE_GUIDE.md** - Full architecture, database structure, development workflow
+3. **DOCS_QUICK_REFERENCE.md** - Quick commands, common tasks, troubleshooting
+4. **DOCS_CONTENT_STRATEGY.md** - Content planning, expansion strategy, quality guidelines
+5. **DOCS_BUGFIX_LOG.md** - Bug fixes, enhancements, version history
+
+**Start Here:**
+- New to the project? Read this file first, then check **DOCS_COMPREHENSIVE_GUIDE.md**
+- Need quick help? Check **DOCS_QUICK_REFERENCE.md**
+- Creating content? See **DOCS_CONTENT_STRATEGY.md**
+- Fixing bugs? Log them in **DOCS_BUGFIX_LOG.md**
+
+---
+
 ## 🌟 What Makes AmAha Different
 
-✅ **Quiz.com-style UI** - Clean, modern, playful design
-✅ **Multi-learning ecosystem** - Quizzes, Puzzles, Studies, Arts
-✅ **Monetization-first architecture** - Built for ads, subscriptions, and rewards
-✅ **Gamification system** - XP, coins, badges, leaderboards
-✅ **Creator economy** - Users can create and earn from content
-✅ **Strict learning rules** - All answers correct to progress
-✅ **Resume & retry support** - Player-friendly experience
+✅ **Quiz.com-style UI** - Clean, modern, playful design  
+✅ **Multi-learning ecosystem** - Quizzes, Puzzles, Studies, Arts  
+✅ **Monetization-first architecture** - Built for ads, subscriptions, and rewards  
+✅ **Gamification system** - XP, coins, badges, leaderboards  
+✅ **Creator economy** - Users can create and earn from content  
+✅ **Strict learning rules** - All answers correct to progress  
+✅ **Resume & retry support** - Player-friendly experience  
 ✅ **Scalable feature design** - Easy to add new learning types
 
 ---
@@ -75,112 +92,184 @@ src/home/
 ```
 ---
 
-## 🎯 Quiz Flow (Implemented)
+---
 
-### Navigation Flow
-Home
-→ Feature (Quiz)
-→ Category (Kids / Students / Programming)
-→ Difficulty (Easy / Medium / Hard)
-→ Levels (Level 1, Level 2, …)
-→ Questions
+## 🚀 Quick Start
+
+### Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server (localhost:3008)
+npm start
+
+# Build for production
+npm build
+```
+
+### Key URLs
+- **Home:** `http://localhost:3008/`
+- **Admin Dashboard:** `http://localhost:3008/admin`
+- **View Questions:** `http://localhost:3008/admin/view-questions`
+- **Add Question:** `http://localhost:3008/admin/add-question`
+- **Import Questions:** `http://localhost:3008/admin/import-questions`
+
+---
+
+## 📊 Current Content Status
+
+- **Kids:** 400 questions (8 subtopics)
+- **Students:** 300 questions
+- **Programming:** 50 questions
+- **Total:** 750+ questions
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React 19, React Router 7, Tailwind CSS
+- **Backend:** Firebase (Firestore, Auth, Hosting)
+- **Build:** React Scripts 5.0
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── home/           # Landing page
+├── quiz/           # Quiz feature
+├── admin/          # Admin panel
+├── auth/           # Authentication
+├── components/     # Shared components
+└── firebase/       # Firebase config
+```
+
+---
+
+## 🎯 Quiz Flow
+
+```
+Home → Feature (Quiz) → Category → Topic → Subtopic → Difficulty → Questions
+```
+
+**Example URL:**
+```
+/quiz/Kids/Math/Simple%20Math%20(Addition%20%26%20Subtraction)/easy
+```
 
 ---
 
 ## 🧩 Quiz Rules
 
-- Each level contains **fixed number of questions**
-- Questions are:
-  - Randomized per user
-  - Never repeated across levels
-- **Level completion rule**:
-  - ✅ ALL answers must be correct
-  - ❌ Any wrong answer → level fails
-- Failed level must be retried
-- Only after completion → next level unlocks
+- **10 questions per level**
+- **ALL answers must be correct** to pass level
+- **Any wrong answer = level failed**
+- Failed levels must be retried
+- Questions randomized per user
+- No question repetition
 
 ---
 
-## ⏸ Resume & Retry
+## 🔧 Admin Features
 
-- Quiz state auto-saved (level + question index)
-- Resume banner shown once
-- Retry restarts same level cleanly
-- Replay always allowed
-
----
-
-## 🧠 UX & Feedback System
-
-- Submit enabled only after option selection
-- Clear answer feedback:
-  - Green → correct
-  - Red → wrong
-  - Others muted
-- Timer per question
-- Progress bar
-- Spam prevention on Next button
-- Safe guards for reloads & invalid routes
+✅ Add questions (manual/bulk)  
+✅ View all questions (sortable/filterable)  
+✅ Import CSV/Excel files  
+✅ Manage features, categories, topics, subtopics  
+✅ Publish/unpublish content  
+✅ Analytics dashboard
 
 ---
 
-## 🏆 Progress & Levels
+## 📝 Recent Updates (December 2025)
 
-- Level unlock based on completion
-- Progress stored per user
-- Guests limited to Level 1
-- Trophy logic scaffolded
+### ✅ Bug Fixes
+- Fixed subtopic publishing error (collection name mismatch)
 
-### Firestore Structure
-
-users/{uid}/progress/{category_difficulty}
----
-
-## 🧑‍💼 Admin Panel (Implemented)
-
-- Add question (manual)
-- Bulk import (CSV / Excel)
-- View / edit questions
-- Categories
-- Scores & analytics (basic)
-- UI mode settings
+### ✅ Enhancements
+- Added sortable columns to question table (7 columns)
+- Added filters: Feature, Category, Subtopic, Difficulty
+- Added topic navigation to quiz page
+- Consolidated documentation to 5 core files
+- Code cleanup: Removed 9 migration scripts and backup files
 
 ---
 
-## 📊 Firestore Data Models
+## 📚 Need More Information?
 
-### Question
-```js
-{
-  question: string,
-  options: string[],
-  correctAnswer: string,
-  category: string,
-  difficulty: "easy" | "medium" | "hard",
-  createdAt: timestamp
-}
+Check the comprehensive documentation:
+- **Architecture & Setup:** `DOCS_COMPREHENSIVE_GUIDE.md`
+- **Quick Commands:** `DOCS_QUICK_REFERENCE.md`
+- **Content Strategy:** `DOCS_CONTENT_STRATEGY.md`
+- **Bug Fixes:** `DOCS_BUGFIX_LOG.md`
 
-User Progress
-{
-  easyCompletedLevels: number,
-  mediumCompletedLevels: number,
-  hardCompletedLevels: number,
-  trophyEarned: boolean
-}
+---
 
-🎨 Design System
-	•	Global typography (Quiz.com inspired)
-	•	Consistent cards, buttons, spacing
-	•	Responsive layout
-	•	Animation-safe UI (no layout shift)
+## 💰 Monetization Strategy
 
-src/index.css
+### Revenue Streams
+1. **Ad Placements** - Rewarded ads, banners, interstitials
+2. **Premium Membership** - Ad-free, unlock all content
+3. **Creator Revenue** - 70/30 split for user-created quizzes
+4. **In-app Purchases** - Coins, power-ups, cosmetics
+5. **Sponsorships** - Corporate training quizzes
 
-🧩 Architecture Principles
-	•	One responsibility per file
-	•	Small files (~100 lines max)
-	•	Clear separation:
-	•	UI
+---
+
+## 🎓 Learning Philosophy
+
+**Simple > Fancy**  
+**Clear > Clever**  
+**Trust > Tricks**
+
+We build for learners first, monetization second.
+
+---
+
+## 🚀 Roadmap
+
+### Phase 1 (✅ Completed)
+- Feature-based architecture
+- Quiz system
+- Admin panel
+- Content management
+- Topic/subtopic navigation
+
+### Phase 2 (🔄 In Progress)
+- User authentication
+- Progress tracking
+- Leaderboards
+- Monetization integration
+
+### Phase 3 (📋 Planned)
+- Puzzles feature
+- Studies feature
+- Reward system
+- Social features
+- Mobile app
+
+---
+
+## 🤝 Contributing
+
+1. Follow the architecture patterns in `DOCS_COMPREHENSIVE_GUIDE.md`
+2. Test all changes locally before pushing
+3. Update relevant documentation
+4. Log bug fixes in `DOCS_BUGFIX_LOG.md`
+
+---
+
+## 📞 Support
+
+- **Documentation:** See the 5 core doc files listed above
+- **Issues:** Log in `DOCS_BUGFIX_LOG.md`
+- **Questions:** Review `DOCS_QUICK_REFERENCE.md`
+
+---
+
+**Built with ❤️ for learners everywhere.**
 	•	Hooks
 	•	Services
 	•	Pages
