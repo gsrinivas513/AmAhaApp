@@ -1,6 +1,7 @@
 // src/quiz/ui/OptionButton.jsx
-import React from "react";
+import React, { useState } from "react";
 import { useUIConfig } from "../../ui/useUIConfig";
+import { ttsService } from "../../utils/textToSpeech";
 
 export default function OptionButton({
   label,
@@ -9,6 +10,7 @@ export default function OptionButton({
   state, // "default" | "selected" | "correct" | "wrong" | "disabled"
 }) {
   const { microAnimations, loading } = useUIConfig();
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const enabled = microAnimations?.enabled && !loading;
 
@@ -17,6 +19,24 @@ export default function OptionButton({
   const hoverScale = enabled ? microAnimations.optionHoverScale : 1;
   const transitionMs = enabled ? microAnimations.transitionMs : 300;
   const pulseScale = enabled ? microAnimations.optionSelectScale : 1.04;
+
+  // Handle audio playback for option text
+  const handlePlayAudio = (e) => {
+    e.stopPropagation();
+    
+    if (isPlayingAudio) {
+      ttsService.stop();
+      setIsPlayingAudio(false);
+    } else {
+      setIsPlayingAudio(true);
+      ttsService.speak(text, {
+        rate: 0.85,
+        pitch: 1.05,
+        onEnd: () => setIsPlayingAudio(false),
+        onError: () => setIsPlayingAudio(false),
+      });
+    }
+  };
 
   // Design system color mappings
   const stateStyles = {
@@ -121,9 +141,40 @@ export default function OptionButton({
           {text}
         </span>
 
+        {/* Audio play button for option */}
+        <button
+          onClick={handlePlayAudio}
+          style={{
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            padding: "4px 8px",
+            fontSize: "18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "4px",
+            transition: "all 200ms ease",
+            opacity: 0.7,
+            marginLeft: "auto",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "0.7";
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          title="Read option aloud"
+          aria-label="Read option aloud"
+        >
+          {isPlayingAudio ? "🔊" : "🔉"}
+        </button>
+
         {/* State indicator icons */}
-        {state === "correct" && <span style={{ fontSize: 20, marginLeft: "auto" }}>✅</span>}
-        {state === "wrong" && <span style={{ fontSize: 20, marginLeft: "auto" }}>❌</span>}
+        {state === "correct" && <span style={{ fontSize: 20 }}>✅</span>}
+        {state === "wrong" && <span style={{ fontSize: 20 }}>❌</span>}
       </button>
 
       {/* 🎞 Animations */}

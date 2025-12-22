@@ -1,0 +1,51 @@
+feature,category,subtopic,topic,question,optionA,optionB,optionC,optionD,correctAnswer,difficulty
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a dog make?,Meow,Woof,Moo,Quack,Woof,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Moo'?,Cat,Dog,Cow,Duck,Cow,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a cat make?,Woof,Meow,Roar,Chirp,Meow,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a lion make?,Roar,Bark,Meow,Chirp,Roar,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Neigh'?,Cow,Horse,Dog,Cat,Horse,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a sheep make?,Baa,Moo,Oink,Cluck,Baa,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Oink'?,Pig,Duck,Goat,Chicken,Pig,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a duck make?,Quack,Moo,Woof,Meow,Quack,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Cluck'?,Duck,Chicken,Goat,Sheep,Chicken,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a frog make?,Ribbit,Chirp,Hoot,Buzz,Ribbit,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Hiss'?,Dog,Cat,Snake,Frog,Snake,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a mouse make?,Roar,Squeak,Bark,Moo,Squeak,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Chirp'?,Lion,Bird,Cow,Pig,Bird,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a goat make?,Maa,Moo,Woof,Quack,Maa,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Growl'?,Sheep,Bear,Duck,Chicken,Bear,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does an elephant make?,Trumpet,Bark,Meow,Quack,Trumpet,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Hoot'?,Parrot,Owl,Crow,Sparrow,Owl,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a crow make?,Caw,Chirp,Hoot,Tweet,Caw,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Buzz'?,Bird,Bee,Frog,Mouse,Bee,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a wolf make?,Meow,Howl,Chirp,Quack,Howl,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Roar' loudest?,Cat,Tiger,Mouse,Chicken,Tiger,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a turkey make?,Gobble,Cluck,Quack,Chirp,Gobble,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Squawk'?,Parrot,Dog,Cat,Sheep,Parrot,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a monkey make?,Ooh-ooh,Moo,Bark,Quack,Ooh-ooh,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Grunt'?,Horse,Pig,Bird,Fish,Pig,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a donkey make?,Hee-haw,Moo,Bark,Chirp,Hee-haw,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Coo'?,Pigeon,Crow,Owl,Parrot,Pigeon,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a seal make?,Bark,Meow,Chirp,Moo,Bark,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Chatter'?,Squirrel,Dog,Cat,Cow,Squirrel,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a peacock make?,Scream,Chirp,Hoot,Caw,Scream,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes a roaring sound?,Rabbit,Lion,Mouse,Bird,Lion,medium
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a camel make?,Grunt,Moo,Bark,Chirp,Grunt,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Whinny'?,Cow,Dog,Horse,Cat,Horse,medium
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a hyena make?,Laugh,Bark,Moo,Chirp,Laugh,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes a trumpeting sound?,Giraffe,Elephant,Lion,Bear,Elephant,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a dolphin make?,Click,Bark,Moo,Chirp,Click,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes a loud roar in the jungle?,Rabbit,Tiger,Mouse,Chicken,Tiger,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a whale make?,Song,Bark,Meow,Chirp,Song,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes a hissing sound?,Rabbit,Snake,Dog,Cow,Snake,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a cricket make?,Chirp,Bark,Moo,Roar,Chirp,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal says 'Bleat'?,Sheep,Dog,Cat,Duck,Sheep,medium
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a rhino make?,Snort,Chirp,Bark,Meow,Snort,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes a loud trumpeting call?,Lion,Elephant,Mouse,Bird,Elephant,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a flamingo make?,Honk,Chirp,Bark,Moo,Honk,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes squeaking sounds?,Elephant,Mouse,Lion,Cow,Mouse,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a zebra make?,Bray,Bark,Meow,Chirp,Bray,medium
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes purring sounds?,Cat,Dog,Cow,Duck,Cat,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a buffalo make?,Moo,Bark,Chirp,Quack,Moo,easy
+Quiz,Kids,Animals & Their Sounds,Animals,Which animal makes croaking sounds?,Bird,Frog,Dog,Cat,Frog,easy
+Quiz,Kids,Animals & Their Sounds,Animals,What sound does a kangaroo make?,Cluck,Bark,Chirp,Moo,Cluck,medium

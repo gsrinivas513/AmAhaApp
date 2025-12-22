@@ -24,7 +24,7 @@ export default function Footer() {
         <div>
           <h3 style={{ fontWeight: 800 }}>AmAhA.com</h3>
           <p style={{ marginTop: 8 }}>
-            Learn. Play. Grow smarter every day.
+            Play. Learn. Grow smarter every day.
           </p>
         </div>
 

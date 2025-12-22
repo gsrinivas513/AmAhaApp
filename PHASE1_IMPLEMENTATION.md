@@ -44,7 +44,7 @@ Your step-by-step guide to modernizing AmAha to Quiz.com style.
     {/* Left side: Text & CTA */}
     <div className="space-y-6">
       <h1 className="text-4xl md:text-5xl font-bold text-white">
-        Learn. Play. Earn.
+        Play. Learn. Master.
       </h1>
       <p className="text-lg text-white/90">
         Join millions learning through quizzes

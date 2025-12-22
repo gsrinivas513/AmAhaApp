@@ -7,6 +7,8 @@ import {
   getDocs,
   deleteDoc,
   doc as fsDoc,
+  doc,
+  setDoc,
   writeBatch,
   serverTimestamp,
   query,
@@ -111,9 +113,22 @@ function ImportQuestionsPage() {
   function validateRowBasics(row, rowIndex, headerHasCategory) {
     const q = (row.question || row.Question || "").trim();
     const cat = (row.category || row.Category || "").trim();
+    const subcat = (row.subtopic || row.Subtopic || "").trim();
+    const feat = (row.feature || row.Feature || "").trim();
     const optionsRaw = row.options || row.Options || "";
     const correct = (row.correctAnswer || row.correct || row.answer || "").trim();
     const difficulty = (row.difficulty || "").trim();
+
+    // Debug: Log first row to check CSV parsing
+    if (rowIndex === 0) {
+      console.log("First CSV row data:", {
+        feature: feat,
+        category: cat,
+        subtopic: subcat,
+        question: q.substring(0, 30) + "...",
+        allKeys: Object.keys(row)
+      });
+    }
 
     if (!q) return { ok: false, msg: `Row ${rowIndex + 1}: question missing` };
     if (headerHasCategory && !cat) return { ok: false, msg: `Row ${rowIndex + 1}: category missing` };
@@ -131,6 +146,8 @@ function ImportQuestionsPage() {
       data: {
         question: q,
         category: cat ? cat.toLowerCase() : null,
+        subtopic: subcat || null,
+        feature: feat || null,
         options,
         correctAnswer: correct,
         difficulty: difficulty || "easy",
@@ -162,6 +179,8 @@ function ImportQuestionsPage() {
 
   // MAIN import function (enhanced: stores import doc)
   const handleImport = async () => {
+    console.log("🚀 NEW IMPORT CODE LOADED - Version 2.0 with auto-create Feature/Category/Subtopic");
+    
     setMessages([]);
     setSummary(null);
     setStatus("");
@@ -198,12 +217,184 @@ function ImportQuestionsPage() {
       const existingByExternal = new Set(existingDocs.map((e) => (e.externalId || "").toString()));
       const existingByQuestion = new Set(existingDocs.map((e) => (e.question || "").toString().trim()));
 
+      // Load existing Features, Categories, Subtopicies for auto-creation
+      setStatus("Loading existing Features, Categories, Subtopicies...");
+      const [featuresSnap, categoriesSnap, subtopicsSnap] = await Promise.all([
+        getDocs(collection(db, "features")),
+        getDocs(collection(db, "categories")),
+        getDocs(collection(db, "subtopics"))
+      ]);
+
+      const existingFeatures = featuresSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const existingCategories = categoriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const existingSubtopicies = subtopicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Helper function to find or create Feature
+      const getOrCreateFeature = async (featureName) => {
+        if (!featureName) return null;
+        const nameLower = featureName.toLowerCase();
+        
+        // Check if already exists (case-insensitive)
+        let existing = existingFeatures.find(f => 
+          (f.name && f.name.toLowerCase() === nameLower) ||
+          (f.label && f.label.toLowerCase() === nameLower)
+        );
+        
+        if (existing) return existing.id;
+        
+        // Create new feature
+        const newFeature = {
+          name: featureName,
+          label: featureName,
+          type: nameLower,
+          icon: "📝",
+          createdAt: serverTimestamp()
+        };
+        
+        const docRef = await addDoc(collection(db, "features"), newFeature);
+        existingFeatures.push({ id: docRef.id, ...newFeature });
+        console.log(`✅ Created Feature: ${featureName} (ID: ${docRef.id})`);
+        return docRef.id;
+      };
+
+      // Helper function to find or create Category
+      const getOrCreateCategory = async (categoryName, featureId) => {
+        if (!categoryName) return null;
+        const nameLower = categoryName.toLowerCase();
+        
+        // Check if already exists (case-insensitive)
+        let existing = existingCategories.find(c => 
+          ((c.name && c.name.toLowerCase() === nameLower) ||
+           (c.label && c.label.toLowerCase() === nameLower) ||
+           c.id === nameLower)
+        );
+        
+        if (existing) return existing.id;
+        
+        // Create new category with the lowercase name as ID
+        const categoryId = nameLower;
+        const newCategory = {
+          name: categoryName,
+          label: categoryName,
+          featureId: featureId || null,
+          published: true,
+          createdAt: serverTimestamp()
+        };
+        
+        await setDoc(doc(db, "categories", categoryId), newCategory);
+        existingCategories.push({ id: categoryId, ...newCategory });
+        console.log(`✅ Created Category: ${categoryName} (ID: ${categoryId})`);
+        return categoryId;
+      };
+
+      // Helper function to find or create Subtopic
+      const getOrCreateSubtopic = async (subtopicName, categoryId, featureId) => {
+        if (!subtopicName) return null;
+        const nameLower = subtopicName.toLowerCase();
+        
+        // Check if already exists (case-insensitive) for this category
+        let existing = existingSubtopicies.find(s => 
+          s.categoryId === categoryId &&
+          ((s.name && s.name.toLowerCase() === nameLower) ||
+           (s.label && s.label.toLowerCase() === nameLower))
+        );
+        
+        if (existing) return existing.id;
+        
+        // Create new subtopic
+        const newSubtopic = {
+          name: subtopicName,
+          label: subtopicName,
+          categoryId: categoryId,
+          featureId: featureId || null,
+          published: true,
+          createdAt: serverTimestamp()
+        };
+        
+        const docRef = await addDoc(collection(db, "subtopics"), newSubtopic);
+        existingSubtopicies.push({ id: docRef.id, ...newSubtopic });
+        console.log(`✅ Created Subtopic: ${subtopicName} (ID: ${docRef.id}) under Category: ${categoryId}`);
+        return docRef.id;
+      };
+
       const toInsert = [];
       const skipped = [];
       const errorsList = [];
 
-      // validate rows first
+      // STEP 1: Collect all unique Features, Categories, Subtopicies from CSV
+      setStatus("Analyzing CSV data...");
+      const uniqueFeatures = new Set();
+      const uniqueCategories = new Set();
+      const uniqueSubtopicies = new Map(); // key: "categoryName|subtopicName"
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const v = validateRowBasics(row, i, headerHasCategory);
+        if (!v.ok) continue;
+
+        const docInfo = v.data;
+        let finalCategory = docInfo.category;
+        if (headerHasCategory) {
+          finalCategory = (docInfo.category || "").toLowerCase();
+        } else {
+          finalCategory = selectedCategory;
+        }
+
+        if (docInfo.feature) uniqueFeatures.add(docInfo.feature);
+        if (finalCategory) uniqueCategories.add(finalCategory);
+        if (docInfo.subtopic && finalCategory) {
+          uniqueSubtopicies.set(`${finalCategory}|${docInfo.subtopic}`, {
+            category: finalCategory,
+            subtopic: docInfo.subtopic
+          });
+        }
+      }
+
+      // STEP 2: Create all Features, Categories, Subtopicies upfront
+      setStatus(`Creating ${uniqueFeatures.size} Features, ${uniqueCategories.size} Categories, ${uniqueSubtopicies.size} Subtopicies...`);
+      
+      const featureIdMap = new Map(); // featureName -> featureId
+      const categoryIdMap = new Map(); // categoryName -> categoryId
+      const subtopicIdMap = new Map(); // "categoryName|subtopicName" -> subtopicId
+
+      // Create all Features
+      for (const featureName of uniqueFeatures) {
+        try {
+          const featureId = await getOrCreateFeature(featureName);
+          featureIdMap.set(featureName, featureId);
+        } catch (err) {
+          console.error(`Failed to create Feature: ${featureName}`, err);
+        }
+      }
+
+      // Create all Categories
+      for (const categoryName of uniqueCategories) {
+        try {
+          // Get the first feature ID if any features were created
+          const featureId = featureIdMap.values().next().value || null;
+          const categoryId = await getOrCreateCategory(categoryName, featureId);
+          categoryIdMap.set(categoryName, categoryId);
+        } catch (err) {
+          console.error(`Failed to create Category: ${categoryName}`, err);
+        }
+      }
+
+      // Create all Subtopicies
+      for (const [key, data] of uniqueSubtopicies) {
+        try {
+          const categoryId = categoryIdMap.get(data.category);
+          const featureId = featureIdMap.values().next().value || null;
+          const subtopicId = await getOrCreateSubtopic(data.subtopic, categoryId, featureId);
+          subtopicIdMap.set(key, subtopicId);
+        } catch (err) {
+          console.error(`Failed to create Subtopic: ${data.subtopic}`, err);
+        }
+      }
+
+      // STEP 3: Now validate and prepare questions for insertion
+      setStatus("Validating questions...");
       setProgress({ processed: 0, total: rows.length });
+      
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const v = validateRowBasics(row, i, headerHasCategory);
@@ -240,14 +431,38 @@ function ImportQuestionsPage() {
           continue;
         }
 
+        // Get IDs from the maps we created
+        const featureId = docInfo.feature ? featureIdMap.get(docInfo.feature) : null;
+        const categoryId = categoryIdMap.get(finalCategory) || finalCategory;
+        const subtopicKey = `${finalCategory}|${docInfo.subtopic}`;
+        const subtopicId = docInfo.subtopic ? subtopicIdMap.get(subtopicKey) : null;
+
         const finalDoc = {
           question: docInfo.question,
-          category: finalCategory,
+          category: categoryId,
           options: docInfo.options,
           correctAnswer: docInfo.correctAnswer,
           difficulty: docInfo.difficulty,
         };
+        if (docInfo.subtopic) finalDoc.subtopic = docInfo.subtopic;
+        if (docInfo.feature) finalDoc.feature = docInfo.feature;
+        if (featureId) finalDoc.featureId = featureId;
+        if (subtopicId) finalDoc.subtopicId = subtopicId;
         if (docInfo.externalId) finalDoc.externalId = docInfo.externalId;
+
+        // Debug: Log first question to verify data
+        if (i === 0) {
+          console.log("📝 First question finalDoc:", {
+            feature: finalDoc.feature,
+            featureId: finalDoc.featureId,
+            category: finalDoc.category,
+            subtopic: finalDoc.subtopic,
+            subtopicId: finalDoc.subtopicId,
+            question: finalDoc.question.substring(0, 30) + "...",
+            docInfo_feature: docInfo.feature,
+            docInfo_subtopic: docInfo.subtopic
+          });
+        }
 
         toInsert.push({ doc: finalDoc, rowIndex: i + 1 });
         existingByQuestion.add(qtext);

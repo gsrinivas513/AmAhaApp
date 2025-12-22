@@ -76,7 +76,7 @@ export default function HeroSection() {
             <div className="w-full aspect-square bg-gradient-to-br from-purple-500 via-primary-400 to-cyan-400 rounded-3xl flex items-center justify-center relative overflow-hidden shadow-2xl">
               
               {/* Advanced animation styles */}
-              <style>{`
+              <style dangerouslySetInnerHTML={{__html: `
                 @keyframes float {
                   0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
                   50% { transform: translateY(-30px) scale(1.1); opacity: 0.9; }
@@ -121,7 +121,7 @@ export default function HeroSection() {
                 .orbit-icon { animation: orbit 6s linear infinite; }
                 .orbit-reverse { animation: orbit-reverse 7s linear infinite; }
                 .bounce-icon { animation: bounce-gentle 2.5s ease-in-out infinite; }
-              `}</style>
+              `}} />
 
               {/* Particle effects - subtle floating elements */}
               <div className="absolute w-2 h-2 bg-white rounded-full particle" style={{ left: '20%', top: '30%', animationDelay: '0s' }}></div>

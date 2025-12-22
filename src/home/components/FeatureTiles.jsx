@@ -1,10 +1,190 @@
 // src/home/components/FeatureTiles.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/ui";
+import { db } from "../../firebase/firebaseConfig";
+import { collection, getDocs } from "firebase/firestore";
 
-// All quiz categories - Light, decent, pleasant gradient colors
-const allCategories = [
+// Feature carousel component
+function FeatureCarouselSection({ feature, categories }) {
+  const navigate = useNavigate();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = React.useRef(null);
+  
+  const itemsPerView = 4;
+  const itemWidth = 240; // width of card + gap
+  const totalWidth = categories.length * itemWidth;
+  const containerWidth = itemsPerView * itemWidth;
+  const maxScroll = Math.max(0, totalWidth - containerWidth);
+
+  const scroll = (direction) => {
+    if (!containerRef.current) return;
+    
+    let newPosition = scrollPosition + (direction === "next" ? itemWidth : -itemWidth);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+    setScrollPosition(newPosition);
+    
+    containerRef.current.scrollTo({
+      left: newPosition,
+      behavior: "smooth",
+    });
+  };
+
+  const canScrollNext = scrollPosition < maxScroll;
+  const canScrollPrev = scrollPosition > 0;
+
+  const getFeatureIcon = (featureType) => {
+    const icons = {
+      quiz: "🎯",
+      puzzle: "🧩",
+      game: "🎮",
+      challenge: "🏆",
+    };
+    return icons[featureType] || "✨";
+  };
+
+  return (
+    <div className="mb-16">
+      <div className="flex items-center justify-between mb-6 px-4">
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">{feature.icon || getFeatureIcon(feature.featureType)}</span>
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">{feature.label || feature.name}</h3>
+            {feature.description && (
+              <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+            )}
+          </div>
+        </div>
+        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+          See all ({categories.length})
+          <span>→</span>
+        </button>
+      </div>
+
+      {categories.length > 0 ? (
+        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+          <div
+            ref={containerRef}
+            className="flex gap-6 overflow-x-hidden scroll-smooth px-4"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {categories.map((category, index) => {
+              const colorScheme = colorSchemes[index % colorSchemes.length];
+              return (
+                <div key={category.id} className="flex-shrink-0 w-56">
+                  <div
+                    onClick={() => navigate(`/${feature.featureType || 'quiz'}/${encodeURIComponent(category.name || category.label)}`)}
+                    className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${colorScheme.color}`}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
+                      {category.icon || "📚"}
+                    </div>
+                    
+                    <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+                  </div>
+                  
+                  <div className="pt-3">
+                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                      {category.label || category.name}
+                    </h3>
+                    
+                    <p className="text-xs text-gray-600 mb-2 font-medium">
+                      {category.quizCount || 0} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
+                    </p>
+                    
+                    {/* Rating display */}
+                    <div className="flex items-center gap-1">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`text-lg ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {canScrollPrev && (
+            <button
+              onClick={() => scroll("prev")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              aria-label="Scroll left"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {canScrollNext && (
+            <button
+              onClick={() => scroll("next")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              aria-label="Scroll right"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-600">No categories published yet for this feature.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Default color schemes for categories
+const colorSchemes = [
+  { color: "from-rose-400 via-pink-300 to-rose-300", borderColor: "from-pink-300 to-rose-200" },
+  { color: "from-amber-400 via-orange-300 to-yellow-300", borderColor: "from-orange-300 to-yellow-200" },
+  { color: "from-blue-400 via-cyan-300 to-blue-300", borderColor: "from-blue-300 to-cyan-200" },
+  { color: "from-orange-400 via-amber-300 to-yellow-300", borderColor: "from-amber-300 to-yellow-200" },
+  { color: "from-emerald-400 via-green-300 to-teal-300", borderColor: "from-green-300 to-teal-200" },
+  { color: "from-cyan-400 via-teal-300 to-blue-300", borderColor: "from-cyan-300 to-teal-200" },
+  { color: "from-red-400 via-orange-300 to-amber-300", borderColor: "from-red-300 to-orange-200" },
+  { color: "from-purple-400 via-violet-300 to-pink-300", borderColor: "from-purple-300 to-pink-200" },
+];
+
+// Helper function to generate consistent rating based on category ID and quiz count
+const generateRealisticRating = (quizCount = 0, categoryId = '') => {
+  // Base rating between 3.8 and 5.0
+  const minRating = 3.8;
+  const maxRating = 5.0;
+  
+  // Factor 1: More quizzes = slightly higher rating (up to 0.5 points)
+  const quizFactor = Math.min(quizCount / 100, 0.5);
+  
+  // Factor 2: Consistent pseudo-random based on category ID (±0.2)
+  // Use simple hash of category ID to generate consistent value
+  let hash = 0;
+  for (let i = 0; i < categoryId.length; i++) {
+    hash = ((hash << 5) - hash) + categoryId.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const normalizedHash = (Math.abs(hash) % 100) / 100; // 0-1
+  const consistentFactor = (normalizedHash - 0.5) * 0.4; // -0.2 to +0.2
+  
+  // Calculate final rating
+  let rating = minRating + quizFactor + consistentFactor;
+  
+  // Ensure it stays within bounds
+  rating = Math.max(minRating, Math.min(maxRating, rating));
+  
+  // Round to 1 decimal place
+  return Math.round(rating * 10) / 10;
+};
+
+// Default categories (fallback when no data from Firebase)
+const defaultCategories = [
   {
     title: "Art & Literature",
     icon: "🎨",
@@ -80,22 +260,14 @@ const allCategories = [
 ];
 
 // Section configurations - Netflix/Prime style
-const sections = [
+const createSections = (categories) => [
   {
-    title: "🔥 Recently Published",
-    categories: allCategories.slice(0, 8),
+    title: "🔥 All Categories",
+    categories: categories.slice(0, 8),
   },
   {
-    title: "⭐ Popular Quizzes",
-    categories: allCategories.slice().reverse(),
-  },
-  {
-    title: "🏆 Best Rating Right Now",
-    categories: allCategories.sort(() => Math.random() - 0.5),
-  },
-  {
-    title: "🚀 Trending Now",
-    categories: allCategories.slice().sort(() => Math.random() - 0.5),
+    title: "⭐ Latest Added",
+    categories: categories.slice(0, 8), // Already sorted by newest first
   },
 ];
 
@@ -106,7 +278,7 @@ function CarouselSection({ section }) {
   const containerRef = React.useRef(null);
   
   const itemsPerView = 4;
-  const itemWidth = 320; // Increased from 240 - Width of each card
+  const itemWidth = 240; // Reduced from 280 - Width of each card + gap
   const maxScroll = Math.max(0, (section.categories.length - itemsPerView) * itemWidth);
 
   const scroll = (direction) => {
@@ -137,47 +309,51 @@ function CarouselSection({ section }) {
       </div>
 
       {/* Carousel container with background */}
-      <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-20 rounded-2xl py-4">
+      <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
         {/* Carousel */}
         <div
           ref={containerRef}
-          className="flex gap-8 overflow-x-hidden scroll-smooth px-6"
+          className="flex gap-6 overflow-x-hidden scroll-smooth px-4"
           style={{ scrollBehavior: "smooth" }}
         >
           {section.categories.map((category) => (
-            <div key={category.title} className="flex-shrink-0 w-72">
-              <Card
-                hover
+            <div key={category.title} className="flex-shrink-0 w-56">
+              {/* Card Image */}
+              <div
                 onClick={() => navigate(category.path)}
-                className={`h-80 flex flex-col items-start justify-end text-left cursor-pointer bg-gradient-to-br ${category.color} shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 relative overflow-hidden group rounded-3xl p-6`}
+                className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${category.color}`}
               >
-                {/* Premium border glow effect */}
-                <div className={`absolute inset-0 border-2 bg-gradient-to-br ${category.borderColor} opacity-40 group-hover:opacity-60 transition-opacity rounded-3xl`}></div>
-                
-                {/* Animated background overlay */}
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                
-                {/* Shine effect */}
-                <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 group-hover:translate-x-full transition-all duration-1000 transform"></div>
-
-                {/* Top Icon Area */}
-                <div className="absolute top-6 left-6 right-6 flex items-start justify-between z-10">
-                  <div className="text-6xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300">{category.icon}</div>
-                  <span className="inline-block px-3 py-1.5 bg-white bg-opacity-40 backdrop-blur-md rounded-full text-xs font-bold text-white border border-white border-opacity-60 drop-shadow-md hover:bg-opacity-50 transition-all shadow-lg">
-                    {category.difficulty}
-                  </span>
+                {/* Icon centered on card */}
+                <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
+                  {category.icon}
                 </div>
-
-                {/* Bottom Content */}
-                <div className="relative z-10 w-full">
-                  <h4 className="text-lg font-bold text-white mb-2 drop-shadow-lg leading-tight">
-                    {category.title}
-                  </h4>
-                  <p className="text-sm text-white text-opacity-95 drop-shadow-md font-medium">
-                    {category.quizzes} Quizzes
-                  </p>
+                
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+              </div>
+              
+              {/* Text Below Card */}
+              <div className="pt-3">
+                <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                  {category.title}
+                </h3>
+                
+                <p className="text-xs text-gray-600 mb-2 font-medium">
+                  {category.quizzes} {category.featureName || "Quizzes"}
+                </p>
+                
+                {/* Rating display */}
+                <div className="flex items-center gap-1 mb-2">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span key={star} className={`text-sm ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
                 </div>
-              </Card>
+              </div>
             </div>
           ))}
         </div>
@@ -213,6 +389,95 @@ function CarouselSection({ section }) {
 }
 
 export default function FeatureTiles() {
+  const [categories, setCategories] = useState(defaultCategories);
+  const [featuresWithCategories, setFeaturesWithCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategoriesAndFeatures = async () => {
+      try {
+        // Load both categories and features
+        const [categorySnapshot, featureSnapshot] = await Promise.all([
+          getDocs(collection(db, "categories")),
+          getDocs(collection(db, "features"))
+        ]);
+
+        // Create a map of feature IDs to feature labels
+        const featureMap = {};
+        const featuresData = [];
+        featureSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          featureMap[doc.id] = data.label || data.name || "Items";
+          featuresData.push({ id: doc.id, ...data });
+        });
+
+        const categoriesData = categorySnapshot.docs
+          .map((doc) => {
+            const data = doc.data();
+            const colorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+            const featureData = featuresData.find(f => f.id === data.featureId);
+            const featureType = featureData?.type || featureData?.name?.toLowerCase() || "quiz";
+            const featureName = featureMap[data.featureId] || "Quizzes";
+            
+            return {
+              id: doc.id,
+              title: data.label || data.name,
+              icon: data.icon || "📚",
+              quizzes: data.quizCount || 0,
+              featureName: featureName,
+              featureType: featureType,
+              difficulty: "Medium",
+              path: `/${featureType}/${doc.id}`,
+              color: colorScheme.color,
+              borderColor: colorScheme.borderColor,
+              isPublished: data.isPublished || false,
+              createdAt: data.createdAt || new Date().toISOString(),
+              rating: generateRealisticRating(data.quizCount || 0, doc.id),
+            };
+          })
+          .filter((cat) => cat.isPublished === true)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        if (categoriesData.length > 0) {
+          setCategories(categoriesData);
+        }
+
+        // Group categories by feature (only published)
+        const result = featuresData
+          .map((feature) => {
+            const categories = categorySnapshot.docs
+              .map(doc => {
+                const data = doc.data();
+                return {
+                  id: doc.id,
+                  ...data,
+                  rating: generateRealisticRating(data.quizCount || 0, doc.id),
+                };
+              })
+              .filter(cat => cat.featureId === feature.id && cat.isPublished === true);
+            return { feature, categories };
+          })
+          .filter(item => item.categories.length > 0)
+          .sort((a, b) => {
+            const aDate = a.feature.createdAt || "";
+            const bDate = b.feature.createdAt || "";
+            return new Date(bDate) - new Date(aDate);
+          });
+
+        setFeaturesWithCategories(result);
+      } catch (error) {
+        console.error("Error loading categories:", error);
+        setCategories(defaultCategories);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCategoriesAndFeatures();
+  }, []);
+
+  const sections = createSections(categories);
+
   return (
     <section className="py-12 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -222,10 +487,37 @@ export default function FeatureTiles() {
           <p className="text-gray-600 mt-2">Discover quizzes, puzzles, games, studies, and challenges across multiple categories</p>
         </div>
 
+        {/* Loading state */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Loading categories...</p>
+          </div>
+        )}
+
         {/* Carousel sections */}
-        {sections.map((section) => (
+        {!loading && sections.map((section) => (
           <CarouselSection key={section.title} section={section} />
         ))}
+
+        {/* Feature sections after Latest Added (no heading) */}
+        {!loading && featuresWithCategories.length > 0 && (
+          <div className="px-4 mt-16">
+            {featuresWithCategories.map((item) => (
+              <FeatureCarouselSection
+                key={item.feature.id}
+                feature={item.feature}
+                categories={item.categories}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* No categories message */}
+        {!loading && categories.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No categories available yet. Check back soon!</p>
+          </div>
+        )}
       </div>
     </section>
   );

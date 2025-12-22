@@ -17,6 +17,7 @@ export function Button({
   disabled = false,
   children,
   className = '',
+  style = {},
   ...props
 }) {
   const variantStyles = {
@@ -53,6 +54,7 @@ export function Button({
         ${widthStyle}
         ${className}
       `}
+      style={style}
       {...props}
     >
       {isLoading && (

@@ -107,19 +107,13 @@ function Navbar() {
               textTransform: "uppercase",
               lineHeight: 1,
             }}>
-              Learn. Play. Master
+              Play. Learn. Master
             </div>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-gray-700 hover:text-gray-900 font-medium transition">
-            Home
-          </Link>
-          <Link to="/quiz" className="text-gray-700 hover:text-gray-900 font-medium transition">
-            Quiz
-          </Link>
           <Link to="/admin/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition">
             Admin
           </Link>
@@ -181,12 +175,6 @@ function Navbar() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white p-4 space-y-3">
-          <Link to="/" className="block text-gray-700 hover:text-gray-900 font-medium">
-            Home
-          </Link>
-          <Link to="/quiz" className="block text-gray-700 hover:text-gray-900 font-medium">
-            Quiz
-          </Link>
           <Link to="/admin/dashboard" className="block text-gray-700 hover:text-gray-900 font-medium">
             Admin
           </Link>

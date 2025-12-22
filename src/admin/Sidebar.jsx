@@ -3,9 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { colors } from "../theme";
 import {
   DashboardIcon,
-  CategoriesIcon,
   TrophyIcon,
-  PaletteIcon,
   PlusIcon,
   DocumentIcon,
   ChartIcon,
@@ -81,9 +79,11 @@ function Sidebar() {
       {/* ================= GLOBAL ================= */}
       <Section title="Global" open={open.global} onToggle={() => toggle("global")}>
         <Item icon={<DashboardIcon />} label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
-        <Item icon={<CategoriesIcon />} label="Categories" path="/admin/categories" active={isActive("/admin/categories")} />
+        <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
+        <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
         <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
-        <Item icon={<PaletteIcon />} label="UI Mode" path="/admin/ui-mode" active={isActive("/admin/ui-mode")} />
+        <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
+        <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
       </Section>
 
       {/* ================= QUIZ ================= */}
@@ -92,7 +92,6 @@ function Sidebar() {
         open={open.quiz}
         onToggle={() => toggle("quiz")}
       >
-        <Item icon={<PlusIcon />} label="Add Question" path="/admin/add-question" active={isActive("/admin/add-question")} />
         <Item icon={<DocumentIcon />} label="View Questions" path="/admin/view-questions" active={isActive("/admin/view-questions")} />
         <Item icon={<ChartIcon />} label="Quiz Analytics" path="/admin/quiz/analytics" active={isActive("/admin/quiz-analytics")} />
         <Item icon={<FilmIcon />} label="Quiz UI Animations" path="/admin/quiz-ui" active={isActive("/admin/quiz-ui")} />

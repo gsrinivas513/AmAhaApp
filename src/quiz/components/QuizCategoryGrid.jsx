@@ -1,7 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 
-const categories = [
+// Helper function to generate consistent rating (same as in FeatureTiles)
+const generateRealisticRating = (quizCount = 0, categoryId = '') => {
+  const minRating = 3.8;
+  const maxRating = 5.0;
+  const quizFactor = Math.min(quizCount / 100, 0.5);
+  
+  let hash = 0;
+  for (let i = 0; i < categoryId.length; i++) {
+    hash = ((hash << 5) - hash) + categoryId.charCodeAt(i);
+    hash = hash & hash;
+  }
+  const normalizedHash = (Math.abs(hash) % 100) / 100;
+  const consistentFactor = (normalizedHash - 0.5) * 0.4;
+  
+  let rating = minRating + quizFactor + consistentFactor;
+  rating = Math.max(minRating, Math.min(maxRating, rating));
+  return Math.round(rating * 10) / 10;
+};
+
+// Fallback static categories (used if Firebase load fails)
+const fallbackCategories = [
   {
     key: "kids",
     title: "Kids",
@@ -76,6 +98,71 @@ const categories = [
 
 export default function QuizCategoryGrid() {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      // Load Quiz feature
+      const featuresSnap = await getDocs(collection(db, "features"));
+      const quizFeature = featuresSnap.docs.find(doc => {
+        const data = doc.data();
+        return data.type === 'quiz' || data.name?.toLowerCase() === 'quiz';
+      });
+
+      if (!quizFeature) {
+        console.warn("Quiz feature not found, using fallback categories");
+        setCategories(fallbackCategories);
+        setLoading(false);
+        return;
+      }
+
+      // Load categories for Quiz feature
+      const categoriesSnap = await getDocs(collection(db, "categories"));
+      const quizCategories = categoriesSnap.docs
+        .map(doc => {
+          const data = doc.data();
+          if (data.featureId !== quizFeature.id || data.isPublished === false) {
+            return null;
+          }
+
+          // Find matching color scheme from fallback
+          const fallback = fallbackCategories.find(f => f.key === doc.id);
+          
+          return {
+            key: doc.id,
+            title: data.label || data.name || doc.id,
+            desc: data.description || fallback?.desc || "Quiz category",
+            color: fallback?.color || ["#E0F2FE", "#BAE6FD"],
+            icon: data.icon || fallback?.icon || "📚",
+            quizCount: data.quizCount || 0,
+            rating: generateRealisticRating(data.quizCount || 0, doc.id),
+          };
+        })
+        .filter(Boolean);
+
+      setCategories(quizCategories.length > 0 ? quizCategories : fallbackCategories);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      setCategories(fallbackCategories);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="section">
+        <div className="container">
+          <p className="text-gray-600">Loading quiz categories...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="section">
@@ -139,6 +226,16 @@ export default function QuizCategoryGrid() {
                 <div>
                   <h3 style={{ margin: 0, fontSize: 18, color: "#0b1220" }}>{c.title}</h3>
                   <p style={{ margin: 0, marginTop: 6, color: "#334155" }}>{c.desc}</p>
+                  {c.quizCount > 0 && (
+                    <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#64748b" }}>
+                      <span>{c.quizCount} {c.quizCount === 1 ? 'quiz' : 'quizzes'}</span>
+                      {c.rating && (
+                        <span style={{ color: "#fbbf24" }}>
+                          ★ {c.rating.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

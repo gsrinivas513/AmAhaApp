@@ -1,5 +1,6 @@
 import React from "react";
 import OptionButton from "../ui/OptionButton";
+import AudioButton from "../../components/AudioButton";
 
 /**
  * 🔒 UI BASELINE — DO NOT MODIFY STYLES WITHOUT APPROVAL
@@ -29,26 +30,26 @@ export default function QuizQuestionCard({
       className="slide-in"
       style={{
         background: "linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #f5f9ff 100%)",
-        padding: "32px 28px",
-        borderRadius: 24,
-        boxShadow: "0 16px 48px rgba(15,23,42,0.15), inset 0 1px 0 rgba(255,255,255,0.9)",
+        padding: "16px 18px",
+        borderRadius: 20,
+        boxShadow: "0 12px 36px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.9)",
         border: "1px solid rgba(200,210,240,0.8)",
         backdropFilter: "blur(10px)",
       }}
     >
       {/* Question count - progress indicator */}
-      <div style={{ fontSize: 12, color: "#0284c7", marginBottom: 12, fontWeight: 600, letterSpacing: 0.5 }}>
-        QUESTION {index + 1} OF {total}
+      <div style={{ fontSize: 11, color: "#0284c7", marginBottom: 8, fontWeight: 600, letterSpacing: 0.5 }}>
+        Q{index + 1}/{total}
       </div>
 
       {/* Progress bar */}
       <div
         style={{
           width: "100%",
-          height: 6,
+          height: 4,
           background: "#e0e7ff",
           borderRadius: 999,
-          marginBottom: 20,
+          marginBottom: 14,
           overflow: "hidden",
         }}
       >
@@ -62,9 +63,19 @@ export default function QuizQuestionCard({
         />
       </div>
 
-      {/* Question text */}
-      <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 24, color: "#0b1220", lineHeight: 1.4 }}>
-        {question}
+      {/* Question text with audio button inline */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#0b1220", lineHeight: 1.5, flex: 1 }}>
+          {question}
+        </div>
+        <div style={{ flexShrink: 0, marginTop: 2 }}>
+          <AudioButton 
+            text={question}
+            variant="outline"
+            size="sm"
+            ariaLabel="Read question aloud"
+          />
+        </div>
       </div>
 
       {/* Options */}

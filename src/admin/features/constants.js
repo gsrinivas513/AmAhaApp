@@ -1,0 +1,45 @@
+// src/admin/features/constants.js
+
+export const UI_MODES = [
+  { value: "playful", label: "🎨 Playful & Fun", description: "Colorful, animated, energetic" },
+  { value: "calm", label: "🌿 Calm & Premium", description: "Clean, minimalist, sophisticated" },
+  { value: "competitive", label: "⚡ Energetic & Competitive", description: "Bold, dynamic, intense" },
+];
+
+export const INITIAL_FEATURE_FORM = {
+  name: "",
+  label: "",
+  description: "",
+  icon: "✨",
+  enabled: true,
+  featureType: "quiz",
+};
+
+export const INITIAL_CATEGORY_FORM = {
+  name: "",
+  label: "",
+  icon: "📚",
+  color: "#0284c7",
+  description: "",
+  featureId: "",
+  defaultUiMode: "playful",
+};
+
+export const INITIAL_TOPIC_FORM = {
+  name: "",
+  label: "",
+  icon: "📚",
+  description: "",
+  sortOrder: 0,
+  categoryId: "",
+  isPublished: true,
+};
+
+export const INITIAL_SUBTOPIC_FORM = {
+  name: "",
+  label: "",
+  icon: "📖",
+  description: "",
+  categoryId: "",
+  topicId: "",
+};

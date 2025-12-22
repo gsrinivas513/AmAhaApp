@@ -1,0 +1,51 @@
+feature,category,subtopic,topic,question,optionA,optionB,optionC,optionD,correctAnswer,difficulty
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a ball?,Square,Triangle,Circle,Rectangle,Circle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,How many sides does a triangle have?,2,3,4,5,3,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is the sky?,Red,Yellow,Blue,Green,Blue,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a pizza slice?,Circle,Triangle,Square,Rectangle,Triangle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,How many sides does a square have?,3,4,5,6,4,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is grass?,Red,Blue,Green,Yellow,Green,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a book?,Circle,Triangle,Rectangle,Star,Rectangle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color do you get when you mix red and yellow?,Purple,Orange,Green,Brown,Orange,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,How many sides does a rectangle have?,3,4,5,6,4,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is the sun?,Blue,Yellow,Green,Red,Yellow,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a door?,Circle,Triangle,Rectangle,Star,Rectangle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color do you get when you mix blue and yellow?,Orange,Green,Purple,Brown,Green,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,How many points does a star have?,3,4,5,6,5,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are clouds?,White,Black,Blue,Green,White,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a window?,Circle,Triangle,Square,Star,Square,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is a strawberry?,Blue,Red,Yellow,Green,Red,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape has no corners?,Square,Triangle,Circle,Rectangle,Circle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are bananas when ripe?,Green,Yellow,Red,Blue,Yellow,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,How many sides does a hexagon have?,4,5,6,7,6,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,What color do you get when you mix red and blue?,Orange,Green,Purple,Brown,Purple,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is an egg?,Circle,Oval,Square,Triangle,Oval,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are leaves?,Blue,Red,Green,Yellow,Green,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a dice?,Square,Circle,Cube,Triangle,Cube,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is an orange?,Purple,Orange,Green,Blue,Orange,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a stop sign?,Circle,Triangle,Octagon,Square,Octagon,hard
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are carrots?,Blue,Orange,Green,Red,Orange,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a coin?,Square,Circle,Triangle,Rectangle,Circle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is chocolate?,Brown,Blue,Green,Yellow,Brown,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a pyramid?,Circle,Triangle,Square,Rectangle,Triangle,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are apples usually?,Blue,Red or Green,Black,White,Red or Green,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape has four equal sides?,Rectangle,Square,Triangle,Circle,Square,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is the night sky?,Yellow,Black,Green,Red,Black,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a heart?,Circle,Heart,Square,Triangle,Heart,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are grapes?,Blue or Purple,Red,Yellow,White,Blue or Purple,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a slice of bread?,Circle,Square,Triangle,Star,Square,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is snow?,White,Black,Blue,Green,White,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a clock face?,Square,Circle,Triangle,Rectangle,Circle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is fire?,Blue,Red,Green,Purple,Red,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a watermelon?,Square,Circle,Triangle,Rectangle,Circle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is a lemon?,Yellow,Red,Blue,Green,Yellow,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a diamond?,Square,Diamond,Circle,Triangle,Diamond,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are elephants?,Pink,Gray,Blue,Green,Gray,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a television screen?,Circle,Rectangle,Triangle,Star,Rectangle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is water?,Clear,Blue,Green,Red,Clear,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,How many corners does a circle have?,1,2,0,4,0,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What color are tomatoes?,Blue,Red,Yellow,Green,Red,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape is a kite?,Triangle or Diamond,Circle,Square,Star,Triangle or Diamond,medium
+Quiz,Kids,Colors & Shapes,Learning Basics,What color is milk?,White,Brown,Yellow,Blue,White,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,What shape has three sides?,Square,Triangle,Circle,Rectangle,Triangle,easy
+Quiz,Kids,Colors & Shapes,Learning Basics,How many colors are in a rainbow?,5,6,7,8,7,medium

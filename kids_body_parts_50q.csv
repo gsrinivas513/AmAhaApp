@@ -1,0 +1,51 @@
+feature,category,subtopic,topic,question,optionA,optionB,optionC,optionD,correctAnswer,difficulty
+Quiz,Kids,Body Parts,Body,How many eyes do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What do you use to smell?,Eyes,Ears,Nose,Mouth,Nose,easy
+Quiz,Kids,Body Parts,Body,How many fingers do you have on one hand?,4,5,6,10,5,easy
+Quiz,Kids,Body Parts,Body,What do you use to hear?,Eyes,Ears,Nose,Mouth,Ears,easy
+Quiz,Kids,Body Parts,Body,What do you use to taste food?,Eyes,Nose,Ears,Tongue,Tongue,easy
+Quiz,Kids,Body Parts,Body,How many legs do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What do you use to walk?,Hands,Legs,Eyes,Ears,Legs,easy
+Quiz,Kids,Body Parts,Body,What do you use to hold things?,Legs,Hands,Eyes,Nose,Hands,easy
+Quiz,Kids,Body Parts,Body,How many arms do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What do you use to see?,Ears,Eyes,Nose,Mouth,Eyes,easy
+Quiz,Kids,Body Parts,Body,How many toes do you have on one foot?,4,5,6,10,5,easy
+Quiz,Kids,Body Parts,Body,What do you use to eat?,Eyes,Mouth,Ears,Nose,Mouth,easy
+Quiz,Kids,Body Parts,Body,What grows on your head?,Teeth,Hair,Nails,Toes,Hair,easy
+Quiz,Kids,Body Parts,Body,What do you use to think?,Heart,Brain,Stomach,Lungs,Brain,medium
+Quiz,Kids,Body Parts,Body,How many thumbs do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you bend your arm?,Bone,Elbow,Skin,Hair,Elbow,easy
+Quiz,Kids,Body Parts,Body,What pumps blood in your body?,Brain,Heart,Lungs,Stomach,Heart,medium
+Quiz,Kids,Body Parts,Body,What do you use to breathe?,Mouth,Nose,Eyes,Ears,Nose,easy
+Quiz,Kids,Body Parts,Body,How many knees do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What protects your brain?,Hair,Skull,Skin,Teeth,Skull,medium
+Quiz,Kids,Body Parts,Body,What do you use to chew food?,Tongue,Teeth,Lips,Nose,Teeth,easy
+Quiz,Kids,Body Parts,Body,How many elbows do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What connects your head to your body?,Leg,Neck,Arm,Waist,Neck,easy
+Quiz,Kids,Body Parts,Body,What helps you smile?,Teeth,Lips,Tongue,Nose,Lips,easy
+Quiz,Kids,Body Parts,Body,What do you blink with?,Mouth,Eyes,Ears,Nose,Eyes,easy
+Quiz,Kids,Body Parts,Body,How many shoulders do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you stand?,Hands,Feet,Eyes,Ears,Feet,easy
+Quiz,Kids,Body Parts,Body,What covers your body?,Hair,Skin,Bones,Muscles,Skin,easy
+Quiz,Kids,Body Parts,Body,How many ears do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you jump?,Arms,Legs,Eyes,Ears,Legs,easy
+Quiz,Kids,Body Parts,Body,What are at the end of your fingers?,Toes,Nails,Hair,Teeth,Nails,easy
+Quiz,Kids,Body Parts,Body,How many ankles do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you turn your head?,Arms,Neck,Legs,Waist,Neck,easy
+Quiz,Kids,Body Parts,Body,What do you use to clap?,Legs,Hands,Feet,Elbows,Hands,easy
+Quiz,Kids,Body Parts,Body,How many wrists do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you run?,Arms,Legs,Eyes,Ears,Legs,easy
+Quiz,Kids,Body Parts,Body,What do you use to pick things up?,Feet,Hands,Eyes,Ears,Hands,easy
+Quiz,Kids,Body Parts,Body,How many nostrils do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps digest food?,Heart,Stomach,Lungs,Brain,Stomach,medium
+Quiz,Kids,Body Parts,Body,What do you use to point?,Toe,Finger,Elbow,Knee,Finger,easy
+Quiz,Kids,Body Parts,Body,How many lips do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you breathe?,Heart,Lungs,Stomach,Brain,Lungs,medium
+Quiz,Kids,Body Parts,Body,What do you use to kick?,Hands,Feet,Head,Elbows,Feet,easy
+Quiz,Kids,Body Parts,Body,How many eyelids do you have per eye?,1,2,3,4,2,medium
+Quiz,Kids,Body Parts,Body,What gives your face its shape?,Hair,Bones,Skin,Muscles,Bones,medium
+Quiz,Kids,Body Parts,Body,What do you use to nod yes?,Head,Hand,Foot,Arm,Head,easy
+Quiz,Kids,Body Parts,Body,How many palms do you have?,1,2,3,4,2,easy
+Quiz,Kids,Body Parts,Body,What helps you grip things?,Toes,Fingers,Eyes,Ears,Fingers,easy
+Quiz,Kids,Body Parts,Body,What do you use to write?,Hand,Foot,Head,Nose,Hand,easy
+Quiz,Kids,Body Parts,Body,How many heels do you have?,1,2,3,4,2,easy

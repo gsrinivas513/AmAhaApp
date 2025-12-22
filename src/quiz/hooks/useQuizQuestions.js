@@ -5,7 +5,7 @@ import { db } from "../../firebase/firebaseConfig";
 import { getOrCreateQuestionOrder } from "../services/questionOrderService";
 import { useAuth } from "../../components/AuthProvider";
 
-export function useQuizQuestions(category, difficulty) {
+export function useQuizQuestions(categoryOrSubtopic, difficulty) {
   const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,11 +16,18 @@ export function useQuizQuestions(category, difficulty) {
 
     async function loadQuestions() {
       try {
-        console.log("📦 Loading questions", { category, difficulty });
+        console.log("📦 Loading questions", { categoryOrSubtopic, difficulty });
+
+        // Assume it's a subtopic name (from new URL structure)
+        // Try to decode it first in case it's URL encoded
+        let queryField = "subtopic";
+        let queryValue = decodeURIComponent(categoryOrSubtopic);
+        
+        console.log("🎯 Querying by subtopic:", queryValue);
 
         const q = query(
           collection(db, "questions"),
-          where("category", "==", category),
+          where(queryField, "==", queryValue),
           where("difficulty", "==", difficulty)
         );
 
@@ -44,7 +51,7 @@ export function useQuizQuestions(category, difficulty) {
         // 🔐 LOGGED-IN USERS → ORDERED QUESTIONS
         const order = await getOrCreateQuestionOrder({
           user,
-          category,
+          category: categoryOrSubtopic,
           difficulty,
           questionIds: all.map(q => q.id),
         });
@@ -69,7 +76,7 @@ export function useQuizQuestions(category, difficulty) {
     return () => {
       active = false;
     };
-  }, [user, category, difficulty]);
+  }, [user, categoryOrSubtopic, difficulty]);
 
   return { questions, loading };
 }

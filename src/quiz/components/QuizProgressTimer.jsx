@@ -8,7 +8,7 @@ export default function QuizProgressTimer({
   const secondsRemaining = Math.ceil(timeMs / 1000);
 
   return (
-    <div style={{ display: "flex", gap: 28, marginBottom: 32, alignItems: "stretch" }}>
+    <div style={{ display: "flex", gap: 28, marginBottom: 10, alignItems: "stretch" }}>
       {/* Progress bar - Questions answered */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <div style={{ fontSize: 12, color: "#64748b", fontWeight: 600, marginBottom: 8, letterSpacing: 0.5 }}>
@@ -37,14 +37,14 @@ export default function QuizProgressTimer({
       </div>
 
       {/* Timer circle */}
-      <div style={{ width: 160, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginBottom: 10, letterSpacing: 0.5 }}>
-          TIME LEFT
+      <div style={{ width: 110, textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginBottom: 6, letterSpacing: 0.5 }}>
+          TIME
         </div>
         <div
           style={{
-            width: 100,
-            height: 100,
+            width: 72,
+            height: 72,
             margin: "0 auto",
             borderRadius: "50%",
             background: warn
@@ -55,17 +55,17 @@ export default function QuizProgressTimer({
             alignItems: "center",
             justifyContent: "center",
             fontWeight: 900,
-            fontSize: 40,
+            fontSize: 28,
             boxShadow: warn
-              ? "0 12px 32px rgba(220,38,38,0.25)"
-              : "0 12px 32px rgba(2,132,199,0.2)",
-            border: warn ? "3px solid #f87171" : "3px solid #93c5fd",
+              ? "0 8px 20px rgba(220,38,38,0.2)"
+              : "0 8px 20px rgba(2,132,199,0.15)",
+            border: warn ? "2px solid #f87171" : "2px solid #93c5fd",
             position: "relative",
             flexDirection: "column",
           }}
         >
           {secondsRemaining}
-          <span style={{ fontSize: 12, fontWeight: 700, marginTop: -4 }}>Sec</span>
+          <span style={{ fontSize: 9, fontWeight: 700, marginTop: -2 }}>Sec</span>
         </div>
       </div>
     </div>

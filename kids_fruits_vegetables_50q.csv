@@ -1,0 +1,51 @@
+feature,category,subtopic,topic,question,optionA,optionB,optionC,optionD,correctAnswer,difficulty
+Quiz,Kids,Fruits & Vegetables,Food,What color is a banana?,Red,Yellow,Green,Blue,Yellow,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is red and round?,Apple,Banana,Mango,Grapes,Apple,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is orange?,Tomato,Carrot,Broccoli,Potato,Carrot,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is yellow and sour?,Lemon,Apple,Grapes,Mango,Lemon,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit has tiny seeds outside?,Strawberry,Banana,Orange,Apple,Strawberry,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable makes you cry when cut?,Onion,Carrot,Potato,Cabbage,Onion,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is orange in color and round?,Apple,Orange,Banana,Grapes,Orange,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and looks like a tree?,Carrot,Potato,Broccoli,Tomato,Broccoli,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is curved and yellow?,Orange,Banana,Apple,Grapes,Banana,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is red and used in salads?,Carrot,Tomato,Broccoli,Potato,Tomato,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is purple and small?,Banana,Grapes,Apple,Orange,Grapes,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable grows underground?,Broccoli,Tomato,Potato,Lettuce,Potato,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit has a hard shell and coconut water?,Apple,Coconut,Banana,Orange,Coconut,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and long?,Carrot,Cucumber,Potato,Onion,Cucumber,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is king of fruits?,Banana,Mango,Apple,Orange,Mango,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is white inside and has layers?,Tomato,Onion,Carrot,Broccoli,Onion,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit has a fuzzy brown skin?,Apple,Kiwi,Orange,Banana,Kiwi,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and used in pickles?,Carrot,Cucumber,Tomato,Potato,Cucumber,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is red and has seeds inside?,Banana,Watermelon,Orange,Lemon,Watermelon,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is orange and good for eyes?,Potato,Carrot,Tomato,Onion,Carrot,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is green outside and red inside?,Apple,Watermelon,Banana,Orange,Watermelon,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is white and round like a ball?,Carrot,Cabbage,Tomato,Broccoli,Cabbage,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is small and red with a stem?,Cherry,Apple,Orange,Banana,Cherry,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and leafy?,Carrot,Spinach,Potato,Onion,Spinach,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is brown outside and white inside?,Banana,Coconut,Apple,Orange,Coconut,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is purple and shiny?,Carrot,Eggplant,Tomato,Potato,Eggplant,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is juicy and citrus?,Banana,Orange,Apple,Grapes,Orange,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable has green florets?,Carrot,Broccoli,Potato,Onion,Broccoli,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is pink inside with black seeds?,Banana,Watermelon,Apple,Orange,Watermelon,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is long and orange?,Broccoli,Carrot,Tomato,Onion,Carrot,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is dried to make raisins?,Apple,Grapes,Banana,Orange,Grapes,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is white and makes you cry?,Potato,Onion,Carrot,Cucumber,Onion,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is yellow and tropical?,Banana,Apple,Cherry,Grapes,Banana,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is crunchy and orange?,Tomato,Carrot,Broccoli,Onion,Carrot,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit has vitamin C?,Potato,Orange,Carrot,Onion,Orange,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is used to make french fries?,Carrot,Potato,Tomato,Onion,Potato,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is sour and makes lemonade?,Orange,Lemon,Apple,Banana,Lemon,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and makes salad crunchy?,Potato,Lettuce,Carrot,Onion,Lettuce,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit grows on a vine?,Carrot,Grapes,Potato,Onion,Grapes,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is red and sweet?,Broccoli,Tomato,Carrot,Onion,Tomato,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is hairy on the outside?,Apple,Peach,Orange,Banana,Peach,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and looks like a small tree?,Carrot,Broccoli,Potato,Tomato,Broccoli,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is blue and small?,Apple,Blueberry,Orange,Banana,Blueberry,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is long and green like a cucumber?,Potato,Zucchini,Carrot,Onion,Zucchini,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is red and shaped like a heart?,Banana,Strawberry,Orange,Grapes,Strawberry,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is white and crispy?,Tomato,Radish,Carrot,Broccoli,Radish,medium
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is tropical and spiky outside?,Apple,Pineapple,Banana,Orange,Pineapple,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable has many layers?,Carrot,Onion,Tomato,Cucumber,Onion,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which fruit is used to make jam?,Potato,Strawberry,Carrot,Onion,Strawberry,easy
+Quiz,Kids,Fruits & Vegetables,Food,Which vegetable is green and used in soup?,Carrot,Celery,Potato,Tomato,Celery,medium

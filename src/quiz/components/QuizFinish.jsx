@@ -154,17 +154,17 @@ export default function QuizFinish({
 
         {/* Actions */}
         <div style={{ display: "grid", gap: 10, marginTop: 28 }}>
-          <ActionButton
-            primary={true}
-            onClick={onNextLevel}
-            passed={passed}
-          >
-            {passed ? "🚀 Next Level" : "🏆 Go Back"}
-          </ActionButton>
-
-          {!passed && (
+          {passed ? (
+            <ActionButton
+              primary={true}
+              onClick={onNextLevel}
+              passed={passed}
+            >
+              🚀 Next Level
+            </ActionButton>
+          ) : (
             <>
-              <ActionButton onClick={onRetry} passed={passed}>
+              <ActionButton onClick={onRetry} passed={passed} primary={true}>
                 🔁 Retry This Level
               </ActionButton>
               <ActionButton onClick={onBack} passed={passed} secondary={true}>
