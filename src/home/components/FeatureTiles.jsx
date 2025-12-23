@@ -54,59 +54,54 @@ function TopicsCarouselSection({ topics }) {
             className="flex gap-6 overflow-x-hidden scroll-smooth"
             style={{ scrollBehavior: "smooth" }}
           >
-            {topics.map((topic) => {
+            {topics.map((topic, index) => {
+              const colorScheme = colorSchemes[index % colorSchemes.length];
               const hasImage = topic.imageUrl || topic.image;
-              
               return (
-              <div key={topic.id} className="flex-shrink-0 w-56">
-                <div
-                  onClick={() => navigate(topic.path)}
-                  className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
-                >
-                  {hasImage ? (
-                    <ResponsiveImage 
-                      src={topic.imageUrl || topic.image}
-                      cloudinaryId={topic.cloudinaryId}
-                      alt={topic.title}
-                      fallbackIcon={topic.icon}
-                      className="w-full h-full"
-                      crop="fit"
-                    />
-                  ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${topic.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
-                      {topic.icon}
-                    </div>
-                  )}
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                
-                <div className="pt-3">
-                  <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
-                    {topic.title}
-                  </h3>
-                  
-                  <p className="text-xs text-gray-500 mb-1">
-                    {topic.categoryName}
-                  </p>
-                  
-                  <p className="text-xs text-gray-600 mb-2 font-medium">
+                <div key={topic.id} className="flex-shrink-0 w-56">
+                  <div
+                    onClick={() => navigate(topic.path)}
+                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                  >
+                    {hasImage ? (
+                      <ResponsiveImage
+                        src={topic.imageUrl || topic.image}
+                        cloudinaryId={topic.cloudinaryId}
+                        alt={topic.title}
+                        fallbackIcon={topic.icon}
+                        className="w-full h-full"
+                        crop="fit"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                        {topic.icon}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <div className="pt-3">
+                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                      {topic.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-1">
+                      {topic.categoryName}
+                    </p>
+                    <p className="text-xs text-gray-600 mb-2 font-medium">
                     {topic.quizzes || 0} Quizzes
-                  </p>
-                  
-                  {/* Rating display */}
-                  <div className="flex items-center gap-1">
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className={`text-lg ${star <= Math.floor(topic.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
-                          ★
-                        </span>
-                      ))}
+                    </p>
+                    {/* Rating display */}
+                    <div className="flex items-center gap-1">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} className={`text-lg ${star <= Math.floor(topic.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500 ml-1">({(topic.rating || 4.0).toFixed(1)})</span>
                     </div>
-                    <span className="text-xs text-gray-500 ml-1">({(topic.rating || 4.0).toFixed(1)})</span>
                   </div>
                 </div>
-              </div>
               );
             })}
           </div>
@@ -468,46 +463,55 @@ function CarouselSection({ section }) {
           className="flex gap-6 overflow-x-hidden scroll-smooth px-4"
           style={{ scrollBehavior: "smooth" }}
         >
-          {section.categories.map((category) => (
-            <div key={category.title} className="flex-shrink-0 w-56">
-              {/* Card Image */}
-              <div
-                onClick={() => navigate(category.path)}
-                className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${category.color}`}
-              >
-                {/* Icon centered on card */}
-                <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
-                  {category.icon}
+          {section.categories.map((category, index) => {
+            const colorScheme = colorSchemes[index % colorSchemes.length];
+            const hasImage = category.imageUrl || category.image;
+            return (
+              <div key={category.title} className="flex-shrink-0 w-56">
+                {/* Card Image */}
+                <div
+                  onClick={() => navigate(category.path)}
+                  className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative group"
+                >
+                  {hasImage ? (
+                    <ResponsiveImage
+                      src={category.imageUrl || category.image}
+                      cloudinaryId={category.cloudinaryId}
+                      alt={category.title}
+                      fallbackIcon={category.icon}
+                      className="w-full h-full"
+                      crop="fit"
+                    />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                      {category.icon}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-                
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
-              </div>
-              
-              {/* Text Below Card */}
-              <div className="pt-3">
-                <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
-                  {category.title}
-                </h3>
-                
-                <p className="text-xs text-gray-600 mb-2 font-medium">
-                  {category.quizzes} {category.featureName || "Quizzes"}
-                </p>
-                
-                {/* Rating display */}
-                <div className="flex items-center gap-1 mb-2">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star} className={`text-sm ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
-                        ★
-                      </span>
-                    ))}
+                {/* Text Below Card */}
+                <div className="pt-3">
+                  <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                    {category.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 mb-2 font-medium">
+                    {Array.isArray(category.quizzes) ? category.quizzes.length : (category.quizzes || 0)} Quizzes
+                  </p>
+                  {/* Rating display */}
+                  <div className="flex items-center gap-1 mb-2">
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span key={star} className={`text-sm ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
                   </div>
-                  <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Left arrow */}
@@ -550,10 +554,11 @@ export default function FeatureTiles() {
     const loadCategoriesAndFeatures = async () => {
       try {
         // Load categories, features, and topics
-        const [categorySnapshot, featureSnapshot, topicSnapshot] = await Promise.all([
+        const [categorySnapshot, featureSnapshot, topicSnapshot, subtopicSnapshot] = await Promise.all([
           getDocs(collection(db, "categories")),
           getDocs(collection(db, "features")),
-          getDocs(collection(db, "topics"))
+          getDocs(collection(db, "topics")),
+          getDocs(collection(db, "subtopics"))
         ]);
 
         // Create a map of feature IDs to feature labels
@@ -563,6 +568,15 @@ export default function FeatureTiles() {
           const data = doc.data();
           featureMap[doc.id] = data.label || data.name || "Items";
           featuresData.push({ id: doc.id, ...data });
+        });
+
+        // Build a map of categoryId to subtopic count
+        const subtopicsData = subtopicSnapshot.docs.map(doc => doc.data());
+        const subtopicCountMap = {};
+        subtopicsData.forEach(sub => {
+          if (sub.categoryId) {
+            subtopicCountMap[sub.categoryId] = (subtopicCountMap[sub.categoryId] || 0) + 1;
+          }
         });
 
         // Create a map of category IDs to category data
@@ -577,7 +591,6 @@ export default function FeatureTiles() {
             const data = doc.data();
             const category = categoryMap[data.categoryId];
             const colorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
-            
             return {
               id: doc.id,
               title: data.name || data.label,
@@ -593,6 +606,11 @@ export default function FeatureTiles() {
               isPublished: data.isPublished !== false,
               createdAt: data.createdAt || new Date().toISOString(),
               rating: generateRealisticRating(data.quizCount || 0, doc.id),
+              imageUrl: data.imageUrl || "",
+              image: data.image || "",
+              cloudinaryId: data.cloudinaryId || "",
+              subtopics: data.subtopics || [],
+              subtopicCount: data.subtopicCount || 0,
             };
           })
           .filter((topic) => topic.isPublished && topic.categoryName !== "Unknown")
@@ -610,7 +628,7 @@ export default function FeatureTiles() {
             const featureType = featureData?.type || featureData?.name?.toLowerCase() || "quiz";
             const featureName = featureMap[data.featureId] || "Quizzes";
             const categoryName = data.label || data.name;
-            
+            const subtopicCount = subtopicCountMap[doc.id] || 0;
             return {
               id: doc.id,
               title: categoryName,
@@ -625,6 +643,11 @@ export default function FeatureTiles() {
               isPublished: data.isPublished || false,
               createdAt: data.createdAt || new Date().toISOString(),
               rating: generateRealisticRating(data.quizCount || 0, doc.id),
+              imageUrl: data.imageUrl || "",
+              image: data.image || "",
+              cloudinaryId: data.cloudinaryId || "",
+              subtopics: [],
+              subtopicCount,
             };
           })
           .filter((cat) => cat.isPublished === true)
