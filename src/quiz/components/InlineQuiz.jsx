@@ -28,7 +28,6 @@ import RewardToast from "../ui/RewardToast";
 import { useRewardToast } from "../ui/useRewardToast";
 
 export default function InlineQuiz({ 
-  featureType, 
   categoryName, 
   topicName, 
   subtopicName, 

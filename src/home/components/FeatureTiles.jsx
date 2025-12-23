@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/ui";
+import { ResponsiveImage } from "../../components/OptimizedImage";
 import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -38,10 +39,7 @@ function TopicsCarouselSection({ topics }) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="text-4xl">📚</span>
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
-            <p className="text-sm text-gray-600 mt-1">Browse all topics across categories</p>
-          </div>
+          <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
         </div>
         <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
           See all ({topics.length})
@@ -56,17 +54,31 @@ function TopicsCarouselSection({ topics }) {
             className="flex gap-6 overflow-x-hidden scroll-smooth"
             style={{ scrollBehavior: "smooth" }}
           >
-            {topics.map((topic) => (
+            {topics.map((topic) => {
+              const hasImage = topic.imageUrl || topic.image;
+              
+              return (
               <div key={topic.id} className="flex-shrink-0 w-56">
                 <div
                   onClick={() => navigate(topic.path)}
-                  className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${topic.color}`}
+                  className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
-                    {topic.icon}
-                  </div>
+                  {hasImage ? (
+                    <ResponsiveImage 
+                      src={topic.imageUrl || topic.image}
+                      cloudinaryId={topic.cloudinaryId}
+                      alt={topic.title}
+                      fallbackIcon={topic.icon}
+                      className="w-full h-full"
+                      crop="fit"
+                    />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${topic.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                      {topic.icon}
+                    </div>
+                  )}
                   
-                  <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
                 
                 <div className="pt-3">
@@ -95,7 +107,8 @@ function TopicsCarouselSection({ topics }) {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {canScrollPrev && (
@@ -196,17 +209,30 @@ function FeatureCarouselSection({ feature, categories }) {
           >
             {categories.map((category, index) => {
               const colorScheme = colorSchemes[index % colorSchemes.length];
+              const hasImage = category.imageUrl || category.image;
+              
               return (
                 <div key={category.id} className="flex-shrink-0 w-56">
                   <div
                     onClick={() => navigate(`/quiz/${encodeURIComponent(category.name || category.label)}`)}
-                    className={`h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative bg-gradient-to-br ${colorScheme.color}`}
+                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
                   >
-                    <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 hover:opacity-100 transition-opacity duration-300">
-                      {category.icon || "📚"}
-                    </div>
+                    {hasImage ? (
+                      <ResponsiveImage 
+                        src={category.imageUrl || category.image}
+                        cloudinaryId={category.cloudinaryId}
+                        alt={category.label || category.name}
+                        fallbackIcon={category.icon || "📚"}
+                        className="w-full h-full"
+                        crop="fit"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                        {category.icon || "📚"}
+                      </div>
+                    )}
                     
-                    <div className="absolute inset-0 bg-black opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   
                   <div className="pt-3">

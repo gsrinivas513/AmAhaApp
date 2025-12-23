@@ -1,6 +1,7 @@
 // src/admin/features/modals/TopicModal.jsx
 import React from "react";
 import { Modal, Button, Input } from "../../../components/ui";
+import ImageUpload from "../../../components/ImageUpload";
 
 export default function TopicModal({ show, editingId, form, setForm, onSave, onClose }) {
   if (!show) return null;
@@ -29,6 +30,24 @@ export default function TopicModal({ show, editingId, form, setForm, onSave, onC
           onChange={(e) => setForm({ ...form, icon: e.target.value })}
           placeholder="e.g., 🐾 🧮 🔬"
         />
+        
+        <ImageUpload
+          label="Topic Image (Upload or paste URL)"
+          value={form.imageUrl || ''}
+          onChange={(imageData) => {
+            if (typeof imageData === 'string') {
+              setForm({ ...form, imageUrl: imageData });
+            } else if (imageData?.url) {
+              setForm({ 
+                ...form, 
+                imageUrl: imageData.url,
+                cloudinaryId: imageData.cloudinaryId 
+              });
+            }
+          }}
+          folder="topics"
+        />
+        
         <Input
           label="Description"
           value={form.description}

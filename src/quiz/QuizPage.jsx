@@ -28,10 +28,10 @@ import RewardToast from "./ui/RewardToast";
 import { useRewardToast } from "./ui/useRewardToast";
 
 export default function QuizPage() {
-  const { featureType, categoryName, topicName, subtopicName, difficulty, level } = useParams();
+  const { categoryName, topicName, subtopicName, difficulty, level } = useParams();
   const currentLevel = Number(level);
   
-  console.log("🎮 QuizPage params:", { featureType, categoryName, topicName, subtopicName, difficulty, level, currentLevel });
+  console.log("🎮 QuizPage params:", { categoryName, topicName, subtopicName, difficulty, level, currentLevel });
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -154,7 +154,7 @@ export default function QuizPage() {
       if (!user) {
         if (currentLevel > 2) {
           console.log("⛔ Guest trying to access level", currentLevel, "- redirecting");
-          navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
+          navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
         }
         return;
       }
@@ -171,7 +171,7 @@ export default function QuizPage() {
 
       if (currentLevel > highest + 1) {
         console.log("⛔ User trying to access level", currentLevel, "but highest is", highest, "- redirecting");
-        navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
+        navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
       }
     }
 
@@ -179,7 +179,7 @@ export default function QuizPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, currentLevel, categoryId, difficulty, navigate, featureType, categoryName, topicName, subtopicName]);
+  }, [user, currentLevel, categoryId, difficulty, navigate, categoryName, topicName, subtopicName]);
 
   /* --------------------------------------------------
    * Hard guard — no questions
@@ -189,13 +189,13 @@ export default function QuizPage() {
     // categoryId being null means we're still loading the subcategory
     if (!loading && questions.length === 0 && categoryId !== null) {
       console.log("⛔ No questions found - redirecting");
-      navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
+      navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`, { replace: true });
     } else if (!loading && questions.length === 0 && categoryId === null) {
       console.log("⚠️ No questions yet, but categoryId still loading...");
     } else if (!loading && questions.length > 0) {
       console.log("✅ Questions loaded successfully:", questions.length);
     }
-  }, [loading, questions.length, categoryId, featureType, categoryName, topicName, subtopicName, difficulty, navigate]);
+  }, [loading, questions.length, categoryId, categoryName, topicName, subtopicName, difficulty, navigate]);
 
   /* --------------------------------------------------
    * 🎉 Celebration
@@ -303,7 +303,6 @@ export default function QuizPage() {
             category={subtopicName}
             difficulty={difficulty}
             level={currentLevel}
-            featureType={featureType}
             categoryName={categoryName}
             topicName={topicName}
             soundOn={soundOn}
@@ -314,13 +313,13 @@ export default function QuizPage() {
                   navigate('/');
                   break;
                 case 'category':
-                  navigate(`/${featureType}/${categoryName}`);
+                  navigate(`/quiz/${categoryName}`);
                   break;
                 case 'topic':
-                  navigate(`/${featureType}/${categoryName}/${topicName}`);
+                  navigate(`/quiz/${categoryName}/${topicName}`);
                   break;
-                case 'subtopic':
-                  navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}`);
+                case 'levels':
+                  navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`);
                   break;
               }
             }}
@@ -352,11 +351,11 @@ export default function QuizPage() {
               xpEarned={flow.xpEarned}
               coinsEarned={flow.coinsEarned}
               onNextLevel={() =>
-                navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${currentLevel + 1}`)
+                navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${currentLevel + 1}`)
               }
               onRetry={flow.reset}
               onBack={() =>
-                navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}`)
+                navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`)
               }
             />
           )}

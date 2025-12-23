@@ -8,7 +8,14 @@ export default function HeroSection() {
   const [pin, setPin] = useState("");
 
   return (
-    <section className="bg-white">
+    <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* FUTURE: Top Pink Banner - Join Game PIN Entry (for group play feature)
           Hidden for now, will be enabled when multiplayer/group play is implemented.
           To enable: Remove display:none style below.
@@ -35,176 +42,155 @@ export default function HeroSection() {
       </div>
 
       {/* Main Hero Section */}
-      <div className="max-w-6xl mx-auto px-4 py-12 md:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left: Logo & CTAs */}
-          <div>
-            <div className="mb-8">
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-                AMAHA.COM
+          <div className="text-center lg:text-left space-y-8 animate-fade-in-up">
+            <div className="space-y-4">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                </span>
+                <span className="text-sm font-semibold text-gray-700">10,000+ Active Learners</span>
+              </div>
+              
+              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-tight">
+                Play. Learn.
+                <span className="block bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Have Fun!
+                </span>
               </h1>
-              <p className="text-lg text-gray-600">
-                Learn through play. Test your knowledge. Win rewards.
+              <p className="text-xl md:text-2xl text-gray-600 max-w-2xl">
+                Learn with fun through engaging quizzes, puzzles, and challenges. Master new skills while playing and earn amazing rewards!
               </p>
             </div>
 
-            <div className="space-y-4">
-              {/* Start Quiz Button */}
-              <Button
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={() => navigate("/quiz")}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button
+                onClick={() => navigate('/quiz')}
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg font-bold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
               >
-                🎮 Start Quiz
-              </Button>
+                <span className="relative z-10">🎮 Start Playing & Learning</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+              <button
+                onClick={() => navigate('/quiz')}
+                className="px-8 py-4 bg-white text-purple-600 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 transform hover:-translate-y-1 transition-all duration-300"
+              >
+                🧩 Explore Categories
+              </button>
+            </div>
 
-              {/* Sign Up Button */}
-              <Button
-                variant="secondary"
-                size="lg"
-                fullWidth
-              >
-                👤 Sign Up
-              </Button>
+            {/* Trust indicators */}
+            <div className="flex flex-wrap gap-6 justify-center lg:justify-start pt-4">
+              <div className="flex items-center gap-2 text-gray-600">
+                <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span className="font-semibold">4.9/5 Rating</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-semibold">Free to Start</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span className="font-semibold">1M+ Questions</span>
+              </div>
             </div>
           </div>
 
-          {/* Right: Decorative illustration area with advanced animations */}
-          <div className="hidden md:flex items-center justify-center relative">
-            {/* Main gradient card background */}
-            <div className="w-full aspect-square bg-gradient-to-br from-purple-500 via-primary-400 to-cyan-400 rounded-3xl flex items-center justify-center relative overflow-hidden shadow-2xl">
-              
-              {/* Advanced animation styles */}
-              <style dangerouslySetInnerHTML={{__html: `
-                @keyframes float {
-                  0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
-                  50% { transform: translateY(-30px) scale(1.1); opacity: 0.9; }
-                }
-                @keyframes float-reverse {
-                  0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
-                  50% { transform: translateY(30px) scale(0.9); opacity: 0.85; }
-                }
-                @keyframes rotate-slow {
-                  from { transform: rotate(0deg); }
-                  to { transform: rotate(360deg); }
-                }
-                @keyframes pulse-glow {
-                  0%, 100% { box-shadow: 0 0 20px rgba(255,255,255,0.4); }
-                  50% { box-shadow: 0 0 40px rgba(255,255,255,0.8); }
-                }
-                @keyframes float-particle {
-                  0% { transform: translateY(100px) translateX(-50px); opacity: 0; }
-                  10% { opacity: 1; }
-                  90% { opacity: 1; }
-                  100% { transform: translateY(-100px) translateX(50px); opacity: 0; }
-                }
-                @keyframes orbit {
-                  from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
-                  to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
-                }
-                @keyframes orbit-reverse {
-                  from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
-                  to { transform: rotate(-360deg) translateX(100px) rotate(360deg); }
-                }
-                @keyframes bounce-gentle {
-                  0%, 100% { transform: translateY(0px); }
-                  50% { transform: translateY(-15px); }
-                }
-                .float-icon-1 { animation: float 3s ease-in-out infinite; }
-                .float-icon-2 { animation: float-reverse 4s ease-in-out infinite; }
-                .float-icon-3 { animation: float 3.5s ease-in-out infinite; }
-                .rotate-icon { animation: rotate-slow 8s linear infinite; }
-                .rotate-reverse { animation: rotate-slow 10s linear infinite reverse; }
-                .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
-                .particle { animation: float-particle 3s ease-in infinite; }
-                .orbit-icon { animation: orbit 6s linear infinite; }
-                .orbit-reverse { animation: orbit-reverse 7s linear infinite; }
-                .bounce-icon { animation: bounce-gentle 2.5s ease-in-out infinite; }
-              `}} />
+          {/* Right: Visual Element */}
+          <div className="relative animate-fade-in-right">
+            <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
+              {/* Feature showcase cards */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl">
+                    🎯
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Personalized Learning</h3>
+                    <p className="text-sm text-gray-600">AI-powered adaptive quizzes</p>
+                  </div>
+                </div>
 
-              {/* Particle effects - subtle floating elements */}
-              <div className="absolute w-2 h-2 bg-white rounded-full particle" style={{ left: '20%', top: '30%', animationDelay: '0s' }}></div>
-              <div className="absolute w-3 h-3 bg-white rounded-full particle" style={{ left: '70%', top: '20%', animationDelay: '0.5s', opacity: 0.7 }}></div>
-              <div className="absolute w-1.5 h-1.5 bg-white rounded-full particle" style={{ left: '40%', top: '50%', animationDelay: '1s' }}></div>
-              <div className="absolute w-2 h-2 bg-white rounded-full particle" style={{ left: '80%', top: '60%', animationDelay: '1.5s', opacity: 0.6 }}></div>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-2xl">
+                    🏆
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Earn Rewards</h3>
+                    <p className="text-sm text-gray-600">Unlock badges and certificates</p>
+                  </div>
+                </div>
 
-              {/* Outer orbiting icons - main features (clockwise) */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div style={{ position: 'relative', width: '300px', height: '300px' }}>
-                  {/* Quiz icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-icon" style={{ animationDelay: '0s' }}>
-                    <div className="text-5xl drop-shadow-lg filter" title="Quizzes">❓</div>
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-xl flex items-center justify-center text-2xl">
+                    📊
                   </div>
-                  {/* Puzzle icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-icon" style={{ animationDelay: '-1.5s' }}>
-                    <div className="text-5xl drop-shadow-lg filter" title="Puzzles">🧩</div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Track Progress</h3>
+                    <p className="text-sm text-gray-600">Detailed analytics dashboard</p>
                   </div>
-                  {/* Game icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-icon" style={{ animationDelay: '-3s' }}>
-                    <div className="text-5xl drop-shadow-lg filter" title="Games">🎮</div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-pink-50 to-yellow-50 rounded-xl">
+                  <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-yellow-500 rounded-xl flex items-center justify-center text-2xl">
+                    🌍
                   </div>
-                  {/* Learning icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-icon" style={{ animationDelay: '-4.5s' }}>
-                    <div className="text-5xl drop-shadow-lg filter" title="Learning">📚</div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Global Community</h3>
+                    <p className="text-sm text-gray-600">Learn with millions worldwide</p>
                   </div>
                 </div>
               </div>
-
-              {/* Inner orbiting icons - supporting features (counter-clockwise) */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div style={{ position: 'relative', width: '200px', height: '200px' }}>
-                  {/* Rewards icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-reverse" style={{ animationDelay: '0s' }}>
-                    <div className="text-4xl drop-shadow-lg filter" title="Rewards">🏆</div>
-                  </div>
-                  {/* Challenge icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-reverse" style={{ animationDelay: '-1.75s' }}>
-                    <div className="text-4xl drop-shadow-lg filter" title="Challenges">⚡</div>
-                  </div>
-                  {/* Achievement icon */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 orbit-reverse" style={{ animationDelay: '-3.5s' }}>
-                    <div className="text-4xl drop-shadow-lg filter" title="Achievements">🌟</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Center rotating rings */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-80 h-80 border-3 border-white border-opacity-30 rounded-full rotate-icon"></div>
-              </div>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-56 h-56 border-2 border-white border-opacity-25 rounded-full rotate-reverse"></div>
-              </div>
-
-              {/* Center main icon with enhanced glow */}
-              <div className="absolute flex items-center justify-center z-20">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white rounded-full opacity-25 blur-lg pulse-glow" style={{ transform: 'scale(2)' }}></div>
-                  <div className="text-9xl float-icon-1 relative z-10 drop-shadow-2xl">✨</div>
-                </div>
-              </div>
-
-              {/* Floating feature badges in corners with bounce */}
-              <div className="absolute top-4 left-4 text-4xl float-icon-2 filter drop-shadow-xl bounce-icon">🎯</div>
-              <div className="absolute top-6 right-6 text-5xl float-icon-3 filter drop-shadow-xl bounce-icon" style={{ animationDelay: '0.3s' }}>🚀</div>
-              <div className="absolute bottom-6 left-6 text-5xl float-icon-1 filter drop-shadow-xl bounce-icon" style={{ animationDelay: '0.6s' }}>💡</div>
-              <div className="absolute bottom-4 right-4 text-4xl float-icon-2 filter drop-shadow-xl bounce-icon" style={{ animationDelay: '0.9s' }}>🌈</div>
-
-              {/* Premium gloss overlay */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white via-transparent to-transparent opacity-30 pointer-events-none"></div>
-              
-              {/* Enhanced corner gradient accents */}
-              <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-pink-300 via-pink-200 to-transparent rounded-3xl opacity-25 blur-2xl"></div>
-              <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-cyan-300 via-cyan-200 to-transparent rounded-3xl opacity-25 blur-2xl"></div>
-              <div className="absolute top-1/2 right-0 w-32 h-32 bg-gradient-to-l from-purple-300 to-transparent rounded-3xl opacity-15 blur-2xl"></div>
             </div>
+
+            {/* Decorative elements */}
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-20 blur-2xl"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-20 blur-2xl"></div>
           </div>
         </div>
       </div>
 
-      {/* Decorative illustration removed to fix JSX mismatch. */}
+      {/* Stats Section */}
+      <div className="relative bg-white/50 backdrop-blur-sm py-12 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                1M+
+              </div>
+              <div className="text-gray-600 font-semibold">Questions</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                50+
+              </div>
+              <div className="text-gray-600 font-semibold">Categories</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                10K+
+              </div>
+              <div className="text-gray-600 font-semibold">Active Users</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pink-600 to-yellow-600 bg-clip-text text-transparent">
+                4.9★
+              </div>
+              <div className="text-gray-600 font-semibold">User Rating</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

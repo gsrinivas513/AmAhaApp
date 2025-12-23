@@ -27,7 +27,7 @@ const DIFFICULTY_COLOR = {
 };
 
 export default function CategoryLevelsPage() {
-  const { featureType, categoryName, topicName, subtopicName, difficulty: difficultyParam } = useParams();
+  const { categoryName, topicName, subtopicName, difficulty: difficultyParam } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -46,6 +46,7 @@ export default function CategoryLevelsPage() {
   const [celebratingLevel, setCelebratingLevel] = useState(null); // Track which level just completed for celebration
   const [showCelebration, setShowCelebration] = useState(false); // Show celebration overlay
   const [levelCounts, setLevelCounts] = useState({ easy: 0, medium: 0, hard: 0 }); // Level counts per difficulty
+  const [fadeIn, setFadeIn] = useState(true); // Fade animation control
 
   const levelRefs = useRef({});
   const theme = DIFFICULTY_COLOR[difficulty];
@@ -55,7 +56,20 @@ export default function CategoryLevelsPage() {
   ========================= */
   useEffect(() => {
     setSelectedLevel(null);
+    // Smooth fade on difficulty change
+    setFadeIn(false);
+    const timer = setTimeout(() => setFadeIn(true), 100);
+    return () => clearTimeout(timer);
   }, [difficulty]);
+
+  /* =========================
+     SMOOTH FADE TRANSITION ON ROUTE CHANGE (NOT DIFFICULTY)
+  ========================= */
+  useEffect(() => {
+    setFadeIn(false);
+    const timer = setTimeout(() => setFadeIn(true), 50);
+    return () => clearTimeout(timer);
+  }, [categoryName, topicName, subtopicName]);
 
   /* =========================
      LOAD CATEGORY/SUBCATEGORY METADATA
@@ -340,6 +354,13 @@ export default function CategoryLevelsPage() {
   ========================= */
   return (
     <SiteLayout>
+      <div 
+        style={{
+          opacity: fadeIn ? 1 : 0,
+          transition: 'opacity 0.3s ease-in-out',
+          willChange: 'opacity'
+        }}
+      >
       {/* Breadcrumb Navigation */}
       <div className="mb-4">
         <button
@@ -384,6 +405,13 @@ export default function CategoryLevelsPage() {
                 <button
                   key={topic.id}
                   onClick={async () => {
+                    const isActive = topic.name === decodeURIComponent(topicName);
+                    if (isActive) return;
+                    
+                    // Fade out
+                    setFadeIn(false);
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    
                     try {
                       // Load subtopics for this topic
                       const subtopicsQuery = query(
@@ -395,11 +423,13 @@ export default function CategoryLevelsPage() {
                       if (subtopicsSnap.size > 0) {
                         // Navigate to first subtopic of this topic
                         const firstSubtopic = subtopicsSnap.docs[0].data();
-                        navigate(`/${featureType}/${categoryName}/${topic.name}/${firstSubtopic.name}/${difficulty}`);
+                        navigate(`/quiz/${categoryName}/${topic.name}/${firstSubtopic.name}/${difficulty}`);
                       } else {
+                        setFadeIn(true);
                         alert("No subtopics found for this topic");
                       }
                     } catch (error) {
+                      setFadeIn(true);
                       console.error("Error loading subtopics:", error);
                     }
                   }}
@@ -475,12 +505,22 @@ export default function CategoryLevelsPage() {
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             {(showAllSubtopics ? subtopics : subtopics.slice(0, 4)).map((subtopic) => {
               const isActive = subtopic.name === decodeURIComponent(subtopicName);
+              const hasImage = subtopic.imageUrl && subtopic.imageUrl.trim() !== "";
+              
               return (
                 <button
                   key={subtopic.id}
-                  onClick={() => navigate(`/${featureType}/${categoryName}/${topicName}/${subtopic.name}/${difficulty}`)}
+                  onClick={async () => {
+                    const isActive = subtopic.name === decodeURIComponent(subtopicName);
+                    if (isActive) return;
+                    
+                    // Fade out before navigation
+                    setFadeIn(false);
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    navigate(`/quiz/${categoryName}/${topicName}/${subtopic.name}/${difficulty}`);
+                  }}
                   style={{
-                    padding: "10px 20px",
+                    padding: hasImage ? "8px 16px" : "10px 20px",
                     borderRadius: 999,
                     border: isActive ? "2px solid #3b82f6" : "2px solid transparent",
                     fontWeight: 700,
@@ -493,6 +533,9 @@ export default function CategoryLevelsPage() {
                     letterSpacing: "0.3px",
                     whiteSpace: "nowrap",
                     flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
@@ -505,8 +548,28 @@ export default function CategoryLevelsPage() {
                     }
                   }}
                 >
-                  {subtopic.icon && <span style={{ marginRight: 6 }}>{subtopic.icon}</span>}
-                  {subtopic.label || subtopic.name}
+                  {hasImage ? (
+                    <img
+                      src={subtopic.imageUrl}
+                      alt={subtopic.name}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "inline";
+                      }}
+                    />
+                  ) : null}
+                  {subtopic.icon && (
+                    <span style={{ display: hasImage ? "none" : "inline" }}>
+                      {subtopic.icon}
+                    </span>
+                  )}
+                  <span>{subtopic.label || subtopic.name}</span>
                 </button>
               );
             })}
@@ -549,7 +612,10 @@ export default function CategoryLevelsPage() {
           {DIFFICULTIES.map((d) => (
             <button
               key={d}
-              onClick={() => setDifficulty(d)}
+              onClick={async () => {
+                if (d === difficulty) return;
+                setDifficulty(d);
+              }}
               style={{
                 padding: "12px 24px",
                 borderRadius: 999,
@@ -588,7 +654,7 @@ export default function CategoryLevelsPage() {
         <LevelResumeBanner
           level={resume.level}
           onResume={() =>
-            navigate(`/${featureType}/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${resume.level}`)
+            navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${resume.level}`)
           }
           onDiscard={async () => {
             await clearResumeState(user);
@@ -601,7 +667,6 @@ export default function CategoryLevelsPage() {
       {selectedLevel ? (
         <div style={{ marginBottom: 40 }}>
           <InlineQuiz
-            featureType={featureType}
             categoryName={categoryName}
             topicName={topicName}
             subtopicName={subtopicName}
@@ -665,7 +730,6 @@ export default function CategoryLevelsPage() {
       ) : (
         /* LEVEL PATH — CANDY CRUSH STYLE */
         <div
-          key={difficulty}
           style={{
             position: "relative",
             width: "100%",
@@ -675,6 +739,8 @@ export default function CategoryLevelsPage() {
             background: "linear-gradient(180deg, #a8e6cf 0%, #dcedc8 50%, #fff9c4 100%)",
             minHeight: `${Math.max(levels.length * 150 + 200, 700)}px`,
             borderRadius: 0,
+            opacity: fadeIn ? 1 : 0.5,
+            transition: 'opacity 0.3s ease-in-out'
           }}
         >
           {/* SVG Path for winding road */}
@@ -1076,6 +1142,7 @@ export default function CategoryLevelsPage() {
           }
         }
       `}</style>
+      </div>
     </SiteLayout>
   );
 }

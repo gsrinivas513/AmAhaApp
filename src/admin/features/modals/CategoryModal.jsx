@@ -1,6 +1,7 @@
 // src/admin/features/modals/CategoryModal.jsx
 import React from "react";
 import { Modal, Button, Input } from "../../../components/ui";
+import ImageUpload from "../../../components/ImageUpload";
 import { UI_MODES } from "../constants";
 
 export default function CategoryModal({ show, editingId, form, setForm, onSave, onClose }) {
@@ -30,9 +31,28 @@ export default function CategoryModal({ show, editingId, form, setForm, onSave, 
           onChange={(e) => setForm({ ...form, icon: e.target.value })}
           placeholder="e.g., 💻"
         />
+        
+        <ImageUpload
+          label="Category Image (Upload or paste URL)"
+          value={form.imageUrl || ''}
+          onChange={(imageData) => {
+            // Handle both string (URL) and object { url, cloudinaryId }
+            if (typeof imageData === 'string') {
+              setForm({ ...form, imageUrl: imageData });
+            } else if (imageData?.url) {
+              setForm({ 
+                ...form, 
+                imageUrl: imageData.url,
+                cloudinaryId: imageData.cloudinaryId 
+              });
+            }
+          }}
+          folder="categories"
+        />
+        
         <div>
           <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 14 }}>
-            Color
+            Color (fallback if no image)
           </label>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input

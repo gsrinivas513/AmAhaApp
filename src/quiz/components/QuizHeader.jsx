@@ -3,7 +3,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
-export default function QuizHeader({ category, difficulty, level, featureType, categoryName, topicName, onNavigate }) {
+export default function QuizHeader({ category, difficulty, level, categoryName, topicName, onNavigate }) {
   const navigate = useNavigate();
   const [subtopics, setSubtopics] = useState([]);
   const [showAllSubtopics, setShowAllSubtopics] = useState(false);
@@ -107,7 +107,7 @@ export default function QuizHeader({ category, difficulty, level, featureType, c
               return (
                 <button
                   key={subtopic.id}
-                  onClick={() => navigate(`/${featureType}/${categoryName}/${topicName}/${subtopic.name}/${difficulty}`)}
+                  onClick={() => navigate(`/quiz/${categoryName}/${topicName}/${subtopic.name}/${difficulty}`)}
                   style={{
                     padding: "10px 20px",
                     borderRadius: 999,
@@ -192,7 +192,7 @@ export default function QuizHeader({ category, difficulty, level, featureType, c
             return (
               <button
                 key={diff}
-                onClick={() => navigate(`/${featureType}/${categoryName}/${topicName}/${category}/${diff}/${level}`)}
+                onClick={() => navigate(`/quiz/${categoryName}/${topicName}/${category}/${diff}/${level}`)}
                 style={{
                   padding: "12px 24px",
                   borderRadius: 999,

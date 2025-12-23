@@ -1,6 +1,7 @@
 // src/admin/features/modals/SubtopicModal.jsx
 import React from "react";
 import { Modal, Button, Input } from "../../../components/ui";
+import ImageUpload from "../../../components/ImageUpload";
 
 export default function SubtopicModal({ show, editingId, form, setForm, topics, onSave, onClose }) {
   if (!show) return null;
@@ -29,6 +30,24 @@ export default function SubtopicModal({ show, editingId, form, setForm, topics, 
           onChange={(e) => setForm({ ...form, icon: e.target.value })}
           placeholder="e.g., 🔢"
         />
+        
+        <ImageUpload
+          label="Subtopic Image (Upload or paste URL)"
+          value={form.imageUrl || ''}
+          onChange={(imageData) => {
+            if (typeof imageData === 'string') {
+              setForm({ ...form, imageUrl: imageData });
+            } else if (imageData?.url) {
+              setForm({ 
+                ...form, 
+                imageUrl: imageData.url,
+                cloudinaryId: imageData.cloudinaryId 
+              });
+            }
+          }}
+          folder="subtopics"
+        />
+        
         <div>
           <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>
             Topic (Optional)
