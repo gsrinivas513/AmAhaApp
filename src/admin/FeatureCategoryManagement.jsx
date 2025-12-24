@@ -62,6 +62,7 @@ export default function FeatureCategoryManagement() {
   // Additional state for visualization - all topics and subtopics
   const [allTopics, setAllTopics] = useState([]);
   const [allSubtopics, setAllSubtopics] = useState([]);
+  const [allPuzzles, setAllPuzzles] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -133,6 +134,12 @@ export default function FeatureCategoryManagement() {
         topicId: s.topicId,
         categoryId: s.categoryId 
       })));
+
+      // Load all puzzles (for puzzle categories)
+      const puzzlesSnap = await getDocs(collection(db, "puzzles"));
+      const allPuzzlesData = puzzlesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setAllPuzzles(allPuzzlesData);
+      console.log("🔄 Refreshed puzzles:", allPuzzlesData.length);
       
       setRefreshKey(prev => prev + 1);
     } catch (err) {
@@ -654,6 +661,7 @@ export default function FeatureCategoryManagement() {
             categories={categoryData.categories}
             topics={allTopics}
             subtopics={allSubtopics}
+            puzzles={allPuzzles}
           />
         </div>
       </div>

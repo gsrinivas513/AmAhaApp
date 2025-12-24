@@ -1,7 +1,7 @@
 // src/admin/features/FlowVisualization.jsx
 import React from "react";
 
-export default function FlowVisualization({ features, categories, topics, subtopics }) {
+export default function FlowVisualization({ features, categories, topics, subtopics, puzzles = [] }) {
   if (features.length === 0) {
     return (
       <div style={{
@@ -60,6 +60,7 @@ export default function FlowVisualization({ features, categories, topics, subtop
                 categories={featureCategories}
                 topics={topics}
                 subtopics={subtopics}
+                puzzles={puzzles}
               />
             );
           })}
@@ -69,7 +70,7 @@ export default function FlowVisualization({ features, categories, topics, subtop
   );
 }
 
-function FeatureRow({ feature, categories, topics, subtopics }) {
+function FeatureRow({ feature, categories, topics, subtopics, puzzles = [] }) {
   const [expanded, setExpanded] = React.useState(false);
 
   return (
@@ -156,6 +157,7 @@ function FeatureRow({ feature, categories, topics, subtopics }) {
                   category={category}
                   topics={topics.filter(t => t.categoryId === category.id)}
                   subtopics={subtopics.filter(s => s.categoryId === category.id)}
+                  puzzles={puzzles.filter(p => p.category === category.id)}
                 />
               ))}
             </div>
@@ -166,8 +168,9 @@ function FeatureRow({ feature, categories, topics, subtopics }) {
   );
 }
 
-function CategoryRow({ category, topics, subtopics }) {
+function CategoryRow({ category, topics, subtopics, puzzles = [] }) {
   const [expanded, setExpanded] = React.useState(false);
+  const isPuzzleCategory = category.uiMode === "puzzle" || category.featureType === "puzzle";
 
   return (
     <div style={{
@@ -208,7 +211,7 @@ function CategoryRow({ category, topics, subtopics }) {
             {category.label}
           </div>
           <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
-            {topics.length} topics • {subtopics.length} subtopics
+            {topics.length} topics • {isPuzzleCategory ? `${puzzles.length} puzzles` : `${subtopics.length} subtopics`}
           </div>
         </div>
         <div style={{
@@ -248,11 +251,14 @@ function CategoryRow({ category, topics, subtopics }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 10 }}>
               {topics.map((topic) => {
                 const topicSubs = subtopics.filter(s => s.topicId === topic.id);
+                const topicPuzzles = puzzles.filter(p => p.topic === topic.id);
                 return (
                   <TopicCard
                     key={topic.id}
                     topic={topic}
                     subtopics={topicSubs}
+                    puzzles={topicPuzzles}
+                    isPuzzleCategory={isPuzzleCategory}
                   />
                 );
               })}
@@ -307,8 +313,9 @@ function CategoryRow({ category, topics, subtopics }) {
   );
 }
 
-function TopicCard({ topic, subtopics }) {
+function TopicCard({ topic, subtopics, puzzles = [], isPuzzleCategory = false }) {
   const [showSubs, setShowSubs] = React.useState(false);
+  const hasContent = isPuzzleCategory ? puzzles.length > 0 : subtopics.length > 0;
 
   return (
     <div style={{
@@ -317,9 +324,9 @@ function TopicCard({ topic, subtopics }) {
       border: "2px solid #e2e8f0",
       overflow: "hidden",
       transition: "all 0.2s ease",
-      cursor: subtopics.length > 0 ? "pointer" : "default"
+      cursor: hasContent ? "pointer" : "default"
     }}
-    onClick={() => subtopics.length > 0 && setShowSubs(!showSubs)}
+    onClick={() => hasContent && setShowSubs(!showSubs)}
     >
       <div style={{ padding: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -336,41 +343,64 @@ function TopicCard({ topic, subtopics }) {
           )}
         </div>
         <div style={{ fontSize: 11, color: "#64748b" }}>
-          Order: {topic.sortOrder || 0} • {subtopics.length} {subtopics.length === 1 ? 'subtopic' : 'subtopics'}
+          Order: {topic.sortOrder || 0} • {isPuzzleCategory ? `${puzzles.length} puzzles` : `${subtopics.length} subtopics`}
         </div>
         <div style={{ fontSize: 10, color: "#10b981", fontWeight: 600, marginTop: 2 }}>
-          {topic.quizCount || 0} questions
+          {isPuzzleCategory ? `${puzzles.length} puzzles` : `${topic.quizCount || 0} questions`}
         </div>
       </div>
 
-      {/* Subtopics */}
-      {showSubs && subtopics.length > 0 && (
+      {/* Subtopics or Puzzles */}
+      {showSubs && hasContent && (
         <div style={{
           padding: 10,
           paddingTop: 0,
           borderTop: "1px solid #e2e8f0"
         }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {subtopics.map(sub => (
-              <div
-                key={sub.id}
-                style={{
-                  padding: "6px 10px",
-                  background: "#f8fafc",
-                  borderRadius: 6,
-                  fontSize: 11,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6
-                }}
-              >
-                <span style={{ fontSize: 14 }}>{sub.icon}</span>
-                <span style={{ flex: 1, color: "#0b1220" }}>{sub.label}</span>
-                <span style={{ fontSize: 10, color: "#10b981", fontWeight: 600 }}>
-                  {sub.quizCount || 0} questions
-                </span>
-              </div>
-            ))}
+            {isPuzzleCategory ? (
+              puzzles.map(puzzle => (
+                <div
+                  key={puzzle.id}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#f8fafc",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>🧩</span>
+                  <span style={{ flex: 1, color: "#0b1220" }}>{puzzle.title || puzzle.id}</span>
+                  <span style={{ fontSize: 10, color: "#8b5cf6", fontWeight: 600 }}>
+                    {puzzle.difficulty || "easy"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              subtopics.map(sub => (
+                <div
+                  key={sub.id}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#f8fafc",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>{sub.icon}</span>
+                  <span style={{ flex: 1, color: "#0b1220" }}>{sub.label}</span>
+                  <span style={{ fontSize: 10, color: "#10b981", fontWeight: 600 }}>
+                    {sub.quizCount || 0} questions
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
