@@ -1,6 +1,8 @@
 // src/admin/features/SubTopicsList.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Button } from "../../components/ui";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 
 function SubTopicsList({
   subtopics,
@@ -13,11 +15,27 @@ function SubTopicsList({
   onAddSubtopic,
   onAddQuestion
 }) {
+  const [puzzlePreview, setPuzzlePreview] = useState({});
+
   const getTopicName = (topicId) => {
     if (!topicId) return "No Topic";
     const topic = topics.find((t) => t.id === topicId);
     return topic ? topic.label : "Unknown Topic";
   };
+
+  useEffect(() => {
+    async function fetchPuzzles() {
+      if (!subtopics) return;
+      const previews = {};
+      for (const sub of subtopics) {
+        if (!sub.id) continue;
+        const qSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", sub.id)));
+        previews[sub.id] = qSnap.docs.map(d => d.data());
+      }
+      setPuzzlePreview(previews);
+    }
+    fetchPuzzles();
+  }, [subtopics]);
 
   if (!selectedCategoryId) {
     return (
@@ -93,8 +111,18 @@ function SubTopicsList({
                     {sub.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#10b981", fontWeight: 600 }}>
-                    {sub.quizCount || 0} questions
+                    {sub.puzzleCount || 0} puzzles
                   </div>
+                  {puzzlePreview[sub.id] && puzzlePreview[sub.id].length > 0 && (
+                    <div style={{ marginTop: 6, fontSize: 11, color: '#444' }}>
+                      <b>Puzzles:</b>
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        {puzzlePreview[sub.id].map((pz, idx) => (
+                          <li key={idx}>{pz.title || pz.question || 'Untitled'} <span style={{color:'#888'}}>({pz.type})</span></li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 

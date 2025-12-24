@@ -1,0 +1,730 @@
+/* src/admin/styles/puzzle-admin.css */
+/* Styling for visual puzzle admin interface */
+
+.puzzle-admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.puzzle-admin-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #2c3e50;
+}
+
+.puzzle-admin-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.puzzle-admin-header p {
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+}
+
+.puzzle-admin-form {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Alerts */
+.alert {
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.alert-error {
+  background-color: #ffe6e6;
+  color: #c33;
+  border-left: 4px solid #c33;
+}
+
+.alert-success {
+  background-color: #e6ffe6;
+  color: #3c3;
+  border-left: 4px solid #3c3;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h2 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.form-input,
+.form-input-small {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-input-small:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input-small {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Puzzle Type Selection */
+.puzzle-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.puzzle-type-option {
+  cursor: pointer;
+}
+
+.puzzle-type-option input {
+  display: none;
+}
+
+.puzzle-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  border: 3px solid #ddd;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.puzzle-type-option input:checked + .puzzle-type-card {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.type-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.type-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.type-desc {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Editor Panel */
+.editor-container {
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 1.5rem;
+  border: 2px dashed #ddd;
+}
+
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.editor-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.editor-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.editor-info p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.editor-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Image Upload */
+.image-preview {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+}
+
+.image-preview img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview-small {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+}
+
+.image-preview-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-remove,
+.btn-remove-small {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-small {
+  width: 24px;
+  height: 24px;
+  font-size: 1rem;
+}
+
+.btn-remove:hover,
+.btn-remove-small:hover {
+  background: rgba(255, 0, 0, 1);
+  transform: scale(1.1);
+}
+
+/* Lists */
+.pairs-list,
+.cards-list,
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pair-item,
+.card-item,
+.item-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.item-row {
+  grid-template-columns: auto 120px 1fr auto;
+}
+
+.pair-number,
+.card-number,
+.item-order-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.pair-image,
+.pair-word,
+.pair-shadow,
+.item-image,
+.item-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pair-image label,
+.pair-word label,
+.pair-shadow label,
+.item-image label,
+.item-label label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.item-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* Preview */
+.editor-preview {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 2px solid #eee;
+}
+
+.editor-preview h4,
+.differences-list h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.preview-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.preview-grid.grid-2x2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.preview-grid.grid-2x3 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.preview-grid.grid-3x3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.preview-grid.cards-grid.grid-2x4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.preview-grid.cards-grid.grid-3x4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.preview-grid.cards-grid.grid-4x4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.preview-card,
+.preview-card-memory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+  border-radius: 10px;
+  border: 2px solid #667eea;
+  min-height: 120px;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-card img,
+.preview-card-memory img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.preview-card span {
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.preview-pairs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.pair-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.pair-preview > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.pair-preview img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+}
+
+/* Spot Difference */
+.spot-difference-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.spot-image-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spot-image-wrapper h5 {
+  margin: 0;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.clickable-canvas {
+  border-radius: 10px;
+}
+
+/* Differences List */
+.differences-list {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+
+.difference-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.difference-item:last-child {
+  margin-bottom: 0;
+}
+
+.diff-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.diff-coords {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.diff-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.diff-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+/* Sequence Preview */
+.preview-sequence {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.sequence-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+  border-radius: 10px;
+  flex: 1;
+  min-width: 120px;
+  border: 2px solid #667eea;
+}
+
+.seq-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.sequence-item img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.seq-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-style: italic;
+}
+
+.editor-note {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.editor-note p {
+  margin: 0;
+  color: #856404;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #2c3e50;
+  border: 2px solid #ddd;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+  border-color: #667eea;
+}
+
+.btn-danger {
+  background: #ff6b6b;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #ff5252;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Checkbox */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .puzzle-admin-container {
+    padding: 1rem;
+  }
+
+  .puzzle-admin-header h1 {
+    font-size: 2rem;
+  }
+
+  .puzzle-admin-form {
+    padding: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .puzzle-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pair-item,
+  .card-item {
+    grid-template-columns: 1fr;
+  }
+
+  .spot-difference-container {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-pairs {
+    grid-template-columns: 1fr;
+  }
+
+  .pair-preview {
+    grid-template-columns: 1fr;
+  }
+}

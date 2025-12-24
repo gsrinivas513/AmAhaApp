@@ -5,6 +5,8 @@ import { Card } from "../../components/ui";
 import { ResponsiveImage } from "../../components/OptimizedImage";
 import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
+import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
+import PuzzleCard from "../../puzzles/PuzzleCard";
 
 // Topics carousel component
 function TopicsCarouselSection({ topics }) {
@@ -209,7 +211,13 @@ function FeatureCarouselSection({ feature, categories }) {
               return (
                 <div key={category.id} className="flex-shrink-0 w-56">
                   <div
-                    onClick={() => navigate(`/quiz/${encodeURIComponent(category.name || category.label)}`)}
+                    onClick={() => {
+                      if (feature.featureType === "puzzle") {
+                        navigate(`/puzzle/${encodeURIComponent(category.name || category.label)}`);
+                      } else {
+                        navigate(`/quiz/${encodeURIComponent(category.name || category.label)}`);
+                      }
+                    }}
                     className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
                   >
                     {hasImage ? (
@@ -549,6 +557,7 @@ export default function FeatureTiles() {
   const [topics, setTopics] = useState([]);
   const [featuresWithCategories, setFeaturesWithCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [puzzles, setPuzzles] = useState([]);
 
   useEffect(() => {
     const loadCategoriesAndFeatures = async () => {
@@ -691,6 +700,10 @@ export default function FeatureTiles() {
     loadCategoriesAndFeatures();
   }, []);
 
+  useEffect(() => {
+    getPuzzlesByCategory("Kids Learning").then(setPuzzles); // Example: load for one category
+  }, []);
+
   const sections = createSections(categories);
 
   return (
@@ -731,6 +744,18 @@ export default function FeatureTiles() {
                 categories={item.categories}
               />
             ))}
+          </div>
+        )}
+
+        {/* Puzzles Carousel */}
+        {puzzles.length > 0 && (
+          <div className="mb-16 px-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">🧩 Fun Puzzles</h3>
+            <div className="flex gap-6 overflow-x-auto">
+              {puzzles.map(puzzle => (
+                <PuzzleCard key={puzzle.id} puzzle={puzzle} />
+              ))}
+            </div>
           </div>
         )}
 

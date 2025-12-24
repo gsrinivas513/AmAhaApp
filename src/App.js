@@ -1,3 +1,12 @@
+import DebugPuzzleFields from "./admin/DebugPuzzleFields";
+import DebugPuzzlesCategory from "./admin/DebugPuzzlesCategory";
+import DebugCategories from "./admin/DebugCategories";
+import FixPuzzleCategories from "./admin/FixPuzzleCategories";
+import FixPuzzleCategoryDirect from "./admin/FixPuzzleCategoryDirect";
+import FixPuzzleHierarchy from "./admin/FixPuzzleHierarchy";
+import FixPuzzlePublished from "./admin/FixPuzzlePublished";
+import FixPuzzleType from "./admin/FixPuzzleType";
+import PuzzlePlayHierarchicalPage from "./puzzles/PuzzlePlayHierarchicalPage";
 // src/App.js
 import React from "react";
 import { Routes, Route } from "react-router-dom";
@@ -41,9 +50,20 @@ import FixFirebaseStructure from "./admin/FixFirebaseStructure";
 import SystemToolsPage from "./admin/SystemToolsPage";
 
 /* ADMIN — PUZZLES */
+import AddPuzzlePage from "./admin/AddPuzzlePage";
+import PuzzleListPage from "./admin/PuzzleListPage";
 import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
+import VisualPuzzleAdminPage from "./admin/VisualPuzzleAdminPage";
+
+/* PUZZLES - USER */
+import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
+import PuzzleTopicPage from "./puzzles/PuzzleTopicPage";
+import PuzzleSubcategoryPage from "./puzzles/PuzzleSubcategoryPage";
+import PuzzlePlayPage from "./puzzles/PuzzlePlayPage";
+import VisualPuzzlePlayPage from "./puzzles/VisualPuzzlePlayPage";
 
 function App() {
+      <Route path="/admin/debug-puzzle-fields" element={<DebugPuzzleFields />} />
   return (
     <div className="app-bg">
       <Navbar />
@@ -87,10 +107,26 @@ function App() {
         <Route path="/admin/system-tools" element={<SystemToolsPage />} />
 
         {/* ADMIN — PUZZLES */}
-        <Route
-          path="/admin/puzzles/dashboard"
-          element={<PuzzlesDashboardPage />}
-        />
+        <Route path="/admin/puzzles" element={<PuzzleListPage />} />
+        <Route path="/admin/add-puzzle" element={<AddPuzzlePage />} />
+        <Route path="/admin/add-puzzle/:puzzleId" element={<AddPuzzlePage />} />
+        <Route path="/admin/puzzles/dashboard" element={<PuzzlesDashboardPage />} />
+        <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
+        <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
+        <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
+        <Route path="/admin/debug-categories" element={<DebugCategories />} />
+        <Route path="/admin/fix-puzzle-categories" element={<FixPuzzleCategories />} />
+        <Route path="/admin/fix-puzzle-category-direct" element={<FixPuzzleCategoryDirect />} />
+        <Route path="/admin/fix-puzzle-hierarchy" element={<FixPuzzleHierarchy />} />
+        <Route path="/admin/fix-puzzle-published" element={<FixPuzzlePublished />} />
+        <Route path="/admin/fix-puzzle-type" element={<FixPuzzleType />} />
+
+        {/* PUZZLES - USER */}
+        <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
+        <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<VisualPuzzlePlayPage />} />
+        <Route path="/puzzles/:category/:topic/:subtopic/level/:difficulty" element={<PuzzlePlayHierarchicalPage />} />
       </Routes>
     </div>
   );
