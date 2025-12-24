@@ -29,13 +29,64 @@ export default function PuzzlePlayPage() {
 
   console.log("🎮 Rendering puzzle type:", puzzle.type);
 
-  switch (puzzle.type) {
+  // Normalize puzzle type to handle different naming conventions
+  const normalizedType = puzzle.type?.toLowerCase().replace(/-/g, '');
+
+  switch (normalizedType) {
     case "matching":
+    case "matchingpairs":
+    case "findpairs":
       return <MatchingPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
     case "ordering":
       return <OrderingPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
     case "drag":
+    case "dragdrop":
       return <DragPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
+    case "pictureword":
+    case "spotdifference":
+    case "pictureshadow":
+      // For visual puzzles that don't have dedicated components yet
+      return (
+        <div className="p-8 text-center max-w-2xl mx-auto">
+          <div className="text-6xl mb-6">🧩</div>
+          <h1 className="text-2xl font-bold mb-4">{puzzle.title}</h1>
+          <p className="text-gray-600 mb-6">{puzzle.description}</p>
+          
+          {puzzle.imageUrl && (
+            <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={puzzle.imageUrl} 
+                alt={puzzle.title}
+                className="w-full max-h-64 object-cover"
+              />
+            </div>
+          )}
+          
+          {puzzle.hints && puzzle.hints.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-yellow-800 mb-2">💡 Hints:</h3>
+              <ul className="text-sm text-yellow-700">
+                {puzzle.hints.map((hint, i) => (
+                  <li key={i}>• {hint}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-blue-800">
+              <strong>Answer:</strong> {puzzle.correctAnswer || "Complete the puzzle to find out!"}
+            </p>
+          </div>
+          
+          <button 
+            onClick={() => setCompleted(true)}
+            className="mt-6 px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600"
+          >
+            ✓ Mark as Complete
+          </button>
+        </div>
+      );
     default:
       return (
         <div className="p-8 text-center">

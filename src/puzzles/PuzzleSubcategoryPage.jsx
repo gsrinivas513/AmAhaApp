@@ -1,6 +1,6 @@
 // src/puzzles/PuzzleSubcategoryPage.jsx
 // Shows subtopics for a selected puzzle category and topic
-// Same pattern as quiz/TopicPage.jsx
+// If no subtopics exist, shows puzzles directly
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
@@ -14,7 +14,9 @@ export default function PuzzleSubcategoryPage() {
   const [category, setCategory] = useState(null);
   const [topic, setTopic] = useState(null);
   const [subtopics, setSubtopics] = useState([]);
+  const [puzzles, setPuzzles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showPuzzlesDirectly, setShowPuzzlesDirectly] = useState(false);
 
   useEffect(() => {
     loadCategoryTopicAndSubtopics();
@@ -83,6 +85,30 @@ export default function PuzzleSubcategoryPage() {
         .filter(sub => sub.isPublished !== false);
 
       setSubtopics(subtopicsData);
+
+      // If no subtopics, load puzzles directly from the topic
+      if (subtopicsData.length === 0) {
+        console.log("No subtopics found, loading puzzles directly for topic:", topicData.id, topicData.name);
+        
+        // Try to find puzzles by topic ID or topic name
+        const puzzlesSnap = await getDocs(collection(db, "puzzles"));
+        const puzzlesData = puzzlesSnap.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(puzzle => {
+            // Match by topic ID, topic name, or type
+            return (
+              puzzle.topic === topicData.id ||
+              puzzle.topic === topicData.name ||
+              puzzle.topicId === topicData.id ||
+              puzzle.type === topicData.name ||
+              puzzle.type === topicData.id
+            ) && puzzle.isPublished !== false;
+          });
+        
+        console.log("Found puzzles:", puzzlesData.length, puzzlesData);
+        setPuzzles(puzzlesData);
+        setShowPuzzlesDirectly(puzzlesData.length > 0 || subtopicsData.length === 0);
+      }
     } catch (error) {
       console.error("Error loading:", error);
     } finally {
@@ -99,17 +125,78 @@ export default function PuzzleSubcategoryPage() {
       <section className="section">
         <div className="container">
           <h1>🧩 {topic?.label || topic?.name}</h1>
-          <p>Choose a subtopic to start solving puzzles</p>
+          <p>{showPuzzlesDirectly ? "Choose a puzzle to play" : "Choose a subtopic to start solving puzzles"}</p>
         </div>
       </section>
 
       <section className="section">
         <div className="container">
-          {subtopics.length === 0 ? (
-            <div className="text-center text-gray-600 py-12">
-              No subtopics available yet.
-            </div>
+          {/* Show puzzles directly if no subtopics */}
+          {showPuzzlesDirectly ? (
+            puzzles.length === 0 ? (
+              <div className="text-center text-gray-600 py-12">
+                <div className="text-4xl mb-4">🧩</div>
+                <p>No puzzles available yet for this topic.</p>
+                <p className="text-sm mt-2">Check back soon!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {puzzles.map(puzzle => (
+                  <Card
+                    key={puzzle.id}
+                    className="cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
+                    onClick={() => navigate(`/puzzle/play/${puzzle.id}`)}
+                  >
+                    <div className="p-6">
+                      {puzzle.imageUrl && (
+                        <div className="mb-4 rounded-lg overflow-hidden">
+                          <img 
+                            src={puzzle.imageUrl} 
+                            alt={puzzle.title}
+                            className="w-full h-32 object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {puzzle.title || puzzle.id}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {puzzle.description || `${puzzle.type} puzzle`}
+                          </p>
+                        </div>
+                        <span className="text-3xl">🧩</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          puzzle.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                          puzzle.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {puzzle.difficulty || 'easy'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {puzzle.type}
+                        </span>
+                      </div>
+
+                      <Button variant="primary" className="w-full">
+                        Play Puzzle →
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )
           ) : (
+            /* Show subtopics if they exist */
+            subtopics.length === 0 ? (
+              <div className="text-center text-gray-600 py-12">
+                No subtopics available yet.
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {subtopics.map(subtopic => {
                 const hasPuzzles = (subtopic.puzzleCount || 0) > 0;
@@ -154,6 +241,7 @@ export default function PuzzleSubcategoryPage() {
                 );
               })}
             </div>
+            )
           )}
         </div>
       </section>

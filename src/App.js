@@ -122,6 +122,7 @@ function App() {
         <Route path="/admin/fix-puzzle-type" element={<FixPuzzleType />} />
 
         {/* PUZZLES - USER */}
+        <Route path="/puzzle/play/:puzzleId" element={<PuzzlePlayPage />} />
         <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
         <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
