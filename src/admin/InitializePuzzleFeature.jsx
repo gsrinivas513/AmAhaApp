@@ -151,8 +151,110 @@ const InitializePuzzleFeature = () => {
         addLog(`  ✅ Created: ${type.name}`);
       }
 
-      addLog("✅ ALL DONE!");
-      setMessage('✅ Puzzle feature initialized! Now refresh the page (F5) to see changes.');
+      // Step 5: Create Sample Puzzles (actual puzzle content!)
+      addLog("5️⃣ Creating Sample Puzzles...");
+      
+      const samplePuzzles = [
+        {
+          id: 'sample-picture-word-1',
+          title: 'Animal Names',
+          description: 'Identify these animal names from pictures',
+          type: 'picture-word',
+          category: 'visual-puzzles',
+          topic: 'picture-word',
+          difficulty: 'easy',
+          imageUrl: 'https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=400',
+          correctAnswer: 'elephant',
+          hints: ['It has a trunk', 'It is very large'],
+          isPublished: true,
+          puzzleCount: 0,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'sample-picture-word-2',
+          title: 'Fruit Names',
+          description: 'What fruit is this?',
+          type: 'picture-word',
+          category: 'visual-puzzles',
+          topic: 'picture-word',
+          difficulty: 'easy',
+          imageUrl: 'https://images.unsplash.com/photo-1568702846914-96b305d2uj9b?w=400',
+          correctAnswer: 'apple',
+          hints: ['It is red', 'Keeps the doctor away'],
+          isPublished: true,
+          puzzleCount: 0,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'sample-matching-pairs-1',
+          title: 'Match the Animals',
+          description: 'Find matching pairs of animals',
+          type: 'matching-pairs',
+          category: 'visual-puzzles',
+          topic: 'matching-pairs',
+          difficulty: 'medium',
+          pairs: [
+            { id: 1, image: '🐶', match: '🐶' },
+            { id: 2, image: '🐱', match: '🐱' },
+            { id: 3, image: '🐰', match: '🐰' },
+            { id: 4, image: '🐻', match: '🐻' }
+          ],
+          isPublished: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'sample-ordering-1',
+          title: 'Number Sequence',
+          description: 'Arrange these numbers in order',
+          type: 'ordering',
+          category: 'traditional-puzzles',
+          topic: 'ordering',
+          difficulty: 'easy',
+          items: ['3', '1', '4', '2', '5'],
+          correctOrder: ['1', '2', '3', '4', '5'],
+          isPublished: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'sample-ordering-2',
+          title: 'Days of the Week',
+          description: 'Put the days in correct order',
+          type: 'ordering',
+          category: 'traditional-puzzles',
+          topic: 'ordering',
+          difficulty: 'medium',
+          items: ['Wednesday', 'Monday', 'Friday', 'Tuesday', 'Thursday'],
+          correctOrder: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          isPublished: true,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'sample-drag-drop-1',
+          title: 'Sort by Color',
+          description: 'Drag items to their color groups',
+          type: 'drag-drop',
+          category: 'traditional-puzzles',
+          topic: 'drag-drop',
+          difficulty: 'easy',
+          items: [
+            { id: 1, text: 'Apple', correctZone: 'red' },
+            { id: 2, text: 'Banana', correctZone: 'yellow' },
+            { id: 3, text: 'Orange', correctZone: 'orange' },
+            { id: 4, text: 'Strawberry', correctZone: 'red' }
+          ],
+          dropZones: ['red', 'yellow', 'orange'],
+          isPublished: true,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      for (const puzzle of samplePuzzles) {
+        await setDoc(doc(db, 'puzzles', puzzle.id), puzzle);
+        addLog(`  ✅ Created puzzle: ${puzzle.title}`);
+      }
+
+      addLog("✅ ALL DONE! Created " + samplePuzzles.length + " sample puzzles!");
+      setMessage('✅ Puzzle feature initialized with ' + samplePuzzles.length + ' sample puzzles! Now refresh the page (F5) to see them.');
     } catch (err) {
       console.error("❌ Setup error:", err);
       setError(`❌ Error: ${err.message}`);
