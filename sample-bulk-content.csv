@@ -1,0 +1,4 @@
+feature,category,topic,subtopic,question,optionA,optionB,optionC,optionD,correctAnswer,difficulty,title,description,imageUrl,type,pairs,items,draggables,targets
+Puzzles,Kids Puzzles,Numbers,Counting,,,,,,, ,Match numbers,Match numbers to their words,,matching,"1-One,2-Two,3-Three",,,
+Puzzles,Kids Puzzles,Numbers,Counting,,,,,,, ,Order numbers,Arrange numbers in ascending order,,ordering,,"3,1,2",,
+Puzzles,Kids Puzzles,Numbers,Counting,,,,,,, ,Drag numbers,Drag each number to its group,,drag,,,"1,2,3","Odd,Even,Prime"

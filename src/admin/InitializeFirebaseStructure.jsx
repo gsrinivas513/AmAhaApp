@@ -22,7 +22,7 @@ export default function InitializeFirebaseStructure() {
       setProgress([]);
 
       const collections = selectedCollection === "all" 
-        ? ["features", "categories", "topics", "subcategories", "questions", "puzzles", "attempts", "scores", "users"]
+        ? ["features", "categories", "topics", "subtopics", "subcategories", "questions", "puzzles", "attempts", "scores", "users"]
         : [selectedCollection];
 
       for (const collectionName of collections) {
@@ -39,58 +39,42 @@ export default function InitializeFirebaseStructure() {
 
           addProgress(`   📊 Total documents: ${snap.size}`);
           
-          // Show first 3 documents as examples
-          const docsToShow = Math.min(3, snap.size);
-          addProgress(`   📄 Showing first ${docsToShow} document(s):\n`);
+          // Show ALL documents (not just first 3)
+          addProgress(`   📄 Showing all ${snap.size} document(s):\n`);
           
-          snap.docs.slice(0, docsToShow).forEach((doc, idx) => {
+          snap.docs.forEach((doc, idx) => {
             const data = doc.data();
             addProgress(`   ${idx + 1}. Document ID: ${doc.id}`);
             
-            // Show key fields based on collection type
-            if (collectionName === "features") {
-              addProgress(`      - Name: ${data.name || "N/A"}`);
-              addProgress(`      - Type: ${data.featureType || "N/A"}`);
-              addProgress(`      - Enabled: ${data.enabled !== false ? "Yes" : "No"}`);
-            } else if (collectionName === "categories") {
-              addProgress(`      - Name: ${data.name || "N/A"}`);
-              addProgress(`      - Feature ID: ${data.featureId || "N/A"}`);
-              addProgress(`      - Published: ${data.isPublished !== false ? "Yes" : "No"}`);
-            } else if (collectionName === "topics") {
-              addProgress(`      - Name: ${data.name || "N/A"}`);
-              addProgress(`      - Category ID: ${data.categoryId || "N/A"}`);
-              addProgress(`      - Quiz Count: ${data.quizCount || 0}`);
-            } else if (collectionName === "subcategories") {
-              addProgress(`      - Name: ${data.name || "N/A"}`);
-              addProgress(`      - Category ID: ${data.categoryId || "N/A"}`);
-              addProgress(`      - Topic ID: ${data.topicId || "N/A"}`);
-              addProgress(`      - Topic: ${data.topic || "N/A"}`);
-            } else if (collectionName === "questions") {
-              addProgress(`      - Question: ${(data.question || "").substring(0, 50)}...`);
-              addProgress(`      - Difficulty: ${data.difficulty || "N/A"}`);
-              addProgress(`      - Category: ${data.category || "N/A"}`);
-              addProgress(`      - Subtopic: ${data.subtopic || "N/A"}`);
-              addProgress(`      - Subtopic ID: ${data.subtopicId || "N/A"}`);
-            } else if (collectionName === "puzzles") {
-              addProgress(`      - Title: ${data.title || "N/A"}`);
-              addProgress(`      - Type: ${data.puzzleType || "N/A"}`);
-              addProgress(`      - Difficulty: ${data.difficulty || "N/A"}`);
-            } else {
-              // Generic display for other collections
-              const keys = Object.keys(data).slice(0, 5);
-              keys.forEach(key => {
-                const value = data[key];
-                if (typeof value !== "object") {
-                  addProgress(`      - ${key}: ${String(value).substring(0, 50)}`);
+            // Show ALL fields for each document
+            const allKeys = Object.keys(data);
+            allKeys.forEach(key => {
+              const value = data[key];
+              if (value === null || value === undefined) {
+                addProgress(`      - ${key}: null`);
+              } else if (value instanceof Date || (value && value.toDate)) {
+                // Handle Firestore Timestamps
+                const dateVal = value.toDate ? value.toDate() : value;
+                addProgress(`      - ${key}: ${dateVal.toISOString()}`);
+              } else if (Array.isArray(value)) {
+                addProgress(`      - ${key}: [Array with ${value.length} items]`);
+                if (value.length > 0 && value.length <= 5) {
+                  value.forEach((item, i) => {
+                    if (typeof item === 'object') {
+                      addProgress(`        [${i}]: ${JSON.stringify(item).substring(0, 100)}`);
+                    } else {
+                      addProgress(`        [${i}]: ${String(item).substring(0, 100)}`);
+                    }
+                  });
                 }
-              });
-            }
+              } else if (typeof value === 'object') {
+                addProgress(`      - ${key}: ${JSON.stringify(value).substring(0, 150)}`);
+              } else {
+                addProgress(`      - ${key}: ${String(value).substring(0, 150)}`);
+              }
+            });
             addProgress("");
           });
-          
-          if (snap.size > docsToShow) {
-            addProgress(`   ... and ${snap.size - docsToShow} more document(s)\n`);
-          }
           
         } catch (err) {
           addProgress(`   ❌ Error reading ${collectionName}: ${err.message}`);
@@ -372,7 +356,8 @@ export default function InitializeFirebaseStructure() {
               <option value="features">✨ Features</option>
               <option value="categories">📁 Categories</option>
               <option value="topics">📋 Topics</option>
-              <option value="subcategories">📖 SubCategories</option>
+              <option value="subtopics">📖 SubTopics</option>
+              <option value="subcategories">📖 SubCategories (legacy)</option>
               <option value="questions">❓ Questions</option>
               <option value="puzzles">🧩 Puzzles</option>
               <option value="attempts">📊 Attempts</option>
@@ -401,7 +386,7 @@ export default function InitializeFirebaseStructure() {
 
           <p style={{ fontSize: 14, color: "#6b7280", margin: 0, lineHeight: 1.6 }}>
             View the contents of Firebase collections. Select a specific collection or inspect all at once.
-            Shows the first 3 documents from each collection with key fields.
+            Shows ALL documents with ALL fields from each collection.
           </p>
         </div>
 

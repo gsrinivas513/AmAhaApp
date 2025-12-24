@@ -7,6 +7,7 @@ function CategoriesList({
   selectedCategoryId,
   selectedFeatureId,
   features,
+  topics = [],
   subtopics,
   onSelectCategory,
   onEditCategory,
@@ -94,7 +95,7 @@ function CategoriesList({
                     {cat.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
-                    {subtopics.filter((s) => s.categoryId === cat.id).length} topics
+                    {topics.filter((t) => t.categoryId === cat.id).length} topics
                   </div>
                 </div>
               </div>

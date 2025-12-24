@@ -1,0 +1,245 @@
+// setupPuzzleFeature.js - BROWSER CONSOLE VERSION
+// Usage:
+// 1. Make sure app is running at http://localhost:3000
+// 2. Open browser DevTools (F12)
+// 3. Go to Console tab
+// 4. Copy-paste this entire script
+// 5. Press Enter
+// 6. Wait for ✅ message
+// 7. Refresh the page (F5 or Cmd+R)
+
+(async function setupPuzzleFeature() {
+  try {
+    console.log("🚀 Starting Puzzle Feature Setup...");
+    
+    // Access Firebase Firestore from React app's window object
+    // The app uses: import { db } from '../firebase/firebaseConfig'
+    
+    // Wait a bit to ensure modules are loaded
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Try to get db from window.__firebaseDb (set by some apps) or create REST call
+    let db;
+    
+    // Method 1: Check if firebase-admin SDK is available in window
+    if (window.firebase && window.firebase.firestore) {
+      db = window.firebase.firestore();
+    }
+    // Method 2: Use Firestore REST API instead
+    else {
+      console.log("Using Firestore REST API...");
+      // Get Firebase config from localStorage (React app stores this)
+      const firebaseConfig = JSON.parse(localStorage.getItem('firebaseConfig') || '{}');
+      
+      if (!firebaseConfig.projectId) {
+        throw new Error("Firebase config not found. Please ensure app is fully loaded.");
+      }
+      
+      // We'll use REST API calls instead
+      await setupWithRestAPI(firebaseConfig);
+      return;
+    }
+
+async function setupPuzzleFeature() {
+  try {
+    console.log("🚀 Starting Puzzle Feature Setup...");
+
+    // Step 1: Check if Puzzle feature exists
+    console.log("\n📝 Step 1: Creating Puzzle Feature...");
+    const featuresSnap = await db.collection("features").where("featureType", "==", "puzzle").get();
+    
+    let puzzleFeatureId;
+    if (featuresSnap.empty) {
+      // Create new puzzle feature
+      const newFeature = {
+        name: "Puzzles",
+        label: "Puzzles",
+        description: "Interactive visual and traditional puzzles for kids",
+        icon: "🧩",
+        enabled: true,
+        featureType: "puzzle",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      const featureRef = await db.collection("features").add(newFeature);
+      puzzleFeatureId = featureRef.id;
+      console.log("✅ Created Puzzle Feature:", puzzleFeatureId);
+    } else {
+      puzzleFeatureId = featuresSnap.docs[0].id;
+      console.log("✅ Puzzle Feature already exists:", puzzleFeatureId);
+    }
+
+    // Step 2: Create puzzle categories
+    console.log("\n📁 Step 2: Creating Puzzle Categories...");
+    const puzzleCategories = [
+      {
+        name: "Visual Puzzles",
+        label: "Visual Puzzles",
+        description: "Picture-based interactive puzzles",
+        featureId: puzzleFeatureId,
+        published: true,
+        createdAt: new Date()
+      },
+      {
+        name: "Traditional Puzzles",
+        label: "Traditional Puzzles",
+        description: "Matching, ordering, and drag-drop puzzles",
+        featureId: puzzleFeatureId,
+        published: true,
+        createdAt: new Date()
+      }
+    ];
+
+    const categoryIds = {};
+    for (const cat of puzzleCategories) {
+      const existing = await db.collection("categories")
+        .where("name", "==", cat.name)
+        .where("featureId", "==", puzzleFeatureId)
+        .get();
+      
+      if (existing.empty) {
+        const catRef = await db.collection("categories").add(cat);
+        categoryIds[cat.name] = catRef.id;
+        console.log(`  ✅ Created category: ${cat.name}`);
+      } else {
+        categoryIds[cat.name] = existing.docs[0].id;
+        console.log(`  ✅ Category already exists: ${cat.name}`);
+      }
+    }
+
+    // Step 3: Create topics for each category
+    console.log("\n📚 Step 3: Creating Topics...");
+    const topicsData = {
+      "Visual Puzzles": [
+        { name: "Picture Word", label: "Picture Word Matching" },
+        { name: "Spot the Difference", label: "Spot the Difference" },
+        { name: "Find Pairs", label: "Find Matching Pairs" },
+        { name: "Picture Shadow", label: "Match Picture & Shadow" }
+      ],
+      "Traditional Puzzles": [
+        { name: "Matching Pairs", label: "Matching Pairs" },
+        { name: "Ordering", label: "Ordering Sequences" },
+        { name: "Drag and Drop", label: "Drag and Drop Puzzles" }
+      ]
+    };
+
+    const topicIds = {};
+    for (const [categoryName, topics] of Object.entries(topicsData)) {
+      topicIds[categoryName] = {};
+      const categoryId = categoryIds[categoryName];
+      
+      for (const topic of topics) {
+        const existing = await db.collection("topics")
+          .where("name", "==", topic.name)
+          .where("categoryId", "==", categoryId)
+          .get();
+        
+        if (existing.empty) {
+          const topicRef = await db.collection("topics").add({
+            name: topic.name,
+            label: topic.label,
+            categoryId: categoryId,
+            isPublished: true,
+            sortOrder: 0,
+            createdAt: new Date()
+          });
+          topicIds[categoryName][topic.name] = topicRef.id;
+          console.log(`  ✅ Created topic: ${topic.label}`);
+        } else {
+          topicIds[categoryName][topic.name] = existing.docs[0].id;
+          console.log(`  ✅ Topic already exists: ${topic.label}`);
+        }
+      }
+    }
+
+    // Step 4: Create subtopics
+    console.log("\n❓ Step 4: Creating SubTopics...");
+    const subtopicsData = {
+      "Visual Puzzles": {
+        "Picture Word": [
+          { name: "Level 1", label: "Beginner Level" },
+          { name: "Level 2", label: "Intermediate Level" },
+          { name: "Level 3", label: "Advanced Level" }
+        ],
+        "Spot the Difference": [
+          { name: "Easy", label: "Easy Difficulty" },
+          { name: "Medium", label: "Medium Difficulty" },
+          { name: "Hard", label: "Hard Difficulty" }
+        ],
+        "Find Pairs": [
+          { name: "Animals", label: "Animal Matching" },
+          { name: "Numbers", label: "Number Matching" }
+        ],
+        "Picture Shadow": [
+          { name: "Shape Matching", label: "Match Shadow to Shape" }
+        ]
+      },
+      "Traditional Puzzles": {
+        "Matching Pairs": [
+          { name: "Basic", label: "Basic Matching" },
+          { name: "Advanced", label: "Advanced Matching" }
+        ],
+        "Ordering": [
+          { name: "Number Sequence", label: "Number Ordering" },
+          { name: "Alphabet Sequence", label: "Alphabet Ordering" }
+        ],
+        "Drag and Drop": [
+          { name: "Simple Drag", label: "Simple Drag Operations" },
+          { name: "Complex Drag", label: "Complex Drag Scenarios" }
+        ]
+      }
+    };
+
+    for (const [categoryName, topics] of Object.entries(subtopicsData)) {
+      const categoryId = categoryIds[categoryName];
+      
+      for (const [topicName, subtopics] of Object.entries(topics)) {
+        const topicId = topicIds[categoryName][topicName];
+        
+        for (const subtopic of subtopics) {
+          const existing = await db.collection("subtopics")
+            .where("name", "==", subtopic.name)
+            .where("categoryId", "==", categoryId)
+            .where("topicId", "==", topicId)
+            .get();
+          
+          if (existing.empty) {
+            await db.collection("subtopics").add({
+              name: subtopic.name,
+              label: subtopic.label,
+              categoryId: categoryId,
+              topicId: topicId,
+              published: true,
+              quizCount: 0,
+              puzzleCount: 0,
+              createdAt: new Date()
+            });
+            console.log(`  ✅ Created subtopic: ${subtopic.label}`);
+          } else {
+            console.log(`  ✅ Subtopic already exists: ${subtopic.label}`);
+          }
+        }
+      }
+    }
+
+    console.log("\n✅ Puzzle Feature Setup Complete!");
+    console.log("\n📊 Created Structure:");
+    console.log("Feature: Puzzles");
+    console.log("├─ Visual Puzzles (Category)");
+    console.log("│  ├─ Picture Word (Topic)");
+    console.log("│  ├─ Spot the Difference (Topic)");
+    console.log("│  ├─ Find Pairs (Topic)");
+    console.log("│  └─ Picture Shadow (Topic)");
+    console.log("└─ Traditional Puzzles (Category)");
+    console.log("   ├─ Matching Pairs (Topic)");
+    console.log("   ├─ Ordering (Topic)");
+    console.log("   └─ Drag and Drop (Topic)");
+    console.log("\n🎉 Ready to create puzzles!");
+
+  } catch (error) {
+    console.error("❌ Error during setup:", error);
+  }
+}
+
+// Run the setup
+setupPuzzleFeature();

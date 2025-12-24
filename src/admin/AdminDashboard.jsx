@@ -4,6 +4,7 @@ import AdminLayout from "./AdminLayout";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Card, Button } from "../components/ui";
+import InitializePuzzleFeature from "./InitializePuzzleFeature";
 
 /**
  * AdminDashboard
@@ -125,6 +126,9 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Puzzle Feature Initialization */}
+      <InitializePuzzleFeature />
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18, marginTop: 18 }}>
         <Card>
           <h3 style={{ marginTop: 0 }}>Total Quiz Attempts</h3>
@@ -201,6 +205,12 @@ function AdminDashboard() {
             </div>
           </Card>
         )}
+      </div>
+
+      <div style={{ marginTop: 32, display: "flex", gap: 16 }}>
+        <a href="/admin/add-content" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Quiz Questions</a>
+        <a href="/admin/add-puzzle" className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Add Puzzles</a>
+        <a href="/admin/puzzles" className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500">View All Puzzles</a>
       </div>
     </AdminLayout>
   );

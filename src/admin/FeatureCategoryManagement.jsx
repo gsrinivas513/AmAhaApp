@@ -28,6 +28,7 @@ import FeatureModal from "./features/modals/FeatureModal";
 import CategoryModal from "./features/modals/CategoryModal";
 import TopicModal from "./features/modals/TopicModal";
 import SubtopicModal from "./features/modals/SubtopicModal";
+import AddPuzzleModal from "./modals/AddPuzzleModal";
 
 export default function FeatureCategoryManagement() {
   // Custom hooks for data management
@@ -46,6 +47,8 @@ export default function FeatureCategoryManagement() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [showSubtopicModal, setShowSubtopicModal] = useState(false);
+  const [showAddPuzzleModal, setShowAddPuzzleModal] = useState(false);
+  const [addPuzzleData, setAddPuzzleData] = useState({ category: null, categoryName: '', topic: null, topicName: '' });
 
   // Form states
   const [featureForm, setFeatureForm] = useState(INITIAL_FEATURE_FORM);
@@ -62,8 +65,20 @@ export default function FeatureCategoryManagement() {
   // Additional state for visualization - all topics and subtopics
   const [allTopics, setAllTopics] = useState([]);
   const [allSubtopics, setAllSubtopics] = useState([]);
+  const [allPuzzles, setAllPuzzles] = useState([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Collapse/Expand state for sections
+  const [expandedSections, setExpandedSections] = useState({
+    features: true,
+    categories: true,
+    topics: true,
+    subtopics: false,
+    puzzleFeatures: true,
+    puzzleCategories: true,
+    puzzleTypes: true
+  });
 
   // Refs to track what has been loaded to prevent redundant calls
   const loadedCategoriesRef = useRef(new Set());
@@ -79,10 +94,11 @@ export default function FeatureCategoryManagement() {
   // Auto-select first feature after data loads
   useEffect(() => {
     if (featureData.features.length > 0 && categoryData.categories.length > 0 && !selectedFeatureId) {
-      const quizFeature = featureData.features.find(f => f.featureType === "quiz") || featureData.features[0];
-      if (quizFeature) {
-        setSelectedFeatureId(quizFeature.id);
-        setCategoryForm(prev => ({ ...prev, featureId: quizFeature.id }));
+      const puzzleFeature = featureData.features.find(f => f.featureType === "puzzle");
+      const selectedFeature = puzzleFeature || featureData.features.find(f => f.featureType === "quiz") || featureData.features[0];
+      if (selectedFeature) {
+        setSelectedFeatureId(selectedFeature.id);
+        setCategoryForm(prev => ({ ...prev, featureId: selectedFeature.id }));
       }
     }
   }, [featureData.features.length, categoryData.categories.length]);
@@ -125,6 +141,12 @@ export default function FeatureCategoryManagement() {
         topicId: s.topicId,
         categoryId: s.categoryId 
       })));
+
+      // Load all puzzles (for puzzle categories)
+      const puzzlesSnap = await getDocs(collection(db, "puzzles"));
+      const allPuzzlesData = puzzlesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setAllPuzzles(allPuzzlesData);
+      console.log("🔄 Refreshed puzzles:", allPuzzlesData.length);
       
       setRefreshKey(prev => prev + 1);
     } catch (err) {
@@ -252,6 +274,18 @@ export default function FeatureCategoryManagement() {
     setTopicForm({ ...INITIAL_TOPIC_FORM, categoryId: selectedCategoryId });
     setEditingTopicId(null);
     setShowTopicModal(true);
+  };
+
+  const handleAddPuzzle = (topic) => {
+    // Open modal instead of navigating
+    const category = categoryData.categories.find(c => c.id === selectedCategoryId);
+    setAddPuzzleData({
+      category: selectedCategoryId,
+      categoryName: category?.label || category?.name || '',
+      topic: topic.id,
+      topicName: topic.name || topic.label || '',
+    });
+    setShowAddPuzzleModal(true);
   };
 
   const handleEditTopic = (topic) => {
@@ -473,7 +507,7 @@ export default function FeatureCategoryManagement() {
             color: "white",
             margin: 0
           }}>
-            🎯 Content Management Flow
+            🎯 Quiz Content Management Flow
           </h2>
           <p style={{
             fontSize: 14,
@@ -487,54 +521,322 @@ export default function FeatureCategoryManagement() {
         </div>
 
         <div className="fcm-main-grid">
-          <FeaturesList
-            features={featureData.features}
-            selectedFeatureId={selectedFeatureId}
-            categories={categoryData.categories}
-            onSelectFeature={handleSelectFeature}
-            onEditFeature={handleEditFeature}
-            onDeleteFeature={handleDeleteFeature}
-            onToggleFeaturePublish={handleToggleFeaturePublish}
-            onAddFeature={handleAddFeature}
-          />
+          {/* Features Section - QUIZ ONLY */}
+          <div className="fcm-features-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, features: !prev.features }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.features ? "#667eea" : "#f1f5f9",
+                color: expandedSections.features ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.features ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>✨ Quiz Features</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.features ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.features && (
+              <FeaturesList
+                features={featureData.features.filter(f => f.featureType !== "puzzle")}
+                selectedFeatureId={selectedFeatureId}
+                categories={categoryData.categories}
+                onSelectFeature={handleSelectFeature}
+                onEditFeature={handleEditFeature}
+                onDeleteFeature={handleDeleteFeature}
+                onToggleFeaturePublish={handleToggleFeaturePublish}
+                onAddFeature={handleAddFeature}
+              />
+            )}
+          </div>
 
-          <CategoriesList
-            categories={categoryData.categories}
-            selectedCategoryId={selectedCategoryId}
-            selectedFeatureId={selectedFeatureId}
-            features={featureData.features}
-            subtopics={allSubtopics}
-            onSelectCategory={handleSelectCategory}
-            onEditCategory={handleEditCategory}
-            onDeleteCategory={handleDeleteCategory}
-            onToggleCategoryPublish={handleToggleCategoryPublish}
-            onAddCategory={handleAddCategory}
-          />
+          {/* Categories Section - QUIZ ONLY */}
+          <div className="fcm-categories-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, categories: !prev.categories }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.categories ? "#667eea" : "#f1f5f9",
+                color: expandedSections.categories ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.categories ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>📁 Quiz Categories</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.categories ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.categories && (
+              <CategoriesList
+                categories={categoryData.categories.filter(c => c.featureType !== "puzzle")}
+                selectedCategoryId={selectedCategoryId}
+                selectedFeatureId={selectedFeatureId}
+                features={featureData.features.filter(f => f.featureType !== "puzzle")}
+                topics={allTopics.filter(t => {
+                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                  return cat && cat.featureType !== "puzzle";
+                })}
+                subtopics={allSubtopics.filter(s => {
+                  const topic = allTopics.find(t => t.id === s.topicId);
+                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                })}
+                onSelectCategory={handleSelectCategory}
+                onEditCategory={handleEditCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onToggleCategoryPublish={handleToggleCategoryPublish}
+                onAddCategory={handleAddCategory}
+              />
+            )}
+          </div>
 
-          <TopicsList
-            topics={allTopics}
-            selectedTopicId={selectedTopicId}
-            selectedCategoryId={selectedCategoryId}
-            categories={categoryData.categories}
-            subtopics={allSubtopics}
-            onSelectTopic={handleSelectTopic}
-            onEditTopic={handleEditTopic}
-            onDeleteTopic={handleDeleteTopic}
-            onToggleTopicPublish={handleToggleTopicPublish}
-            onAddTopic={handleAddTopic}
-          />
+          {/* Topics Section - QUIZ ONLY */}
+          <div className="fcm-topics-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, topics: !prev.topics }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.topics ? "#667eea" : "#f1f5f9",
+                color: expandedSections.topics ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.topics ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>📚 Quiz Topics</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.topics ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.topics && (
+              <TopicsList
+                topics={allTopics.filter(t => {
+                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                  return cat && cat.featureType !== "puzzle";
+                })}
+                selectedTopicId={selectedTopicId}
+                selectedCategoryId={selectedCategoryId}
+                categories={categoryData.categories.filter(c => c.featureType !== "puzzle")}
+                subtopics={allSubtopics.filter(s => {
+                  const topic = allTopics.find(t => t.id === s.topicId);
+                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                })}
+                onSelectTopic={handleSelectTopic}
+                onEditTopic={handleEditTopic}
+                onDeleteTopic={handleDeleteTopic}
+                onToggleTopicPublish={handleToggleTopicPublish}
+                onAddTopic={handleAddTopic}
+              />
+            )}
+          </div>
 
-          <SubTopicsList
-            subtopics={allSubtopics}
-            selectedTopicId={selectedTopicId}
-            selectedCategoryId={selectedCategoryId}
-            topics={allTopics}
-            onEditSubtopic={handleEditSubtopic}
-            onDeleteSubtopic={handleDeleteSubtopic}
-            onToggleSubtopicPublish={handleToggleSubtopicPublish}
-            onAddSubtopic={handleAddSubtopic}
-            onAddQuestion={handleAddQuestion}
-          />
+          {/* Subtopics Section - QUIZ ONLY */}
+          <div className="fcm-subtopics-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, subtopics: !prev.subtopics }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.subtopics ? "#667eea" : "#f1f5f9",
+                color: expandedSections.subtopics ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.subtopics ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>❓ Quiz SubTopics</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.subtopics ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.subtopics && (
+              <SubTopicsList
+                subtopics={allSubtopics.filter(s => {
+                  const topic = allTopics.find(t => t.id === s.topicId);
+                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                })}
+                selectedTopicId={selectedTopicId}
+                selectedCategoryId={selectedCategoryId}
+                topics={allTopics.filter(t => {
+                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                  return cat && cat.featureType !== "puzzle";
+                })}
+                onEditSubtopic={handleEditSubtopic}
+                onDeleteSubtopic={handleDeleteSubtopic}
+                onToggleSubtopicPublish={handleToggleSubtopicPublish}
+                onAddSubtopic={handleAddSubtopic}
+                onAddQuestion={handleAddQuestion}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* PUZZLE MANAGEMENT SECTION - SEPARATE */}
+        <div style={{
+          marginTop: 48,
+          padding: 20,
+          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+          borderRadius: 12,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+        }}>
+          <h2 style={{ 
+            fontSize: 20, 
+            fontWeight: 700, 
+            color: "white",
+            margin: 0
+          }}>
+            🧩 Puzzle Management
+          </h2>
+          <p style={{
+            fontSize: 14,
+            color: "white",
+            margin: "8px 0 0 0",
+            opacity: 0.95,
+            fontWeight: 500
+          }}>
+            Simplified: Category → Puzzle Type → Puzzles (No Subtopics)
+          </p>
+        </div>
+
+        <div className="fcm-main-grid" style={{ marginTop: 20 }}>
+          {/* Puzzle Features Section */}
+          <div className="fcm-features-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleFeatures: !prev.puzzleFeatures }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.puzzleFeatures ? "#f5576c" : "#ffe5e5",
+                color: expandedSections.puzzleFeatures ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.puzzleFeatures ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>✨ Puzzle Features</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.puzzleFeatures ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.puzzleFeatures && (
+              <FeaturesList
+                features={featureData.features.filter(f => f.featureType === "puzzle")}
+                selectedFeatureId={selectedFeatureId}
+                categories={categoryData.categories}
+                onSelectFeature={handleSelectFeature}
+                onEditFeature={handleEditFeature}
+                onDeleteFeature={handleDeleteFeature}
+                onToggleFeaturePublish={handleToggleFeaturePublish}
+                onAddFeature={handleAddFeature}
+              />
+            )}
+          </div>
+
+          {/* Puzzle Categories Section */}
+          <div className="fcm-categories-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleCategories: !prev.puzzleCategories }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.puzzleCategories ? "#f5576c" : "#ffe5e5",
+                color: expandedSections.puzzleCategories ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.puzzleCategories ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>📁 Puzzle Categories</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.puzzleCategories ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.puzzleCategories && (
+              <CategoriesList
+                categories={categoryData.categories.filter(c => c.featureType === "puzzle")}
+                selectedCategoryId={selectedCategoryId}
+                selectedFeatureId={selectedFeatureId}
+                features={featureData.features.filter(f => f.featureType === "puzzle")}
+                topics={allTopics.filter(t => {
+                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                  return cat && cat.featureType === "puzzle";
+                })}
+                subtopics={[]}
+                onSelectCategory={handleSelectCategory}
+                onEditCategory={handleEditCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onToggleCategoryPublish={handleToggleCategoryPublish}
+                onAddCategory={handleAddCategory}
+              />
+            )}
+          </div>
+
+          {/* Puzzle Types Section */}
+          <div className="fcm-topics-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleTypes: !prev.puzzleTypes }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.puzzleTypes ? "#f5576c" : "#ffe5e5",
+                color: expandedSections.puzzleTypes ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.puzzleTypes ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>🎮 Puzzle Types</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.puzzleTypes ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.puzzleTypes && (
+              <TopicsList
+                topics={allTopics.filter(t => {
+                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                  return cat && cat.featureType === "puzzle";
+                })}
+                selectedTopicId={selectedTopicId}
+                selectedCategoryId={selectedCategoryId}
+                categories={categoryData.categories.filter(c => c.featureType === "puzzle")}
+                subtopics={[]}
+                onSelectTopic={handleSelectTopic}
+                onEditTopic={handleEditTopic}
+                onDeleteTopic={handleDeleteTopic}
+                onToggleTopicPublish={handleToggleTopicPublish}
+                onAddTopic={handleAddTopic}
+                onAddPuzzle={handleAddPuzzle}
+              />
+            )}
+          </div>
         </div>
 
         {/* Flow Visualization */}
@@ -545,6 +847,7 @@ export default function FeatureCategoryManagement() {
             categories={categoryData.categories}
             topics={allTopics}
             subtopics={allSubtopics}
+            puzzles={allPuzzles}
           />
         </div>
       </div>
@@ -629,6 +932,21 @@ export default function FeatureCategoryManagement() {
           onClose={closeModals}
         />
       )}
+
+      {/* Add Puzzle Modal */}
+      <AddPuzzleModal
+        isOpen={showAddPuzzleModal}
+        onClose={() => setShowAddPuzzleModal(false)}
+        category={addPuzzleData.category}
+        categoryName={addPuzzleData.categoryName}
+        topic={addPuzzleData.topic}
+        topicName={addPuzzleData.topicName}
+        onSuccess={() => {
+          // Refresh puzzle data after successful creation
+          visualizationLoadedRef.current = false;
+          refreshVisualizationData();
+        }}
+      />
     </AdminLayout>
   );
 }

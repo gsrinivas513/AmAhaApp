@@ -17,13 +17,13 @@ export default function HomePage() {
           <FeatureTiles />
         </div>
 
-        <div style={{ marginTop: 72 }}>
+       {/*  <div style={{ marginTop: 72 }}>
           <FeatureGrid />
-        </div>
+        </div> */}
 
-        <div style={{ marginTop: 56 }}>
+        {/* <div style={{ marginTop: 56 }}>
           <StatsStrip />
-        </div>
+        </div> */}
 
         <div style={{ marginTop: 56 }}>
           <TestimonialsSection />

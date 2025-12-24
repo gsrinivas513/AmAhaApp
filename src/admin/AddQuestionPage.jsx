@@ -6,6 +6,7 @@ import { addDoc, collection, getDocs, query, where, doc, setDoc, updateDoc, serv
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Card, Button } from "../components/ui";
+import QuestionsTable from "./components/QuestionsTable";
 
 function AddQuestionPage() {
   const location = useLocation();
@@ -13,6 +14,7 @@ function AddQuestionPage() {
   
   /* ---------------- CATEGORIES FROM FIREBASE ---------------- */
   const [categories, setCategories] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [subtopics, setSubtopicies] = useState([]);
   const [features, setFeatures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +42,14 @@ function AddQuestionPage() {
       
       setCategories(categoriesData);
 
+      // Load topics
+      const topicsSnap = await getDocs(collection(db, "topics"));
+      const topicsData = topicsSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTopics(topicsData);
+
       // Load subtopics
       const subtopicsSnap = await getDocs(collection(db, "subtopics"));
       const subtopicsData = subtopicsSnap.docs.map(doc => ({
@@ -47,7 +57,7 @@ function AddQuestionPage() {
         ...doc.data()
       }));
       setSubtopicies(subtopicsData);
-      
+
       // Set preselected values if they exist
       if (preselectedData.preselectedCategory) {
         const selectedCat = categoriesData.find(c => c.id === preselectedData.preselectedCategory);
@@ -57,6 +67,7 @@ function AddQuestionPage() {
             ...prev,
             feature: selectedFeature?.id || "",
             category: selectedCat.id,
+            topic: "",
             subtopic: preselectedData.preselectedSubtopic || ""
           }));
         }
@@ -75,6 +86,7 @@ function AddQuestionPage() {
     correctAnswer: "",
     feature: "",
     category: "",
+    topic: "",
     subtopic: "",
     difficulty: "",
     imageUrl: "", // For puzzles and other visual content
@@ -112,7 +124,7 @@ function AddQuestionPage() {
     const featureType = getSelectedFeatureType();
     
     // Common required fields
-    const hasBasicFields = form.feature && form.category && form.subtopic;
+    const hasBasicFields = form.feature && form.category && form.topic && form.subtopic;
     
     if (!hasBasicFields) return false;
 
@@ -157,6 +169,7 @@ function AddQuestionPage() {
       
       if (!form.feature) errorMsg += "- Select Feature\n";
       if (!form.category) errorMsg += "- Select Category\n";
+      if (!form.topic) errorMsg += "- Select Topic\n";
       if (!form.subtopic) errorMsg += "- Select SubTopic\n";
       if (!form.question) errorMsg += "- Enter Question/Title\n";
       
@@ -174,37 +187,84 @@ function AddQuestionPage() {
     }
 
     try {
-      // Prepare data based on feature type
-      const dataToSave = {
-        feature: form.feature,
-        category: form.category,
-        subtopic: form.subtopic,
-        difficulty: form.difficulty,
-        createdAt: new Date(),
-        featureType: featureType
-      };
-
-      // Add feature-specific fields
-      if (featureType === "quiz") {
-        dataToSave.question = form.question;
-        dataToSave.options = form.options;
-        dataToSave.correctAnswer = form.correctAnswer;
-      } else if (featureType === "puzzle") {
-        dataToSave.question = form.question; // Title
-        dataToSave.imageUrl = form.imageUrl || "";
-        dataToSave.correctAnswer = form.correctAnswer || ""; // For puzzle validation
-      } else if (featureType === "study" || featureType === "article") {
-        dataToSave.question = form.question; // Title
-        dataToSave.description = form.description;
-        dataToSave.imageUrl = form.imageUrl || "";
-      } else {
-        // Default: save all fields
-        dataToSave.question = form.question;
-        dataToSave.description = form.description || "";
-        dataToSave.imageUrl = form.imageUrl || "";
+      // --- Helper: update puzzle counts for subtopic, topic, category ---
+      async function updatePuzzleCounts({ subtopicId, topicId, categoryId }) {
+        try {
+          // Subtopic
+          if (subtopicId) {
+            const snap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", subtopicId)));
+            await updateDoc(doc(db, "subtopics", subtopicId), { puzzleCount: snap.size });
+          }
+          // Topic
+          if (topicId) {
+            const snap = await getDocs(query(collection(db, "puzzles"), where("topicId", "==", topicId)));
+            await updateDoc(doc(db, "topics", topicId), { puzzleCount: snap.size });
+          }
+          // Category
+          if (categoryId) {
+            const snap = await getDocs(query(collection(db, "puzzles"), where("categoryId", "==", categoryId)));
+            await updateDoc(doc(db, "categories", categoryId), { puzzleCount: snap.size });
+          }
+        } catch (err) {
+          console.error("Failed to update puzzle counts:", err);
+        }
       }
 
-      await addDoc(collection(db, "questions"), dataToSave);
+      let dataToSave;
+      let collectionName = "questions";
+      if (featureType === "puzzle") {
+        // Save as a puzzle
+        collectionName = "puzzles";
+        dataToSave = {
+          title: form.question,
+          description: form.description || "",
+          imageUrl: form.imageUrl || "",
+          type: form.type || "",
+          feature: form.feature,
+          featureId: form.feature,
+          category: form.category,
+          categoryId: form.category,
+          topic: form.topic,
+          topicId: form.topic,
+          subtopic: form.subtopic,
+          subtopicId: form.subtopic,
+          difficulty: form.difficulty,
+          createdAt: new Date(),
+        };
+        if (form.correctAnswer) dataToSave.correctAnswer = form.correctAnswer;
+        const docRef = await addDoc(collection(db, collectionName), dataToSave);
+        await updatePuzzleCounts({
+          subtopicId: form.subtopic,
+          topicId: form.topic,
+          categoryId: form.category,
+        });
+      } else {
+        // Save as a quiz or other content
+        dataToSave = {
+          feature: form.feature,
+          category: form.category,
+          topic: form.topic,
+          subtopic: form.subtopic,
+          difficulty: form.difficulty,
+          createdAt: new Date(),
+          featureType: featureType
+        };
+        if (featureType === "quiz") {
+          dataToSave.question = form.question;
+          dataToSave.options = form.options;
+          dataToSave.correctAnswer = form.correctAnswer;
+        } else if (featureType === "study" || featureType === "article") {
+          dataToSave.question = form.question; // Title
+          dataToSave.description = form.description;
+          dataToSave.imageUrl = form.imageUrl || "";
+        } else {
+          // Default: save all fields
+          dataToSave.question = form.question;
+          dataToSave.description = form.description || "";
+          dataToSave.imageUrl = form.imageUrl || "";
+        }
+        await addDoc(collection(db, collectionName), dataToSave);
+      }
 
       // Update the category's quiz count
       const category = categories.find(c => c.name === form.category);
@@ -231,6 +291,7 @@ function AddQuestionPage() {
         correctAnswer: "",
         feature: "",
         category: "",
+        topic: "",
         subtopic: "",
         difficulty: "",
         imageUrl: "",
@@ -300,382 +361,152 @@ const normalizeQuestions = (rows) => {
 
   /* ---------------- SAVE BULK ---------------- */
 
+  // --- UNIFIED BULK IMPORT ---
   const saveImported = async () => {
-    console.log("🚀 NEW IMPORT CODE LOADED - Version 2.1 with duplicate detection");
     setImporting(true);
-
     try {
       let saved = 0;
       let skipped = 0;
-      const { updateDoc, doc: fsDoc } = await import("firebase/firestore");
-      const categoriesUpdated = new Set();
-
-      // Reload fresh data from Firestore
-      const [featuresSnap, categoriesSnap, subtopicsSnap, questionsSnap] = await Promise.all([
+      // Load all existing hierarchy
+      const [featuresSnap, categoriesSnap, topicsSnap, subtopicsSnap, questionsSnap] = await Promise.all([
         getDocs(collection(db, "features")),
         getDocs(collection(db, "categories")),
+        getDocs(collection(db, "topics")),
         getDocs(collection(db, "subtopics")),
-        getDocs(collection(db, "questions"))
+        getDocs(collection(db, "questions")),
       ]);
-
       const existingFeatures = featuresSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const existingCategories = categoriesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const existingSubtopicies = subtopicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // Create a Set of existing question texts for duplicate detection
-      const existingQuestions = new Set(
-        questionsSnap.docs.map(d => d.data().question?.toLowerCase().trim())
-      );
-      console.log(`📊 Found ${existingQuestions.size} existing questions in database`);
-
+      const existingTopics = topicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const existingSubtopics = subtopicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const existingQuestions = new Set(questionsSnap.docs.map(d => d.data().question?.toLowerCase().trim()));
       // Helper: Get or create Feature
       const getOrCreateFeature = async (featureName) => {
         if (!featureName) return null;
         const nameLower = featureName.toLowerCase();
-        
-        let existing = existingFeatures.find(f => 
-          (f.name && f.name.toLowerCase() === nameLower) ||
-          (f.label && f.label.toLowerCase() === nameLower)
-        );
-        
+        let existing = existingFeatures.find(f => (f.name && f.name.toLowerCase() === nameLower) || (f.label && f.label.toLowerCase() === nameLower));
         if (existing) return existing.id;
-        
-        const newFeature = {
-          name: featureName,
-          label: featureName,
-          type: nameLower,
-          icon: "📝",
-          createdAt: serverTimestamp()
-        };
-        
+        const newFeature = { name: featureName, label: featureName, type: nameLower, icon: "📝", createdAt: serverTimestamp() };
         const docRef = await addDoc(collection(db, "features"), newFeature);
         existingFeatures.push({ id: docRef.id, ...newFeature });
-        console.log(`✅ Created Feature: ${featureName} (ID: ${docRef.id})`);
         return docRef.id;
       };
-
       // Helper: Get or create Category
       const getOrCreateCategory = async (categoryName, featureId) => {
         if (!categoryName) return null;
         const nameLower = categoryName.toLowerCase();
-        
-        let existing = existingCategories.find(c => 
-          ((c.name && c.name.toLowerCase() === nameLower) ||
-           (c.label && c.label.toLowerCase() === nameLower) ||
-           c.id === nameLower)
-        );
-        
+        let existing = existingCategories.find(c => ((c.name && c.name.toLowerCase() === nameLower) || (c.label && c.label.toLowerCase() === nameLower) || c.id === nameLower));
         if (existing) return existing.id;
-        
         const categoryId = nameLower;
-        const newCategory = {
-          name: categoryName,
-          label: categoryName,
-          featureId: featureId || null,
-          published: true,
-          createdAt: serverTimestamp()
-        };
-        
+        const newCategory = { name: categoryName, label: categoryName, featureId: featureId || null, published: true, createdAt: serverTimestamp() };
         await setDoc(doc(db, "categories", categoryId), newCategory);
         existingCategories.push({ id: categoryId, ...newCategory });
-        console.log(`✅ Created Category: ${categoryName} (ID: ${categoryId})`);
         return categoryId;
       };
-
       // Helper: Get or create Topic
       const getOrCreateTopic = async (topicName, categoryId) => {
         if (!topicName) return null;
-        
-        // Try to find existing topic
-        const topicQuery = query(
-          collection(db, "topics"),
-          where("categoryId", "==", categoryId),
-          where("name", "==", topicName)
-        );
-        const topicSnap = await getDocs(topicQuery);
-        
-        if (!topicSnap.empty) {
-          return topicSnap.docs[0].id;
-        }
-        
-        // Create new topic
-        const newTopic = {
-          name: topicName,
-          label: topicName,
-          categoryId: categoryId,
-          isPublished: true,
-          sortOrder: 0,
-          quizCount: 0,
-          createdAt: serverTimestamp()
-        };
-        
+        let existing = existingTopics.find(t => t.categoryId === categoryId && ((t.name && t.name.toLowerCase() === topicName.toLowerCase()) || (t.label && t.label.toLowerCase() === topicName.toLowerCase())));
+        if (existing) return existing.id;
+        const newTopic = { name: topicName, label: topicName, categoryId, isPublished: true, sortOrder: 0, createdAt: serverTimestamp() };
         const docRef = await addDoc(collection(db, "topics"), newTopic);
-        console.log(`✅ Created Topic: ${topicName} (ID: ${docRef.id}) under Category: ${categoryId}`);
+        existingTopics.push({ id: docRef.id, ...newTopic });
         return docRef.id;
       };
-
       // Helper: Get or create Subtopic
-      const getOrCreateSubtopic = async (subtopicName, categoryId, featureId, topic = null) => {
+      const getOrCreateSubtopic = async (subtopicName, categoryId, featureId, topicId) => {
         if (!subtopicName) return null;
-        const nameLower = subtopicName.toLowerCase();
-        
-        let existing = existingSubtopicies.find(s => 
-          s.categoryId === categoryId &&
-          ((s.name && s.name.toLowerCase() === nameLower) ||
-           (s.label && s.label.toLowerCase() === nameLower))
-        );
-        
-        // Get or create topic if provided
-        let topicId = null;
-        if (topic) {
-          topicId = await getOrCreateTopic(topic, categoryId);
-        }
-        
-        if (existing) {
-          // Update topicId if provided and different
-          if (topicId && existing.topicId !== topicId) {
-            await updateDoc(doc(db, "subtopics", existing.id), { 
-              topicId,
-              topic // Keep old field for compatibility
-            });
-            existing.topicId = topicId;
-            console.log(`✅ Updated SubTopic topic: ${subtopicName} → ${topic} (${topicId})`);
-          }
-          return existing.id;
-        }
-        
-        const newSubtopic = {
-          name: subtopicName,
-          label: subtopicName,
-          categoryId: categoryId,
-          featureId: featureId || null,
-          topic: topic || null, // Keep for compatibility
-          topicId: topicId || null,
-          published: true,
-          quizCount: 0,
-          createdAt: serverTimestamp()
-        };
-        
+        let existing = existingSubtopics.find(s => s.categoryId === categoryId && ((s.name && s.name.toLowerCase() === subtopicName.toLowerCase()) || (s.label && s.label.toLowerCase() === subtopicName.toLowerCase())));
+        if (existing) return existing.id;
+        const newSubtopic = { name: subtopicName, label: subtopicName, categoryId, featureId: featureId || null, topicId: topicId || null, published: true, createdAt: serverTimestamp() };
         const docRef = await addDoc(collection(db, "subtopics"), newSubtopic);
-        existingSubtopicies.push({ id: docRef.id, ...newSubtopic });
-        console.log(`✅ Created SubTopic: ${subtopicName} (ID: ${docRef.id}) under Category: ${categoryId}, Topic: ${topic || 'None'} (ID: ${topicId || 'None'})`);
+        existingSubtopics.push({ id: docRef.id, ...newSubtopic });
         return docRef.id;
       };
-
-      // Collect unique features/categories/subtopics
-      const uniqueFeatures = new Set();
-      const uniqueCategories = new Set();
-      const uniqueSubtopicies = new Map();
-
+      // --- Main Bulk Import Loop ---
+      const subtopicIdsUpdated = new Set();
+      const topicIdsUpdated = new Set();
       for (const q of importedQuestions) {
-        if (q.feature) uniqueFeatures.add(q.feature);
-        if (q.category) uniqueCategories.add(q.category.toLowerCase());
-        if (q.subtopic && q.category) {
-          uniqueSubtopicies.set(`${q.category.toLowerCase()}|${q.subtopic}`, {
-            category: q.category.toLowerCase(),
-            subtopic: q.subtopic,
-            topic: q.topic || null
-          });
-        }
-      }
-
-      // Create all Features/Categories/Subtopicies upfront
-      const featureIdMap = new Map();
-      const categoryIdMap = new Map();
-      const subtopicIdMap = new Map();
-
-      for (const featureName of uniqueFeatures) {
         try {
-          const featureId = await getOrCreateFeature(featureName);
-          featureIdMap.set(featureName, featureId);
-        } catch (err) {
-          console.error(`Failed to create Feature: ${featureName}`, err);
-        }
-      }
-
-      for (const categoryName of uniqueCategories) {
-        try {
-          const featureId = featureIdMap.values().next().value || null;
-          const categoryId = await getOrCreateCategory(categoryName, featureId);
-          categoryIdMap.set(categoryName, categoryId);
-        } catch (err) {
-          console.error(`Failed to create Category: ${categoryName}`, err);
-        }
-      }
-
-      for (const [key, data] of uniqueSubtopicies) {
-        try {
-          const categoryId = categoryIdMap.get(data.category);
-          const featureId = featureIdMap.values().next().value || null;
-          const subtopicId = await getOrCreateSubtopic(data.subtopic, categoryId, featureId, data.topic);
-          subtopicIdMap.set(key, subtopicId);
-        } catch (err) {
-          console.error(`Failed to create Subtopic: ${data.subtopic}`, err);
-        }
-      }
-
-      // Now save questions with proper IDs
-      for (const q of importedQuestions) {
-        if (
-          !q.question ||
-          q.options.some((o) => !o) ||
-          !q.correctAnswer ||
-          !q.category ||
-          !q.difficulty
-        ) continue;
-
-        // Check for duplicate question
-        const questionTextLower = q.question.toLowerCase().trim();
-        if (existingQuestions.has(questionTextLower)) {
-          console.log(`⏭️  Skipping duplicate: "${q.question}"`);
-          skipped++;
-          continue;
-        }
-
-        const categoryLower = q.category.toLowerCase();
-        const featureId = q.feature ? featureIdMap.get(q.feature) : null;
-        const categoryId = categoryIdMap.get(categoryLower) || categoryLower;
-        const subtopicKey = `${categoryLower}|${q.subtopic}`;
-        const subtopicId = q.subtopic ? subtopicIdMap.get(subtopicKey) : null;
-
-        const questionData = {
-          question: q.question,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          category: categoryId,
-          difficulty: q.difficulty,
-          createdAt: new Date(),
-        };
-
-        if (q.feature) questionData.feature = q.feature;
-        if (q.subtopic) questionData.subtopic = q.subtopic;
-        if (q.topic) questionData.topic = q.topic;
-        if (featureId) questionData.featureId = featureId;
-        if (subtopicId) questionData.subtopicId = subtopicId;
-
-        // Debug first question
-        if (saved === 0) {
-          console.log("📝 First question to save:", {
-            feature: questionData.feature,
-            featureId: questionData.featureId,
-            category: questionData.category,
-            subtopic: questionData.subtopic,
-            subtopicId: questionData.subtopicId,
-            topic: questionData.topic
-          });
-        }
-
-        await addDoc(collection(db, "questions"), questionData);
-        
-        // Add to existing questions set to catch duplicates within the same import
-        existingQuestions.add(questionTextLower);
-
-        saved++;
-        categoriesUpdated.add(categoryId);
-      }
-
-      // Update quiz counts for all affected categories
-      for (const categoryId of categoriesUpdated) {
-        // categoryId is already the lowercase ID like "kids"
-        const category = existingCategories.find(c => c.id === categoryId);
-        if (category) {
-          const questionsQuery = query(
-            collection(db, "questions"),
-            where("category", "==", categoryId)
-          );
-          const questionsSnap = await getDocs(questionsQuery);
-          const newCount = questionsSnap.size;
-
-          await updateDoc(fsDoc(db, "categories", categoryId), {
-            quizCount: newCount,
-          });
-          
-          console.log(`✅ Updated category ${categoryId} quiz count: ${newCount}`);
-        }
-      }
-
-      // Update quiz counts for all affected subtopics
-      const subtopicsForCategory = existingSubtopicies.filter(s => 
-        Array.from(categoriesUpdated).includes(s.categoryId)
-      );
-      
-      console.log(`Updating quiz counts for ${subtopicsForCategory.length} subtopics...`);
-      
-      for (const subtopic of subtopicsForCategory) {
-        try {
-          // Count questions that have this subtopic ID
-          const questionsQuery = query(
-            collection(db, "questions"),
-            where("subtopicId", "==", subtopic.id)
-          );
-          const questionsSnap = await getDocs(questionsQuery);
-          const count = questionsSnap.size;
-
-          await updateDoc(fsDoc(db, "subtopics", subtopic.id), {
-            quizCount: count,
-          });
-          
-          console.log(`✅ Updated subtopic ${subtopic.name} quiz count: ${count}`);
-        } catch (err) {
-          console.error(`Failed to update subtopic ${subtopic.name}:`, err);
-        }
-      }
-
-      // Update quiz counts for all topics
-      console.log('Updating quiz counts for topics...');
-      const topicsSnap = await getDocs(collection(db, "topics"));
-      
-      for (const topicDoc of topicsSnap.docs) {
-        try {
-          const topicId = topicDoc.id;
-          const topicName = topicDoc.data().name;
-          
-          // Query subtopics linked to this topic directly from database
-          const subcatsQuery = query(
-            collection(db, "subtopics"),
-            where("topicId", "==", topicId)
-          );
-          const subcatsSnap = await getDocs(subcatsQuery);
-          
-          console.log(`📊 Topic "${topicName}" has ${subcatsSnap.size} subtopics`);
-          
-          // Count total questions across all subtopics for this topic
-          let totalQuestions = 0;
-          for (const subcatDoc of subcatsSnap.docs) {
-            const questionsQuery = query(
-              collection(db, "questions"),
-              where("subtopicId", "==", subcatDoc.id)
-            );
-            const questionsSnap = await getDocs(questionsQuery);
-            totalQuestions += questionsSnap.size;
-            
-            if (questionsSnap.size > 0) {
-              console.log(`  ↳ SubTopic "${subcatDoc.data().name}" has ${questionsSnap.size} questions`);
+          // Hierarchy creation
+          const featureId = await getOrCreateFeature(q.feature || "Quiz");
+          const categoryId = await getOrCreateCategory(q.category || "General", featureId);
+          const topicId = await getOrCreateTopic(q.topic || "General", categoryId);
+          const subtopicId = await getOrCreateSubtopic(q.subtopic || "General", categoryId, featureId, topicId);
+          // Prepare quiz or puzzle data
+          let docData = {
+            feature: q.feature,
+            category: categoryId,
+            topic: topicId,
+            subtopic: subtopicId,
+            featureId,
+            categoryId,
+            topicId,
+            subtopicId,
+            createdAt: new Date(),
+          };
+          if (q.question) {
+            // Quiz
+            docData = {
+              ...docData,
+              question: q.question,
+              options: [q.optionA, q.optionB, q.optionC, q.optionD],
+              correctAnswer: q.correctAnswer,
+              difficulty: q.difficulty || "easy",
+            };
+            // Check for duplicate
+            if (existingQuestions.has(q.question.toLowerCase().trim())) {
+              skipped++;
+              continue;
             }
+            await addDoc(collection(db, "questions"), docData);
+          } else if (q.title) {
+            // Puzzle
+            docData = {
+              ...docData,
+              title: q.title,
+              description: q.description,
+              imageUrl: q.imageUrl,
+              type: q.type,
+              data: {},
+            };
+            if (q.type === "matching" && q.pairs) docData.data.pairs = q.pairs;
+            if (q.type === "ordering" && q.items) docData.data.items = q.items;
+            if (q.type === "drag") {
+              if (q.draggables) docData.data.draggables = q.draggables;
+              if (q.targets) docData.data.targets = q.targets;
+            }
+            await addDoc(collection(db, "puzzles"), docData);
+          } else {
+            skipped++;
+            continue;
           }
-
-          await updateDoc(fsDoc(db, "topics", topicId), {
-            quizCount: totalQuestions,
-          });
-          
-          console.log(`✅ Updated topic ${topicName} quiz count: ${totalQuestions}`);
-        } catch (err) {
-          console.error(`Failed to update topic:`, err);
+          saved++;
+          subtopicIdsUpdated.add(subtopicId);
+          topicIdsUpdated.add(topicId);
+        } catch {
+          skipped++;
         }
       }
-
-      const message = skipped > 0 
-        ? `Bulk import successful! Saved ${saved} new questions, skipped ${skipped} duplicates.`
-        : `Bulk import successful! Saved ${saved} questions.`;
-      
-      alert(message);
+      // --- Update counts for subtopics and topics ---
+      for (const subtopicId of subtopicIdsUpdated) {
+        // Quiz count
+        const quizSnap = await getDocs(query(collection(db, "questions"), where("subtopicId", "==", subtopicId)));
+        // Puzzle count
+        const puzzleSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", subtopicId)));
+        await updateDoc(doc(db, "subtopics", subtopicId), { quizCount: quizSnap.size, puzzleCount: puzzleSnap.size });
+      }
+      for (const topicId of topicIdsUpdated) {
+        const quizSnap = await getDocs(query(collection(db, "questions"), where("topicId", "==", topicId)));
+        const puzzleSnap = await getDocs(query(collection(db, "puzzles"), where("topicId", "==", topicId)));
+        await updateDoc(doc(db, "topics", topicId), { quizCount: quizSnap.size, puzzleCount: puzzleSnap.size });
+      }
+      alert(`Bulk import complete! Saved: ${saved}, Skipped: ${skipped}`);
       setImportedQuestions([]);
     } catch (err) {
-      console.error("Error during bulk import:", err);
-      alert("Error during bulk import. Some questions may not have been saved.");
-    } finally {
-      setImporting(false);
+      alert("Bulk import failed");
     }
+    setImporting(false);
   };
 
   /* ---------------- TEMPLATES ---------------- */
@@ -785,6 +616,7 @@ const normalizeQuestions = (rows) => {
           ))}
         </select>
 
+
         <select
           style={{
             ...mediumWidth,
@@ -801,6 +633,7 @@ const normalizeQuestions = (rows) => {
             setForm({
               ...form,
               category: selectedCategory,
+              topic: "",
               subtopic: ""
             });
           }}
@@ -812,6 +645,25 @@ const normalizeQuestions = (rows) => {
             <option key={cat.id} value={cat.id}>
               {cat.name}{!cat.isPublished ? " (Draft)" : ""}
             </option>
+          ))}
+        </select>
+
+        {/* Topic Dropdown */}
+        <select
+          style={mediumWidth}
+          value={form.topic}
+          onChange={e => {
+            setForm({
+              ...form,
+              topic: e.target.value,
+              subtopic: ""
+            });
+          }}
+          disabled={!form.category}
+        >
+          <option value="">Select Topic</option>
+          {topics.filter(t => t.categoryId === form.category).map(t => (
+            <option key={t.id} value={t.id}>{t.label || t.name}</option>
           ))}
         </select>
 
@@ -834,12 +686,12 @@ const normalizeQuestions = (rows) => {
               subtopic: selectedSubtopic
             });
           }}
-          disabled={!form.category || preselectedData.preselectedSubtopic}
+          disabled={!form.topic || preselectedData.preselectedSubtopic}
           title={preselectedData.preselectedSubtopic ? `🔒 Pre-selected: ${preselectedData.subtopicName || ''}` : ""}
         >
           <option value="">Select SubTopic</option>
           {subtopics
-            .filter(sub => sub.categoryId === form.category)
+            .filter(sub => sub.categoryId === form.category && sub.topicId === form.topic)
             .map(sub => (
               <option key={sub.id} value={sub.id}>
                 {sub.name}
@@ -1002,6 +854,14 @@ const normalizeQuestions = (rows) => {
           </Button>
         </div>
       )}
+
+      <hr style={{ margin: "40px 0" }} />
+
+      <h2 style={{ marginBottom: 20 }}>📋 View & Manage Questions</h2>
+      <p style={{ color: "#64748b", marginBottom: 16, fontSize: 14 }}>
+        View all quiz questions, filter by feature/category/difficulty, sort, and manage deletions below.
+      </p>
+      <QuestionsTable />
     </AdminLayout>
   );
 }

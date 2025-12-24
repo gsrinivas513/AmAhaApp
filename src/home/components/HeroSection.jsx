@@ -69,14 +69,14 @@ export default function HeroSection() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
-                onClick={() => navigate('/quiz')}
+                onClick={() => navigate('/categories')}
                 className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg font-bold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
               >
                 <span className="relative z-10">🎮 Start Playing & Learning</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
               <button
-                onClick={() => navigate('/quiz')}
+                onClick={() => navigate('/explore')}
                 className="px-8 py-4 bg-white text-purple-600 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 transform hover:-translate-y-1 transition-all duration-300"
               >
                 🧩 Explore Categories

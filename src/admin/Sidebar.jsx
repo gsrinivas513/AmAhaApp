@@ -19,8 +19,8 @@ function Sidebar() {
 
   /* ---------------- COLLAPSE STATE ---------------- */
   const [open, setOpen] = useState({
-    global: true,
-    quiz: true,
+    global: false,
+    quiz: false,
     puzzles: false,
   });
 
@@ -29,7 +29,7 @@ function Sidebar() {
     if (location.pathname.startsWith("/admin/quiz")) {
       setOpen((o) => ({ ...o, quiz: true }));
     }
-    if (location.pathname.startsWith("/admin/puzzles")) {
+    if (location.pathname.startsWith("/admin/puzzles") || location.pathname.includes("visual-puzzle")) {
       setOpen((o) => ({ ...o, puzzles: true }));
     }
   }, [location.pathname]);
@@ -82,6 +82,7 @@ function Sidebar() {
         <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
         <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
         <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
+        <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
         <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
         <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
       </Section>
@@ -103,8 +104,9 @@ function Sidebar() {
         open={open.puzzles}
         onToggle={() => toggle("puzzles")}
       >
-        <DisabledItem icon={<PuzzleIcon />} label="Dashboard (Coming soon)" />
-        <DisabledItem icon={<GearIcon />} label="Config (Coming soon)" />
+        <Item icon={<PuzzleIcon />} label="Traditional Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
+        <Item icon={<PuzzleIcon />} label="Visual Puzzles" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
+        <DisabledItem icon={<GearIcon />} label="Dashboard (Coming soon)" />
       </Section>
     </div>
   );
