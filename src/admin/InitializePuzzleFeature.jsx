@@ -237,12 +237,12 @@ const InitializePuzzleFeature = () => {
           topic: 'drag-drop',
           difficulty: 'easy',
           items: [
-            { id: 1, text: 'Apple', correctZone: 'red' },
-            { id: 2, text: 'Banana', correctZone: 'yellow' },
-            { id: 3, text: 'Orange', correctZone: 'orange' },
-            { id: 4, text: 'Strawberry', correctZone: 'red' }
+            { id: 1, text: 'Apple', correctZone: 'Red' },
+            { id: 2, text: 'Banana', correctZone: 'Yellow' },
+            { id: 3, text: 'Orange', correctZone: 'Orange' },
+            { id: 4, text: 'Lime', correctZone: 'Green' }
           ],
-          dropZones: ['red', 'yellow', 'orange'],
+          dropZones: ['Red', 'Yellow', 'Orange', 'Green'],
           isPublished: true,
           createdAt: new Date().toISOString()
         }
