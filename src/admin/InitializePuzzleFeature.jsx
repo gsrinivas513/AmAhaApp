@@ -13,6 +13,39 @@ const InitializePuzzleFeature = () => {
     console.log(text);
   };
 
+  const handleResetPuzzles = async () => {
+    if (!window.confirm('Are you sure? This will delete all sample puzzles. You can then re-initialize to get fresh copies.')) {
+      return;
+    }
+    
+    setLoading(true);
+    setMessage('');
+    setError('');
+    setLogs([]);
+
+    try {
+      addLog("🗑️ Deleting all sample puzzles...");
+      
+      const { collection, getDocs, deleteDoc } = await import('firebase/firestore');
+      const puzzlesSnap = await getDocs(collection(db, 'puzzles'));
+      
+      let count = 0;
+      for (const puzzleDoc of puzzlesSnap.docs) {
+        await deleteDoc(puzzleDoc.ref);
+        count++;
+        addLog(`  ✅ Deleted: ${puzzleDoc.id}`);
+      }
+      
+      setMessage(`✅ Deleted ${count} puzzles! Now click "Initialize Now" to create fresh sample puzzles.`);
+    } catch (err) {
+      console.error("❌ Delete error:", err);
+      setError(`❌ Error: ${err.message}`);
+      addLog(`❌ ERROR: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInitialize = async () => {
     setLoading(true);
     setMessage('');
@@ -275,22 +308,41 @@ const InitializePuzzleFeature = () => {
       <h3>🎮 Initialize Puzzle Feature</h3>
       <p>This will create the puzzle feature, categories, and puzzle types in the database.</p>
       
-      <button
-        onClick={handleInitialize}
-        disabled={loading}
-        style={{
-          padding: '10px 20px',
-          backgroundColor: loading ? '#ccc' : '#4CAF50',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontSize: '14px',
-          fontWeight: 'bold'
-        }}
-      >
-        {loading ? '⏳ Initializing...' : '🚀 Initialize Now'}
-      </button>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+        <button
+          onClick={handleInitialize}
+          disabled={loading}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: loading ? '#ccc' : '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {loading ? '⏳ Initializing...' : '🚀 Initialize Now'}
+        </button>
+
+        <button
+          onClick={handleResetPuzzles}
+          disabled={loading}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: loading ? '#ccc' : '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          {loading ? '⏳ Resetting...' : '🗑️ Reset All Puzzles'}
+        </button>
+      </div>
 
       {/* Live logs */}
       {logs.length > 0 && (
