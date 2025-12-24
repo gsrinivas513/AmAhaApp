@@ -19,8 +19,8 @@ function Sidebar() {
 
   /* ---------------- COLLAPSE STATE ---------------- */
   const [open, setOpen] = useState({
-    global: true,
-    quiz: true,
+    global: false,
+    quiz: false,
     puzzles: false,
   });
 

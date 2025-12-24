@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import AdminLayout from './AdminLayout';
 import { addPuzzle, updatePuzzle, getPuzzleById } from '../quiz/services/puzzleService';
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -355,8 +356,9 @@ function AddPuzzlePage({ puzzleId }) {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">{puzzleId ? 'Edit Puzzle' : 'Add New Puzzle'}</h2>
+    <AdminLayout>
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-2xl font-bold mb-4">{puzzleId ? 'Edit Puzzle' : 'Add New Traditional Puzzle'}</h2>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       {success && <div className="text-green-600 mb-2">Puzzle saved!</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -446,6 +448,7 @@ function AddPuzzlePage({ puzzleId }) {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 }
 
