@@ -47,6 +47,23 @@ export default function DragPuzzle({ puzzle, onComplete, isInline = false }) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
   const [attempts, setAttempts] = useState(0);
+  const [draggedItem, setDraggedItem] = useState(null);
+
+  function handleDragStart(item) {
+    setDraggedItem(item);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+
+  function handleDrop(target) {
+    if (draggedItem) {
+      setPlaced(p => ({ ...p, [draggedItem]: target }));
+      setDraggedItem(null);
+    }
+  }
 
   function handlePlace(item, target) {
     setPlaced(p => ({ ...p, [item]: target }));
@@ -155,17 +172,19 @@ export default function DragPuzzle({ puzzle, onComplete, isInline = false }) {
               <h3 className="text-lg font-bold text-gray-800 mb-4">📦 Items to Sort:</h3>
               <div className="flex flex-wrap gap-3">
                 {draggables.map(item => (
-                  <button
+                  <div
                     key={item}
-                    onClick={() => handlePlace(item, "")}
-                    className={`px-4 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 ${
+                    draggable={!done}
+                    onDragStart={() => handleDragStart(item)}
+                    onDragEnd={() => setDraggedItem(null)}
+                    className={`px-4 py-3 rounded-lg font-semibold transition-all transform cursor-grab active:cursor-grabbing ${
                       placed[item]
-                        ? "bg-gray-200 text-gray-500 opacity-60"
-                        : "bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:shadow-xl"
-                    } ${done ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}`}
+                        ? "bg-gray-200 text-gray-500 opacity-50"
+                        : "bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                    } ${draggedItem === item ? "opacity-60 scale-95" : ""} ${done ? "cursor-not-allowed" : ""}`}
                   >
                     {item}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -177,7 +196,11 @@ export default function DragPuzzle({ puzzle, onComplete, isInline = false }) {
                 {targets.map(target => (
                   <div
                     key={target}
-                    className="border-3 border-dashed border-purple-300 rounded-xl p-6 bg-purple-50 min-h-[140px] transition"
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(target)}
+                    className={`border-3 border-dashed rounded-xl p-6 min-h-[140px] transition ${
+                      draggedItem ? "border-purple-500 bg-purple-100" : "border-purple-300 bg-purple-50"
+                    }`}
                   >
                     <h4 className="font-bold text-purple-700 mb-4 text-lg">📍 {target}</h4>
                     <div className="space-y-2">
@@ -186,8 +209,10 @@ export default function DragPuzzle({ puzzle, onComplete, isInline = false }) {
                         .map(item => (
                           <div
                             key={item}
-                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 to-teal-400 text-white font-semibold cursor-pointer hover:shadow-md transition"
-                            onClick={() => handlePlace(item, "")}
+                            draggable={!done}
+                            onDragStart={() => handleDragStart(item)}
+                            onDragEnd={() => setDraggedItem(null)}
+                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 to-teal-400 text-white font-semibold cursor-grab active:cursor-grabbing hover:shadow-md transition"
                           >
                             ✓ {item}
                           </div>
