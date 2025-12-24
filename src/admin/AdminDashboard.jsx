@@ -4,6 +4,7 @@ import AdminLayout from "./AdminLayout";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Card, Button } from "../components/ui";
+import InitializePuzzleFeature from "./InitializePuzzleFeature";
 
 /**
  * AdminDashboard
@@ -124,6 +125,9 @@ function AdminDashboard() {
           <Button variant="primary" onClick={exportCSV}>Download CSV</Button>
         </div>
       </div>
+
+      {/* Puzzle Feature Initialization */}
+      <InitializePuzzleFeature />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18, marginTop: 18 }}>
         <Card>

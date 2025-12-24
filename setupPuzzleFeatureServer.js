@@ -1,56 +1,42 @@
-// setupPuzzleFeature.js - BROWSER CONSOLE VERSION
-// Usage:
-// 1. Make sure app is running at http://localhost:3000
-// 2. Open browser DevTools (F12)
-// 3. Go to Console tab
-// 4. Copy-paste this entire script
-// 5. Press Enter
-// 6. Wait for ✅ message
-// 7. Refresh the page (F5 or Cmd+R)
+#!/usr/bin/env node
 
-(async function setupPuzzleFeature() {
-  try {
-    console.log("🚀 Starting Puzzle Feature Setup...");
-    
-    // Access Firebase Firestore from React app's window object
-    // The app uses: import { db } from '../firebase/firebaseConfig'
-    
-    // Wait a bit to ensure modules are loaded
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Try to get db from window.__firebaseDb (set by some apps) or create REST call
-    let db;
-    
-    // Method 1: Check if firebase-admin SDK is available in window
-    if (window.firebase && window.firebase.firestore) {
-      db = window.firebase.firestore();
-    }
-    // Method 2: Use Firestore REST API instead
-    else {
-      console.log("Using Firestore REST API...");
-      // Get Firebase config from localStorage (React app stores this)
-      const firebaseConfig = JSON.parse(localStorage.getItem('firebaseConfig') || '{}');
-      
-      if (!firebaseConfig.projectId) {
-        throw new Error("Firebase config not found. Please ensure app is fully loaded.");
-      }
-      
-      // We'll use REST API calls instead
-      await setupWithRestAPI(firebaseConfig);
-      return;
-    }
+/**
+ * setupPuzzleFeature.js - Server-side setup script
+ * Run from terminal: node setupPuzzleFeature.js
+ * Requires: Firebase Admin SDK (npm install firebase-admin)
+ */
+
+const admin = require('firebase-admin');
+const path = require('path');
+
+// Initialize Firebase Admin SDK
+// Make sure you have downloaded your Firebase service account key
+const serviceAccountPath = path.join(__dirname, 'firebaseAdminKey.json');
+
+try {
+  const serviceAccount = require(serviceAccountPath);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+} catch (error) {
+  console.error('❌ Error: Cannot find firebaseAdminKey.json');
+  console.error('Please download your Firebase service account key and save it as firebaseAdminKey.json');
+  process.exit(1);
+}
+
+const db = admin.firestore();
 
 async function setupPuzzleFeature() {
   try {
-    console.log("🚀 Starting Puzzle Feature Setup...");
+    console.log("🚀 Starting Puzzle Feature Setup...\n");
 
-    // Step 1: Check if Puzzle feature exists
-    console.log("\n📝 Step 1: Creating Puzzle Feature...");
-    const featuresSnap = await db.collection("features").where("featureType", "==", "puzzle").get();
+    // Step 1: Create or get Puzzle feature
+    console.log("📝 Step 1: Creating Puzzle Feature...");
+    const featuresRef = db.collection("features");
+    const puzzleFeatureQuery = await featuresRef.where("featureType", "==", "puzzle").get();
     
     let puzzleFeatureId;
-    if (featuresSnap.empty) {
-      // Create new puzzle feature
+    if (puzzleFeatureQuery.empty) {
       const newFeature = {
         name: "Puzzles",
         label: "Puzzles",
@@ -58,14 +44,14 @@ async function setupPuzzleFeature() {
         icon: "🧩",
         enabled: true,
         featureType: "puzzle",
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
-      const featureRef = await db.collection("features").add(newFeature);
-      puzzleFeatureId = featureRef.id;
+      const docRef = await featuresRef.add(newFeature);
+      puzzleFeatureId = docRef.id;
       console.log("✅ Created Puzzle Feature:", puzzleFeatureId);
     } else {
-      puzzleFeatureId = featuresSnap.docs[0].id;
+      puzzleFeatureId = puzzleFeatureQuery.docs[0].id;
       console.log("✅ Puzzle Feature already exists:", puzzleFeatureId);
     }
 
@@ -78,7 +64,7 @@ async function setupPuzzleFeature() {
         description: "Picture-based interactive puzzles",
         featureId: puzzleFeatureId,
         published: true,
-        createdAt: new Date()
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
       },
       {
         name: "Traditional Puzzles",
@@ -86,19 +72,21 @@ async function setupPuzzleFeature() {
         description: "Matching, ordering, and drag-drop puzzles",
         featureId: puzzleFeatureId,
         published: true,
-        createdAt: new Date()
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
       }
     ];
 
     const categoryIds = {};
+    const categoriesRef = db.collection("categories");
+    
     for (const cat of puzzleCategories) {
-      const existing = await db.collection("categories")
+      const existing = await categoriesRef
         .where("name", "==", cat.name)
         .where("featureId", "==", puzzleFeatureId)
         .get();
       
       if (existing.empty) {
-        const catRef = await db.collection("categories").add(cat);
+        const catRef = await categoriesRef.add(cat);
         categoryIds[cat.name] = catRef.id;
         console.log(`  ✅ Created category: ${cat.name}`);
       } else {
@@ -124,24 +112,26 @@ async function setupPuzzleFeature() {
     };
 
     const topicIds = {};
+    const topicsRef = db.collection("topics");
+    
     for (const [categoryName, topics] of Object.entries(topicsData)) {
       topicIds[categoryName] = {};
       const categoryId = categoryIds[categoryName];
       
       for (const topic of topics) {
-        const existing = await db.collection("topics")
+        const existing = await topicsRef
           .where("name", "==", topic.name)
           .where("categoryId", "==", categoryId)
           .get();
         
         if (existing.empty) {
-          const topicRef = await db.collection("topics").add({
+          const topicRef = await topicsRef.add({
             name: topic.name,
             label: topic.label,
             categoryId: categoryId,
             isPublished: true,
             sortOrder: 0,
-            createdAt: new Date()
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
           });
           topicIds[categoryName][topic.name] = topicRef.id;
           console.log(`  ✅ Created topic: ${topic.label}`);
@@ -190,6 +180,8 @@ async function setupPuzzleFeature() {
       }
     };
 
+    const subtopicsRef = db.collection("subtopics");
+    
     for (const [categoryName, topics] of Object.entries(subtopicsData)) {
       const categoryId = categoryIds[categoryName];
       
@@ -197,14 +189,14 @@ async function setupPuzzleFeature() {
         const topicId = topicIds[categoryName][topicName];
         
         for (const subtopic of subtopics) {
-          const existing = await db.collection("subtopics")
+          const existing = await subtopicsRef
             .where("name", "==", subtopic.name)
             .where("categoryId", "==", categoryId)
             .where("topicId", "==", topicId)
             .get();
           
           if (existing.empty) {
-            await db.collection("subtopics").add({
+            await subtopicsRef.add({
               name: subtopic.name,
               label: subtopic.label,
               categoryId: categoryId,
@@ -212,7 +204,7 @@ async function setupPuzzleFeature() {
               published: true,
               quizCount: 0,
               puzzleCount: 0,
-              createdAt: new Date()
+              createdAt: admin.firestore.FieldValue.serverTimestamp()
             });
             console.log(`  ✅ Created subtopic: ${subtopic.label}`);
           } else {
@@ -234,10 +226,12 @@ async function setupPuzzleFeature() {
     console.log("   ├─ Matching Pairs (Topic)");
     console.log("   ├─ Ordering (Topic)");
     console.log("   └─ Drag and Drop (Topic)");
-    console.log("\n🎉 Ready to create puzzles!");
+    console.log("\n🎉 Database setup complete! Ready to create puzzles!");
 
+    process.exit(0);
   } catch (error) {
     console.error("❌ Error during setup:", error);
+    process.exit(1);
   }
 }
 
