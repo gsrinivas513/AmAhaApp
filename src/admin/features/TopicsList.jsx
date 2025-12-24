@@ -1,6 +1,7 @@
 // src/admin/features/TopicsList.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Button } from "../../components/ui";
+import { countPuzzlesForTopic } from "../../puzzles/puzzleCountService";
 
 function TopicsList({
   topics,
@@ -12,8 +13,26 @@ function TopicsList({
   onEditTopic,
   onDeleteTopic,
   onToggleTopicPublish,
-  onAddTopic
+  onAddTopic,
+  onAddPuzzle
 }) {
+  const [puzzleCounts, setPuzzleCounts] = useState({});
+
+  // Load puzzle counts dynamically when topics change
+  useEffect(() => {
+    const loadPuzzleCounts = async () => {
+      if (!topics || topics.length === 0) return;
+      
+      const counts = {};
+      for (const topic of topics) {
+        const count = await countPuzzlesForTopic(topic.id, topic.name || topic.label);
+        counts[topic.id] = count;
+      }
+      setPuzzleCounts(counts);
+    };
+
+    loadPuzzleCounts();
+  }, [topics]);
   const getCategoryName = (catId) => {
     const cat = categories.find((c) => c.id === catId);
     return cat ? cat.label : "Unknown Category";
@@ -34,7 +53,7 @@ function TopicsList({
   };
 
   const getQuizCount = (topic) => topic.quizCount || 0;
-  const getPuzzleCount = (topic) => topic.puzzleCount || 0;
+  const getPuzzleCount = (topicId) => puzzleCounts[topicId] !== undefined ? puzzleCounts[topicId] : 0;
 
   if (!selectedCategoryId) {
     return (
@@ -110,7 +129,9 @@ function TopicsList({
                     {topic.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
-                    {getSubtopicCount(topic.id)} subtopics | {isPuzzleCategory() ? `${getPuzzleCount(topic)} puzzles` : `${getQuizCount(topic)} quizzes`}
+                    {isPuzzleCategory() 
+                      ? `${getPuzzleCount(topic.id)} puzzles` 
+                      : `${getSubtopicCount(topic.id)} subtopics | ${getQuizCount(topic)} quizzes`}
                   </div>
                 </div>
               </div>
@@ -185,6 +206,30 @@ function TopicsList({
                 >
                   🗑️
                 </Button>
+                {isPuzzleCategory() && onAddPuzzle && (
+                  <Button
+                    title="Add Puzzle"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddPuzzle(topic);
+                    }}
+                    style={{
+                      padding: "4px",
+                      fontSize: 12,
+                      background: "#fef3c7",
+                      color: "#92400e",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    +
+                  </Button>
+                )}
               </div>
             </div>
           </Card>

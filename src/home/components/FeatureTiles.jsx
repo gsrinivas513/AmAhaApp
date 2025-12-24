@@ -7,6 +7,7 @@ import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
 import PuzzleCard from "../../puzzles/PuzzleCard";
+import { countPuzzlesForCategory } from "../../puzzles/puzzleCountService";
 
 // Topics carousel component
 function TopicsCarouselSection({ topics }) {
@@ -244,7 +245,7 @@ function FeatureCarouselSection({ feature, categories }) {
                     </h3>
                     
                     <p className="text-xs text-gray-600 mb-2 font-medium">
-                      {category.quizCount || 0} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
+                      {feature.featureType === "puzzle" ? (category.puzzleCount !== undefined ? category.puzzleCount : (category.quizCount || 0)) : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
                     </p>
                     
                     {/* Rating display */}
@@ -702,6 +703,32 @@ export default function FeatureTiles() {
 
   useEffect(() => {
     getPuzzlesByCategory("Kids Learning").then(setPuzzles); // Example: load for one category
+  }, []);
+
+  // Load puzzle counts for all puzzle categories
+  useEffect(() => {
+    const loadPuzzleCounts = async () => {
+      if (featuresWithCategories.length === 0) return;
+      
+      const updated = await Promise.all(
+        featuresWithCategories.map(async (item) => {
+          if (item.feature.featureType === 'puzzle') {
+            const categoriesWithCounts = await Promise.all(
+              item.categories.map(async (cat) => {
+                const puzzleCount = await countPuzzlesForCategory(cat.id, cat.name || cat.label);
+                return { ...cat, puzzleCount };
+              })
+            );
+            return { ...item, categories: categoriesWithCounts };
+          }
+          return item;
+        })
+      );
+      
+      setFeaturesWithCategories(updated);
+    };
+    
+    loadPuzzleCounts();
   }, []);
 
   const sections = createSections(categories);

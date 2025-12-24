@@ -167,44 +167,61 @@ export default function UnifiedPuzzlePage() {
       );
   }
 
-  // Show completion screen if puzzle is completed
-  if (completed) {
-    return (
-      <SiteLayout>
-        <div className="p-8 text-center max-w-2xl mx-auto">
-          <div className="text-6xl mb-6">🎉</div>
-          <h1 className="text-3xl font-bold mb-4">Puzzle Complete!</h1>
-          <p className="text-gray-600 mb-8">Great job! You solved the puzzle.</p>
-
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={handleNavigateBack}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600"
-            >
-              ← Back to Puzzles
-            </button>
-            <button
-              onClick={() => {
-                setCompleted(false);
-                setPuzzle(null);
-              }}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </SiteLayout>
-    );
-  }
-
+  // Show completion modal inline (overlay on same page)
   return (
     <SiteLayout>
+      {/* Header with Back Button */}
+      <div className="bg-gradient-to-r from-purple-300 via-pink-200 to-orange-200 text-gray-800 py-6 px-4 shadow-lg">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div>
+            <button
+              onClick={handleNavigateBack}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-400/30 hover:bg-gray-400/50 rounded-lg transition-colors font-semibold text-gray-800"
+            >
+              <span>←</span> Back
+            </button>
+          </div>
+          <h2 className="text-2xl font-bold">{puzzle.title}</h2>
+          <div className="w-20"></div>
+        </div>
+      </div>
+
       <div style={{ background: "#ffffff", minHeight: "100vh", padding: "12px 12px 32px 12px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           {puzzleComponent}
         </div>
       </div>
+
+      {/* Completion Modal - Overlay on same page */}
+      {completed && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+            <div className="text-6xl mb-6 animate-bounce">🎉</div>
+            <h1 className="text-3xl font-bold mb-2 text-gray-800">Puzzle Complete!</h1>
+            <p className="text-gray-600 mb-8">Great job! You solved the puzzle.</p>
+
+            <div className="flex gap-4 justify-center flex-col sm:flex-row">
+              <button
+                onClick={handleNavigateBack}
+                className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+              >
+                ← Back to Puzzles
+              </button>
+              <button
+                onClick={() => {
+                  setCompleted(false);
+                  setPuzzle(null);
+                  // Reload puzzle to reset it
+                  window.location.reload();
+                }}
+                className="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </SiteLayout>
   );
 }

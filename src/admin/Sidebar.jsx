@@ -82,6 +82,7 @@ function Sidebar() {
         <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
         <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
         <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
+        <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
         <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
         <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
       </Section>

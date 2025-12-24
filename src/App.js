@@ -16,6 +16,8 @@ import Navbar from "./components/Navbar";
 /* PUBLIC */
 import HomePage from "./home/HomePage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import AllFeaturesPage from "./pages/AllFeaturesPage";
+import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
 
 /* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
@@ -54,6 +56,7 @@ import AddPuzzlePage from "./admin/AddPuzzlePage";
 import PuzzleListPage from "./admin/PuzzleListPage";
 import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
 import VisualPuzzleAdminPage from "./admin/VisualPuzzleAdminPage";
+import SocialMediaManagerPage from "./admin/SocialMediaManagerPage";
 
 /* PUZZLES - USER */
 import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
@@ -71,6 +74,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/categories" element={<AllFeaturesPage />} />
+        <Route path="/explore" element={<ExploreCategoriesPage />} />
 
         {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
@@ -114,6 +119,7 @@ function App() {
         <Route path="/admin/puzzles/dashboard" element={<PuzzlesDashboardPage />} />
         <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
+        <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
         <Route path="/admin/debug-categories" element={<DebugCategories />} />
         <Route path="/admin/fix-puzzle-categories" element={<FixPuzzleCategories />} />
