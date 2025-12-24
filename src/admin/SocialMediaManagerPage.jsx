@@ -60,23 +60,31 @@ function SocialMediaManagerPage() {
         contentType,
         postsToGenerate
       );
+      
       // Show success message
       alert(`✅ Generated ${generated.length} social media posts!`);
-      // Switch to drafts tab and load the generated posts
+      console.log('Generated posts:', generated);
+      
+      // Immediately set the generated posts in state
+      setPosts(generated);
+      
+      // Switch to drafts tab
       setActiveTab('drafts');
-      // Force reload of draft posts
-      setTimeout(() => {
-        setLoading(true);
-        SocialContentEngine.getPostsByStatus('draft')
-          .then((draftPosts) => {
-            setPosts(draftPosts);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.error('Error fetching draft posts:', error);
-            setLoading(false);
-          });
-      }, 300);
+      
+      // Also fetch from Firestore to ensure we have the latest
+      setTimeout(async () => {
+        try {
+          setLoading(true);
+          const draftPosts = await SocialContentEngine.getPostsByStatus('draft');
+          console.log('Fetched draft posts from Firestore:', draftPosts);
+          setPosts(draftPosts);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching draft posts:', error);
+          // Keep the generated posts if fetch fails
+          setLoading(false);
+        }
+      }, 500);
     } catch (error) {
       console.error('Error generating posts:', error);
       alert('Failed to generate posts. Check console for details.');

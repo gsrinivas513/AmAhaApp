@@ -517,18 +517,39 @@ class SocialContentEngine {
    */
   async getPostsByStatus(status) {
     try {
-      const q = query(
-        collection(db, 'social_posts'),
-        where('status', '==', status),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      // First try with orderBy (requires composite index)
+      try {
+        const q = query(
+          collection(db, 'social_posts'),
+          where('status', '==', status),
+          orderBy('createdAt', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      } catch (indexError) {
+        // If composite index doesn't exist, query without orderBy
+        console.log('Composite index not available, fetching without orderBy');
+        const q = query(
+          collection(db, 'social_posts'),
+          where('status', '==', status)
+        );
+        const snapshot = await getDocs(q);
+        const posts = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // Sort manually by createdAt
+        return posts.sort((a, b) => {
+          const timeA = a.createdAt?.toDate?.() || new Date(a.createdAt);
+          const timeB = b.createdAt?.toDate?.() || new Date(b.createdAt);
+          return timeB - timeA;
+        });
+      }
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching posts by status:', error);
       return [];
     }
   }
