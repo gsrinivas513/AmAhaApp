@@ -6,6 +6,7 @@ import { addDoc, collection, getDocs, query, where, doc, setDoc, updateDoc, serv
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Card, Button } from "../components/ui";
+import QuestionsTable from "./components/QuestionsTable";
 
 function AddQuestionPage() {
   const location = useLocation();
@@ -853,6 +854,14 @@ const normalizeQuestions = (rows) => {
           </Button>
         </div>
       )}
+
+      <hr style={{ margin: "40px 0" }} />
+
+      <h2 style={{ marginBottom: 20 }}>📋 View & Manage Questions</h2>
+      <p style={{ color: "#64748b", marginBottom: 16, fontSize: 14 }}>
+        View all quiz questions, filter by feature/category/difficulty, sort, and manage deletions below.
+      </p>
+      <QuestionsTable />
     </AdminLayout>
   );
 }

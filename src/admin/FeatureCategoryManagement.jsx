@@ -65,6 +65,14 @@ export default function FeatureCategoryManagement() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Collapse/Expand state for sections
+  const [expandedSections, setExpandedSections] = useState({
+    features: false,
+    categories: false,
+    topics: false,
+    subtopics: false
+  });
+
   // Refs to track what has been loaded to prevent redundant calls
   const loadedCategoriesRef = useRef(new Set());
   const visualizationLoadedRef = useRef(false);
@@ -487,54 +495,154 @@ export default function FeatureCategoryManagement() {
         </div>
 
         <div className="fcm-main-grid">
-          <FeaturesList
-            features={featureData.features}
-            selectedFeatureId={selectedFeatureId}
-            categories={categoryData.categories}
-            onSelectFeature={handleSelectFeature}
-            onEditFeature={handleEditFeature}
-            onDeleteFeature={handleDeleteFeature}
-            onToggleFeaturePublish={handleToggleFeaturePublish}
-            onAddFeature={handleAddFeature}
-          />
+          {/* Features Section */}
+          <div className="fcm-features-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, features: !prev.features }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.features ? "#667eea" : "#f1f5f9",
+                color: expandedSections.features ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.features ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>✨ Features</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.features ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.features && (
+              <FeaturesList
+                features={featureData.features}
+                selectedFeatureId={selectedFeatureId}
+                categories={categoryData.categories}
+                onSelectFeature={handleSelectFeature}
+                onEditFeature={handleEditFeature}
+                onDeleteFeature={handleDeleteFeature}
+                onToggleFeaturePublish={handleToggleFeaturePublish}
+                onAddFeature={handleAddFeature}
+              />
+            )}
+          </div>
 
-          <CategoriesList
-            categories={categoryData.categories}
-            selectedCategoryId={selectedCategoryId}
-            selectedFeatureId={selectedFeatureId}
-            features={featureData.features}
-            subtopics={allSubtopics}
-            onSelectCategory={handleSelectCategory}
-            onEditCategory={handleEditCategory}
-            onDeleteCategory={handleDeleteCategory}
-            onToggleCategoryPublish={handleToggleCategoryPublish}
-            onAddCategory={handleAddCategory}
-          />
+          {/* Categories Section */}
+          <div className="fcm-categories-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, categories: !prev.categories }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.categories ? "#667eea" : "#f1f5f9",
+                color: expandedSections.categories ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.categories ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>📁 Categories</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.categories ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.categories && (
+              <CategoriesList
+                categories={categoryData.categories}
+                selectedCategoryId={selectedCategoryId}
+                selectedFeatureId={selectedFeatureId}
+                features={featureData.features}
+                subtopics={allSubtopics}
+                onSelectCategory={handleSelectCategory}
+                onEditCategory={handleEditCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onToggleCategoryPublish={handleToggleCategoryPublish}
+                onAddCategory={handleAddCategory}
+              />
+            )}
+          </div>
 
-          <TopicsList
-            topics={allTopics}
-            selectedTopicId={selectedTopicId}
-            selectedCategoryId={selectedCategoryId}
-            categories={categoryData.categories}
-            subtopics={allSubtopics}
-            onSelectTopic={handleSelectTopic}
-            onEditTopic={handleEditTopic}
-            onDeleteTopic={handleDeleteTopic}
-            onToggleTopicPublish={handleToggleTopicPublish}
-            onAddTopic={handleAddTopic}
-          />
+          {/* Topics Section */}
+          <div className="fcm-topics-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, topics: !prev.topics }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.topics ? "#667eea" : "#f1f5f9",
+                color: expandedSections.topics ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.topics ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>📚 Topics</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.topics ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.topics && (
+              <TopicsList
+                topics={allTopics}
+                selectedTopicId={selectedTopicId}
+                selectedCategoryId={selectedCategoryId}
+                categories={categoryData.categories}
+                subtopics={allSubtopics}
+                onSelectTopic={handleSelectTopic}
+                onEditTopic={handleEditTopic}
+                onDeleteTopic={handleDeleteTopic}
+                onToggleTopicPublish={handleToggleTopicPublish}
+                onAddTopic={handleAddTopic}
+              />
+            )}
+          </div>
 
-          <SubTopicsList
-            subtopics={allSubtopics}
-            selectedTopicId={selectedTopicId}
-            selectedCategoryId={selectedCategoryId}
-            topics={allTopics}
-            onEditSubtopic={handleEditSubtopic}
-            onDeleteSubtopic={handleDeleteSubtopic}
-            onToggleSubtopicPublish={handleToggleSubtopicPublish}
-            onAddSubtopic={handleAddSubtopic}
-            onAddQuestion={handleAddQuestion}
-          />
+          {/* Subtopics Section */}
+          <div className="fcm-subtopics-section">
+            <div 
+              onClick={() => setExpandedSections(prev => ({ ...prev, subtopics: !prev.subtopics }))}
+              style={{
+                padding: "12px 16px",
+                background: expandedSections.subtopics ? "#667eea" : "#f1f5f9",
+                color: expandedSections.subtopics ? "white" : "#1e293b",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: expandedSections.subtopics ? 12 : 0,
+                transition: "all 0.2s ease"
+              }}
+            >
+              <span>❓ SubTopics</span>
+              <span style={{ fontSize: 12 }}>{expandedSections.subtopics ? "▼" : "▶"}</span>
+            </div>
+            {expandedSections.subtopics && (
+              <SubTopicsList
+                subtopics={allSubtopics}
+                selectedTopicId={selectedTopicId}
+                selectedCategoryId={selectedCategoryId}
+                topics={allTopics}
+                onEditSubtopic={handleEditSubtopic}
+                onDeleteSubtopic={handleDeleteSubtopic}
+                onToggleSubtopicPublish={handleToggleSubtopicPublish}
+                onAddSubtopic={handleAddSubtopic}
+                onAddQuestion={handleAddQuestion}
+              />
+            )}
+          </div>
         </div>
 
         {/* Flow Visualization */}

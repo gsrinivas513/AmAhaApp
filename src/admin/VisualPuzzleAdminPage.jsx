@@ -44,10 +44,11 @@ function VisualPuzzleAdminPage({ puzzleId }) {
   const [categories, setCategories] = useState([]);
   const [topics, setTopics] = useState([]);
   const [subtopics, setSubtopics] = useState([]);
+  const [features, setFeatures] = useState([]);
   const editorRef = useRef();
 
   React.useEffect(() => {
-    loadCategories();
+    loadCategoriesAndFeatures();
   }, []);
 
   React.useEffect(() => {
@@ -62,18 +63,48 @@ function VisualPuzzleAdminPage({ puzzleId }) {
     }
   }, [puzzle.topicId]);
 
-  const loadCategories = async () => {
+  const loadCategoriesAndFeatures = async () => {
     try {
-      const q = query(collection(db, "categories"));
-      const snapshot = await getDocs(q);
-      setCategories(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
+      // Load all features first to identify puzzle feature
+      const featuresSnap = await getDocs(collection(db, "features"));
+      const featuresData = featuresSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFeatures(featuresData);
+      
+      // Find the puzzle feature
+      const puzzleFeature = featuresData.find(f => 
+        (f.featureType && f.featureType.toLowerCase() === "puzzle") ||
+        (f.label && f.label.toLowerCase().includes("puzzle")) ||
+        (f.name && f.name.toLowerCase().includes("puzzle"))
       );
+      
+      if (puzzleFeature) {
+        // Load only categories for puzzle feature
+        const q = query(
+          collection(db, "categories"),
+          where("featureId", "==", puzzleFeature.id)
+        );
+        const snapshot = await getDocs(q);
+        setCategories(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+        );
+      } else {
+        // Fallback: load all categories if no puzzle feature exists
+        const snapshot = await getDocs(collection(db, "categories"));
+        setCategories(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+        );
+      }
     } catch (err) {
-      console.error("Error loading categories:", err);
+      console.error("Error loading categories and features:", err);
     }
   };
 
@@ -326,7 +357,7 @@ function VisualPuzzleAdminPage({ puzzleId }) {
 
         {/* Hierarchy */}
         <section className="form-section">
-          <h2>Category & Topic</h2>
+          <h2>Puzzle Category & Topic</h2>
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="categoryId">Category *</label>

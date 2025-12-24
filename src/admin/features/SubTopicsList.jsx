@@ -81,7 +81,7 @@ function SubTopicsList({
               fontWeight: 700,
             }}
           >
-            ❓ Step 4: Quiz Questions by SubTopics ({filteredSubtopicies.length})
+          Step 4: SubTopics ({filteredSubtopicies.length})
           </h3>
           <div
             style={{
