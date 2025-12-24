@@ -26,12 +26,13 @@ const InitializePuzzleFeature = () => {
       addLog("1️⃣ Creating Puzzle Feature...");
       await setDoc(doc(db, 'features', 'Puzzles'), {
         featureName: 'Puzzles',
+        label: 'Puzzles',
         featureType: 'puzzle',
         status: 'enabled',
         createdAt: new Date(),
         description: 'Visual and traditional puzzle games'
       }, { merge: true });
-      addLog("  ✅ Puzzle feature created");
+      addLog("  ✅ Puzzle feature created with label");
 
       addLog("  ✅ Puzzle feature created");
 
@@ -70,8 +71,9 @@ const InitializePuzzleFeature = () => {
       ];
 
       for (const cat of categories) {
-        await setDoc(doc(db, 'categories', cat.id), cat.data, { merge: true });
-        addLog(`  ✅ Created: ${cat.data.categoryName} (featureId: ${cat.data.featureId})`);
+        // Use set without merge to REPLACE the document (fixes wrong featureType)
+        await setDoc(doc(db, 'categories', cat.id), cat.data);
+        addLog(`  ✅ Created/Updated: ${cat.data.categoryName} (featureId: ${cat.data.featureId})`);
       }
 
       for (const cat of categories) {
@@ -97,7 +99,7 @@ const InitializePuzzleFeature = () => {
           categoryName: type.category,
           puzzleCount: 0,
           description: `${type.name} puzzle type`
-        }, { merge: true });
+        }); // NO merge - replace completely
         addLog(`  ✅ Created: ${type.name}`);
       }
 
@@ -116,7 +118,7 @@ const InitializePuzzleFeature = () => {
           categoryName: type.category,
           puzzleCount: 0,
           description: `${type.name} puzzle type`
-        }, { merge: true });
+        }); // NO merge - replace completely
         addLog(`  ✅ Created: ${type.name}`);
       }
 
