@@ -57,7 +57,20 @@ export default function PuzzleTopicPage() {
         }))
         .filter(topic => topic.isPublished !== false);
 
-      setTopics(topicsData);
+      // Count puzzles for each topic dynamically
+      const puzzlesSnap = await getDocs(collection(db, "puzzles"));
+      const allPuzzles = puzzlesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      const topicsWithCounts = topicsData.map(topic => {
+        const count = allPuzzles.filter(p => 
+          p.topic === topic.id || 
+          p.topic === topic.name || 
+          p.topic === topic.label
+        ).length;
+        return { ...topic, puzzleCount: count };
+      });
+
+      setTopics(topicsWithCounts);
     } catch (error) {
       console.error("Error loading:", error);
     } finally {
