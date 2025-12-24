@@ -1,7 +1,7 @@
 // src/admin/puzzle-editors/PictureShadowEditor.jsx
 // Editor for picture-shadow matching puzzles
 import React, { useState, forwardRef } from "react";
-import CloudinaryImageUpload from "../../components/CloudinaryImageUpload";
+import ImageUpload from "../../components/ImageUpload";
 
 const PictureShadowEditor = forwardRef(({ data, onChange }, ref) => {
   const [pairs, setPairs] = useState(data.pairs || []);
@@ -75,8 +75,10 @@ const PictureShadowEditor = forwardRef(({ data, onChange }, ref) => {
                   </button>
                 </div>
               ) : (
-                <CloudinaryImageUpload
-                  onUpload={(url) => handleImageUpload(index, "image", url)}
+                <ImageUpload
+                  value={pair.image}
+                  onChange={(result) => handleImageUpload(index, "image", result.url || result)}
+                  label={`Pair ${index + 1} Image`}
                   folder="puzzles/picture-shadow"
                 />
               )}
@@ -96,8 +98,10 @@ const PictureShadowEditor = forwardRef(({ data, onChange }, ref) => {
                   </button>
                 </div>
               ) : (
-                <CloudinaryImageUpload
-                  onUpload={(url) => handleImageUpload(index, "shadow", url)}
+                <ImageUpload
+                  value={pair.shadow}
+                  onChange={(result) => handleImageUpload(index, "shadow", result.url || result)}
+                  label={`Pair ${index + 1} Shadow`}
                   folder="puzzles/picture-shadow"
                 />
               )}

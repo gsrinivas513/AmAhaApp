@@ -1,7 +1,7 @@
 // src/admin/puzzle-editors/SpotDifferenceEditor.jsx
-// Editor for spot-the-difference puzzles
-import React, { useState, useRef, forwardRef } from "react";
-import CloudinaryImageUpload from "../../components/CloudinaryImageUpload";
+// Editor for spot the difference puzzles
+import React, { useState, forwardRef, useRef } from "react";
+import ImageUpload from "../../components/ImageUpload";
 
 const SpotDifferenceEditor = forwardRef(({ data, onChange }, ref) => {
   const [imageA, setImageA] = useState(data.imageA || "");
@@ -83,8 +83,10 @@ const SpotDifferenceEditor = forwardRef(({ data, onChange }, ref) => {
               </button>
             </div>
           ) : (
-            <CloudinaryImageUpload
-              onUpload={(url) => handleImageUpload("A", url)}
+            <ImageUpload
+              value={imageA}
+              onChange={(result) => handleImageUpload("A", result.url || result)}
+              label="Original Image"
               folder="puzzles/spot-difference"
             />
           )}
@@ -107,8 +109,10 @@ const SpotDifferenceEditor = forwardRef(({ data, onChange }, ref) => {
               </button>
             </div>
           ) : (
-            <CloudinaryImageUpload
-              onUpload={(url) => handleImageUpload("B", url)}
+            <ImageUpload
+              value={imageB}
+              onChange={(result) => handleImageUpload("B", result.url || result)}
+              label="Modified Image"
               folder="puzzles/spot-difference"
             />
           )}

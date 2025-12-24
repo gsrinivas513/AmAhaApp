@@ -1,7 +1,7 @@
 // src/admin/puzzle-editors/FindPairEditor.jsx
-// Editor for find matching pairs (memory game) puzzles
+// Editor for find matching pairs (memory) puzzles
 import React, { useState, forwardRef } from "react";
-import CloudinaryImageUpload from "../../components/CloudinaryImageUpload";
+import ImageUpload from "../../components/ImageUpload";
 
 const FindPairEditor = forwardRef(({ data, onChange }, ref) => {
   const [cards, setCards] = useState(data.cards || []);
@@ -102,12 +102,14 @@ const FindPairEditor = forwardRef(({ data, onChange }, ref) => {
                   ✕
                 </button>
               </div>
-            ) : (
-              <CloudinaryImageUpload
-                onUpload={(url) => handleImageUpload(index, url)}
-                folder="puzzles/find-pair"
-              />
-            )}
+              ) : (
+                <ImageUpload
+                  value={card.image}
+                  onChange={(result) => handleImageUpload(index, result.url || result)}
+                  label={`Card ${index + 1} Image`}
+                  folder="puzzles/find-pair"
+                />
+              )}
 
             <button
               type="button"

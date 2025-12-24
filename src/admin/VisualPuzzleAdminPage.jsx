@@ -8,13 +8,14 @@ import {
   DIFFICULTY_LEVELS,
   AGE_GROUPS,
 } from "../quiz/services/visualPuzzleService";
-import { collection, query, where, getDocs, db } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 import PictureWordEditor from "./puzzle-editors/PictureWordEditor";
 import SpotDifferenceEditor from "./puzzle-editors/SpotDifferenceEditor";
 import FindPairEditor from "./puzzle-editors/FindPairEditor";
 import PictureShadowEditor from "./puzzle-editors/PictureShadowEditor";
 import OrderingEditor from "./puzzle-editors/OrderingEditor";
-import "../styles/puzzle-admin.css";
+import "./styles/puzzle-admin.css";
 
 const defaultPuzzle = {
   title: "",

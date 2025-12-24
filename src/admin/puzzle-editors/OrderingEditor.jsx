@@ -1,7 +1,7 @@
 // src/admin/puzzle-editors/OrderingEditor.jsx
 // Editor for ordering/sequencing puzzles
 import React, { useState, forwardRef } from "react";
-import CloudinaryImageUpload from "../../components/CloudinaryImageUpload";
+import ImageUpload from "../../components/ImageUpload";
 
 const OrderingEditor = forwardRef(({ data, onChange }, ref) => {
   const [items, setItems] = useState(data.items || []);
@@ -124,8 +124,10 @@ const OrderingEditor = forwardRef(({ data, onChange }, ref) => {
                   </button>
                 </div>
               ) : (
-                <CloudinaryImageUpload
-                  onUpload={(url) => handleImageUpload(index, url)}
+                <ImageUpload
+                  value={item.image}
+                  onChange={(result) => handleImageUpload(index, result.url || result)}
+                  label={`Item ${index + 1} Image`}
                   folder="puzzles/ordering"
                 />
               )}

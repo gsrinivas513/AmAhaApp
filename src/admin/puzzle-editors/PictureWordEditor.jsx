@@ -1,7 +1,7 @@
 // src/admin/puzzle-editors/PictureWordEditor.jsx
 // Editor for picture-word matching puzzles
 import React, { useState, forwardRef } from "react";
-import CloudinaryImageUpload from "../../components/CloudinaryImageUpload";
+import ImageUpload from "../../components/ImageUpload";
 
 const PictureWordEditor = forwardRef(({ data, onChange }, ref) => {
   const [pairs, setPairs] = useState(data.pairs || []);
@@ -95,8 +95,10 @@ const PictureWordEditor = forwardRef(({ data, onChange }, ref) => {
                   </button>
                 </div>
               ) : (
-                <CloudinaryImageUpload
-                  onUpload={(url) => handleImageUpload(index, url)}
+                <ImageUpload
+                  value={pair.image}
+                  onChange={(result) => handleImageUpload(index, result.url || result)}
+                  label={`Pair ${index + 1} Image`}
                   folder="puzzles/picture-word"
                 />
               )}
