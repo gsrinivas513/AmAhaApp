@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import SiteLayout from "../layouts/SiteLayout";
 
-export default function OrderingPuzzle({ puzzle, onComplete }) {
+export default function OrderingPuzzle({ puzzle, onComplete, isInline = false }) {
   // Parse items and correctOrder from various data formats
   const { initialItems, correctOrder } = useMemo(() => {
     let items = [];
@@ -79,8 +79,8 @@ export default function OrderingPuzzle({ puzzle, onComplete }) {
     return <div className="p-8 text-center text-red-600">No items found in puzzle</div>;
   }
 
-  return (
-    <SiteLayout>
+  const content = (
+    <>
       {/* Instructions Modal */}
       {showInstructions && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -240,6 +240,18 @@ export default function OrderingPuzzle({ puzzle, onComplete }) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  // Return with or without SiteLayout wrapper based on isInline flag
+  if (isInline) {
+    return content;
+  }
+
+  // For backward compatibility with old component usage (standalone mode)
+  return (
+    <SiteLayout>
+      {content}
     </SiteLayout>
   );
 }

@@ -61,6 +61,7 @@ import PuzzleTopicPage from "./puzzles/PuzzleTopicPage";
 import PuzzleSubcategoryPage from "./puzzles/PuzzleSubcategoryPage";
 import PuzzlePlayPage from "./puzzles/PuzzlePlayPage";
 import VisualPuzzlePlayPage from "./puzzles/VisualPuzzlePlayPage";
+import UnifiedPuzzlePage from "./puzzles/UnifiedPuzzlePage";
 
 function App() {
       <Route path="/admin/debug-puzzle-fields" element={<DebugPuzzleFields />} />
@@ -122,12 +123,10 @@ function App() {
         <Route path="/admin/fix-puzzle-type" element={<FixPuzzleType />} />
 
         {/* PUZZLES - USER */}
-        <Route path="/puzzle/play/:puzzleId" element={<PuzzlePlayPage />} />
+        <Route path="/puzzle" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
-        <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
-        <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<VisualPuzzlePlayPage />} />
-        <Route path="/puzzles/:category/:topic/:subtopic/level/:difficulty" element={<PuzzlePlayHierarchicalPage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
     </div>
   );

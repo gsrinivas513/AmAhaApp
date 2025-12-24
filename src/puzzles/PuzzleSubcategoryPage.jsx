@@ -145,7 +145,7 @@ export default function PuzzleSubcategoryPage() {
                   <Card
                     key={puzzle.id}
                     className="cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
-                    onClick={() => navigate(`/puzzle/play/${puzzle.id}`)}
+                    onClick={() => navigate(`/puzzle/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}/${puzzle.id}`)}
                   >
                     <div className="p-6">
                       {puzzle.imageUrl && (

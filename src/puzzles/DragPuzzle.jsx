@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import SiteLayout from "../layouts/SiteLayout";
 
-export default function DragPuzzle({ puzzle, onComplete }) {
+export default function DragPuzzle({ puzzle, onComplete, isInline = false }) {
   // Parse draggables and targets from various data formats
   const { draggables, targets, correctAnswers } = useMemo(() => {
     let draggables = [];
@@ -87,8 +87,8 @@ export default function DragPuzzle({ puzzle, onComplete }) {
     return <div className="p-8 text-center text-red-600">No items or targets found in puzzle</div>;
   }
 
-  return (
-    <SiteLayout>
+  const content = (
+    <>
       {/* Instructions Modal */}
       {showInstructions && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -259,6 +259,18 @@ export default function DragPuzzle({ puzzle, onComplete }) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  // Return with or without SiteLayout wrapper based on isInline flag
+  if (isInline) {
+    return content;
+  }
+
+  // For backward compatibility with old component usage (standalone mode)
+  return (
+    <SiteLayout>
+      {content}
     </SiteLayout>
   );
 }
