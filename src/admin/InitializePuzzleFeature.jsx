@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../firebase/firebaseConfig';
-import { collection, setDoc, doc, getDoc } from 'firebase/firestore';
+import { setDoc, doc } from 'firebase/firestore';
 
 const InitializePuzzleFeature = () => {
   const [loading, setLoading] = useState(false);
@@ -22,103 +22,132 @@ const InitializePuzzleFeature = () => {
     try {
       addLog("🚀 Starting puzzle feature initialization...");
 
-      // Step 1: Create Puzzle Feature
+      // Step 1: Create Puzzle Feature (matching quiz feature structure)
       addLog("1️⃣ Creating Puzzle Feature...");
       await setDoc(doc(db, 'features', 'Puzzles'), {
-        featureName: 'Puzzles',
-        label: 'Puzzles',
-        featureType: 'puzzle',
+        name: 'puzzles',           // internal name (lowercase)
+        label: 'Puzzles',          // display label
+        featureName: 'Puzzles',    // for compatibility
+        featureType: 'puzzle',     // type identifier
+        icon: '🧩',
+        enabled: true,
         status: 'enabled',
         createdAt: new Date(),
         description: 'Visual and traditional puzzle games'
-      }, { merge: true });
-      addLog("  ✅ Puzzle feature created with label");
-
+      });
       addLog("  ✅ Puzzle feature created");
 
-      // Step 2: Create Categories
+      // Step 2: Create Categories (matching quiz category structure exactly)
       addLog("2️⃣ Creating Categories...");
-      
-      // First, get the Puzzles feature document to get its ID
-      const puzzlesFeatureDoc = await getDoc(doc(db, 'features', 'Puzzles'));
-      const puzzlesFeatureId = puzzlesFeatureDoc.id; // This will be "Puzzles"
       
       const categories = [
         {
           id: 'visual-puzzles',
           data: {
-            categoryName: 'Visual Puzzles',
-            label: 'Visual Puzzles',
-            featureId: puzzlesFeatureId,
+            name: 'visual-puzzles',           // internal name
+            label: 'Visual Puzzles',          // display label
+            categoryName: 'Visual Puzzles',   // for compatibility
+            icon: '🎨',
+            color: '#8B5CF6',                 // purple
+            imageUrl: '',
+            cloudinaryId: '',
+            description: 'Interactive visual puzzle games',
+            featureId: 'Puzzles',             // links to feature
             featureName: 'Puzzles',
             featureType: 'puzzle',
+            defaultUiMode: 'playful',         // UI style
+            uiMode: 'puzzle',                 // This is what shows as "Mode: puzzle"
+            isPublished: true,
             published: true,
-            description: 'Interactive visual puzzle games'
+            quizCount: 0,
+            puzzleCount: 0,
+            createdAt: new Date().toISOString()
           }
         },
         {
           id: 'traditional-puzzles',
           data: {
-            categoryName: 'Traditional Puzzles',
+            name: 'traditional-puzzles',
             label: 'Traditional Puzzles',
-            featureId: puzzlesFeatureId,
+            categoryName: 'Traditional Puzzles',
+            icon: '📝',
+            color: '#10B981',                 // green
+            imageUrl: '',
+            cloudinaryId: '',
+            description: 'Word matching, ordering, and drag-drop games',
+            featureId: 'Puzzles',
             featureName: 'Puzzles',
             featureType: 'puzzle',
+            defaultUiMode: 'playful',
+            uiMode: 'puzzle',                 // This shows as "Mode: puzzle"
+            isPublished: true,
             published: true,
-            description: 'Word matching, ordering, and drag-drop games'
+            quizCount: 0,
+            puzzleCount: 0,
+            createdAt: new Date().toISOString()
           }
         }
       ];
 
       for (const cat of categories) {
-        // Use set without merge to REPLACE the document (fixes wrong featureType)
         await setDoc(doc(db, 'categories', cat.id), cat.data);
-        addLog(`  ✅ Created/Updated: ${cat.data.categoryName} (featureId: ${cat.data.featureId})`);
-      }
-
-      for (const cat of categories) {
-        await setDoc(doc(db, 'categories', cat.id), cat.data, { merge: true });
-        addLog(`  ✅ Created: ${cat.data.categoryName}`);
+        addLog(`  ✅ Created: ${cat.data.label} (Mode: ${cat.data.uiMode})`);
       }
 
       // Step 3: Create Visual Puzzle Types (Topics)
       addLog("3️⃣ Creating Visual Puzzle Types...");
       const visualTypes = [
-        { id: 'picture-word', name: 'Picture Word', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
-        { id: 'spot-difference', name: 'Spot Difference', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
-        { id: 'find-pairs', name: 'Find Pairs', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
-        { id: 'picture-shadow', name: 'Picture Shadow', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
-        { id: 'matching-pairs', name: 'Matching Pairs', category: 'Visual Puzzles', categoryId: 'visual-puzzles' }
+        { id: 'picture-word', name: 'Picture Word', icon: '🖼️' },
+        { id: 'spot-difference', name: 'Spot Difference', icon: '🔍' },
+        { id: 'find-pairs', name: 'Find Pairs', icon: '🃏' },
+        { id: 'picture-shadow', name: 'Picture Shadow', icon: '👤' },
+        { id: 'matching-pairs', name: 'Matching Pairs', icon: '🎴' }
       ];
 
       for (const type of visualTypes) {
         await setDoc(doc(db, 'topics', type.id), {
-          topicName: type.name,
-          label: type.name,
-          categoryId: type.categoryId,
-          categoryName: type.category,
+          name: type.id,                      // internal name
+          label: type.name,                   // display label
+          topicName: type.name,               // for compatibility
+          icon: type.icon,
+          imageUrl: '',
+          cloudinaryId: '',
+          description: `${type.name} puzzle type`,
+          categoryId: 'visual-puzzles',       // links to category
+          categoryName: 'Visual Puzzles',
+          sortOrder: visualTypes.indexOf(type),
+          isPublished: true,
+          quizCount: 0,
           puzzleCount: 0,
-          description: `${type.name} puzzle type`
-        }); // NO merge - replace completely
+          createdAt: new Date().toISOString()
+        });
         addLog(`  ✅ Created: ${type.name}`);
       }
 
       // Step 4: Create Traditional Puzzle Types
       addLog("4️⃣ Creating Traditional Puzzle Types...");
       const traditionalTypes = [
-        { id: 'ordering', name: 'Ordering', category: 'Traditional Puzzles', categoryId: 'traditional-puzzles' },
-        { id: 'drag-drop', name: 'Drag & Drop', category: 'Traditional Puzzles', categoryId: 'traditional-puzzles' }
+        { id: 'ordering', name: 'Ordering', icon: '🔢' },
+        { id: 'drag-drop', name: 'Drag & Drop', icon: '✋' }
       ];
 
       for (const type of traditionalTypes) {
         await setDoc(doc(db, 'topics', type.id), {
-          topicName: type.name,
+          name: type.id,
           label: type.name,
-          categoryId: type.categoryId,
-          categoryName: type.category,
+          topicName: type.name,
+          icon: type.icon,
+          imageUrl: '',
+          cloudinaryId: '',
+          description: `${type.name} puzzle type`,
+          categoryId: 'traditional-puzzles',
+          categoryName: 'Traditional Puzzles',
+          sortOrder: traditionalTypes.indexOf(type),
+          isPublished: true,
+          quizCount: 0,
           puzzleCount: 0,
-          description: `${type.name} puzzle type`
-        }); // NO merge - replace completely
+          createdAt: new Date().toISOString()
+        });
         addLog(`  ✅ Created: ${type.name}`);
       }
 
