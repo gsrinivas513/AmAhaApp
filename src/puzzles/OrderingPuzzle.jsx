@@ -3,22 +3,33 @@
 import React, { useState, useMemo } from "react";
 
 export default function OrderingPuzzle({ puzzle, onComplete }) {
-  // Parse items from either data.items or correctAnswer
-  const initialItems = useMemo(() => {
+  // Parse items and correctOrder from various data formats
+  const { initialItems, correctOrder } = useMemo(() => {
+    let items = [];
+    let correct = [];
+    
+    // Format 1: puzzle.data.items (legacy)
     if (puzzle.data?.items && Array.isArray(puzzle.data.items)) {
-      return puzzle.data.items;
+      items = puzzle.data.items;
+      correct = puzzle.data.correctOrder || [...items].sort();
+    }
+    // Format 2: puzzle.items and puzzle.correctOrder (new format from InitializePuzzleFeature)
+    else if (puzzle.items && Array.isArray(puzzle.items)) {
+      items = puzzle.items;
+      correct = puzzle.correctOrder || [...items].sort();
+    }
+    // Format 3: Parse from correctAnswer string: "3,1,2" or similar
+    else if (puzzle.correctAnswer && typeof puzzle.correctAnswer === "string") {
+      items = puzzle.correctAnswer.split(",").map(s => s.trim());
+      correct = [...items].sort();
     }
     
-    // Parse from correctAnswer string: "3,1,2" or similar
-    if (puzzle.correctAnswer && typeof puzzle.correctAnswer === "string") {
-      return puzzle.correctAnswer.split(",").map(s => s.trim());
-    }
-    
-    return [];
+    return { initialItems: items, correctOrder: correct };
   }, [puzzle]);
 
   const [order, setOrder] = useState(initialItems);
   const [done, setDone] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   function move(idx, dir) {
     const newOrder = [...order];
@@ -29,7 +40,9 @@ export default function OrderingPuzzle({ puzzle, onComplete }) {
   }
 
   function check() {
-    const correct = [...order].sort((a, b) => a - b).every((v, i) => v === order[i]);
+    // Check if current order matches correct order
+    const correct = order.every((item, idx) => item === correctOrder[idx]);
+    setIsCorrect(correct);
     setDone(true);
     if (correct) onComplete();
   }
@@ -51,7 +64,15 @@ export default function OrderingPuzzle({ puzzle, onComplete }) {
         ))}
       </ul>
       {!done && <button className="btn-primary" onClick={check}>Check</button>}
-      {done && <div className="mt-4 text-green-600 font-bold">Puzzle Complete!</div>}
+      {done && isCorrect && <div className="mt-4 text-green-600 font-bold">🎉 Correct! Puzzle Complete!</div>}
+      {done && !isCorrect && (
+        <div className="mt-4">
+          <div className="text-red-600 font-bold mb-2">❌ Not quite right. Try again!</div>
+          <button className="btn-primary" onClick={() => { setDone(false); setOrder(initialItems); }}>
+            Retry
+          </button>
+        </div>
+      )}
     </div>
   );
 }

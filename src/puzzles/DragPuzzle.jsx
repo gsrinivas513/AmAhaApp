@@ -3,13 +3,14 @@
 import React, { useState, useMemo } from "react";
 
 export default function DragPuzzle({ puzzle, onComplete }) {
-  // Parse draggables and targets from either data format or correctAnswer
-  const { draggables, targets } = useMemo(() => {
+  // Parse draggables and targets from various data formats
+  const { draggables, targets, correctAnswers } = useMemo(() => {
     let draggables = [];
     let targets = [];
+    let correctAnswers = {};
     
+    // Format 1: puzzle.data.draggables and puzzle.data.targets (legacy)
     if (puzzle.data?.draggables && puzzle.data?.targets) {
-      // Format: arrays or comma-separated strings
       draggables = Array.isArray(puzzle.data.draggables) 
         ? puzzle.data.draggables 
         : puzzle.data.draggables.split(",").map(s => s.trim());
@@ -17,8 +18,27 @@ export default function DragPuzzle({ puzzle, onComplete }) {
         ? puzzle.data.targets 
         : puzzle.data.targets.split(",").map(s => s.trim());
     }
+    // Format 2: puzzle.items and puzzle.dropZones (new format from InitializePuzzleFeature)
+    else if (puzzle.items && puzzle.dropZones) {
+      draggables = puzzle.items.map(item => item.text || item.label || String(item.id));
+      targets = puzzle.dropZones;
+      // Build correct answers map
+      puzzle.items.forEach(item => {
+        const itemLabel = item.text || item.label || String(item.id);
+        correctAnswers[itemLabel] = item.correctZone;
+      });
+    }
+    // Format 3: puzzle.draggables and puzzle.targets (direct)
+    else if (puzzle.draggables && puzzle.targets) {
+      draggables = Array.isArray(puzzle.draggables) 
+        ? puzzle.draggables 
+        : puzzle.draggables.split(",").map(s => s.trim());
+      targets = Array.isArray(puzzle.targets) 
+        ? puzzle.targets 
+        : puzzle.targets.split(",").map(s => s.trim());
+    }
     
-    return { draggables, targets };
+    return { draggables, targets, correctAnswers };
   }, [puzzle]);
 
   const [placed, setPlaced] = useState({});
@@ -29,10 +49,23 @@ export default function DragPuzzle({ puzzle, onComplete }) {
   }
 
   function check() {
-    // Simple check: all items are placed in some target
-    const correct = draggables.every(item => placed[item]);
+    // Check if all items are placed correctly
+    let allCorrect = true;
+    
+    if (Object.keys(correctAnswers).length > 0) {
+      // Validate against correct answers
+      allCorrect = draggables.every(item => {
+        const userAnswer = placed[item];
+        const correctAnswer = correctAnswers[item];
+        return userAnswer === correctAnswer;
+      });
+    } else {
+      // Simple check: all items are placed in some target
+      allCorrect = draggables.every(item => placed[item]);
+    }
+    
     setDone(true);
-    if (correct) onComplete();
+    if (allCorrect) onComplete();
   }
 
   if (draggables.length === 0 || targets.length === 0) {

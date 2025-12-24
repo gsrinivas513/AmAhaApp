@@ -3,13 +3,25 @@
 import React, { useState, useMemo } from "react";
 
 export default function MatchingPuzzle({ puzzle, onComplete }) {
-  // Parse pairs from either data.pairs (array format) or correctAnswer (string format)
+  // Parse pairs from various data formats
   const pairs = useMemo(() => {
+    // Format 1: puzzle.data.pairs with {left, right}
     if (puzzle.data?.pairs && Array.isArray(puzzle.data.pairs)) {
-      return puzzle.data.pairs;
+      return puzzle.data.pairs.map(p => ({
+        left: p.left || p.image || p.id,
+        right: p.right || p.match || p.id
+      }));
     }
     
-    // Parse from correctAnswer string: "1-One,2-Two,3-Three"
+    // Format 2: puzzle.pairs with {image, match} (new format from InitializePuzzleFeature)
+    if (puzzle.pairs && Array.isArray(puzzle.pairs)) {
+      return puzzle.pairs.map(p => ({
+        left: p.left || p.image || String(p.id),
+        right: p.right || p.match || String(p.id)
+      }));
+    }
+    
+    // Format 3: Parse from correctAnswer string: "1-One,2-Two,3-Three"
     if (puzzle.correctAnswer && typeof puzzle.correctAnswer === "string") {
       return puzzle.correctAnswer.split(",").map(pair => {
         const [left, right] = pair.split("-");
