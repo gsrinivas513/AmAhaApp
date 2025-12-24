@@ -1,32 +1,42 @@
 import React, { useState } from 'react';
 import { db } from '../firebase/firebaseConfig';
-import { collection, setDoc, doc } from 'firebase/firestore';
+import { collection, setDoc, doc, getDoc } from 'firebase/firestore';
 
 const InitializePuzzleFeature = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [logs, setLogs] = useState([]);
+
+  const addLog = (text) => {
+    setLogs(prev => [...prev, text]);
+    console.log(text);
+  };
 
   const handleInitialize = async () => {
     setLoading(true);
     setMessage('');
     setError('');
+    setLogs([]);
 
     try {
-      console.log("🚀 Initializing Puzzle Feature...");
+      addLog("🚀 Starting puzzle feature initialization...");
 
       // Step 1: Create Puzzle Feature
-      console.log("1️⃣ Creating Puzzle Feature...");
+      addLog("1️⃣ Creating Puzzle Feature...");
       await setDoc(doc(db, 'features', 'Puzzles'), {
         featureName: 'Puzzles',
         featureType: 'puzzle',
         status: 'enabled',
         createdAt: new Date(),
         description: 'Visual and traditional puzzle games'
-      });
+      }, { merge: true });
+      addLog("  ✅ Puzzle feature created");
+
+      addLog("  ✅ Puzzle feature created");
 
       // Step 2: Create Categories
-      console.log("2️⃣ Creating Categories...");
+      addLog("2️⃣ Creating Categories...");
       const categories = [
         {
           id: 'visual-puzzles',
@@ -49,11 +59,17 @@ const InitializePuzzleFeature = () => {
       ];
 
       for (const cat of categories) {
-        await setDoc(doc(db, 'categories', cat.id), cat.data);
+        await setDoc(doc(db, 'categories', cat.id), cat.data, { merge: true });
+        addLog(`  ✅ Created: ${cat.data.categoryName}`);
+      }
+
+      for (const cat of categories) {
+        await setDoc(doc(db, 'categories', cat.id), cat.data, { merge: true });
+        addLog(`  ✅ Created: ${cat.data.categoryName}`);
       }
 
       // Step 3: Create Visual Puzzle Types (Topics)
-      console.log("3️⃣ Creating Visual Puzzle Types...");
+      addLog("3️⃣ Creating Visual Puzzle Types...");
       const visualTypes = [
         { id: 'picture-word', name: 'Picture Word', category: 'Visual Puzzles' },
         { id: 'spot-difference', name: 'Spot Difference', category: 'Visual Puzzles' },
@@ -67,11 +83,12 @@ const InitializePuzzleFeature = () => {
           topicName: type.name,
           categoryName: type.category,
           description: `${type.name} puzzle type`
-        });
+        }, { merge: true });
+        addLog(`  ✅ Created: ${type.name}`);
       }
 
       // Step 4: Create Traditional Puzzle Types
-      console.log("4️⃣ Creating Traditional Puzzle Types...");
+      addLog("4️⃣ Creating Traditional Puzzle Types...");
       const traditionalTypes = [
         { id: 'ordering', name: 'Ordering', category: 'Traditional Puzzles' },
         { id: 'drag-drop', name: 'Drag & Drop', category: 'Traditional Puzzles' }
@@ -82,14 +99,16 @@ const InitializePuzzleFeature = () => {
           topicName: type.name,
           categoryName: type.category,
           description: `${type.name} puzzle type`
-        });
+        }, { merge: true });
+        addLog(`  ✅ Created: ${type.name}`);
       }
 
-      console.log("✅ Puzzle feature setup complete!");
-      setMessage('✅ Puzzle feature initialized! Refresh the page to see changes.');
+      addLog("✅ ALL DONE!");
+      setMessage('✅ Puzzle feature initialized! Now refresh the page (F5) to see changes.');
     } catch (err) {
       console.error("❌ Setup error:", err);
       setError(`❌ Error: ${err.message}`);
+      addLog(`❌ ERROR: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -123,6 +142,24 @@ const InitializePuzzleFeature = () => {
         {loading ? '⏳ Initializing...' : '🚀 Initialize Now'}
       </button>
 
+      {/* Live logs */}
+      {logs.length > 0 && (
+        <div style={{
+          marginTop: '15px',
+          padding: '10px',
+          backgroundColor: '#f0f0f0',
+          borderRadius: '4px',
+          maxHeight: '200px',
+          overflowY: 'auto',
+          fontFamily: 'monospace',
+          fontSize: '12px'
+        }}>
+          {logs.map((log, i) => (
+            <div key={i} style={{ marginBottom: '4px' }}>{log}</div>
+          ))}
+        </div>
+      )}
+
       {message && (
         <div style={{
           marginTop: '15px',
@@ -130,9 +167,13 @@ const InitializePuzzleFeature = () => {
           backgroundColor: '#d4edda',
           color: '#155724',
           borderRadius: '4px',
-          border: '1px solid #c3e6cb'
+          border: '1px solid #c3e6cb',
+          fontWeight: 'bold'
         }}>
           {message}
+          <div style={{ marginTop: '10px', fontSize: '12px' }}>
+            📌 <strong>Important:</strong> Press F5 or Cmd+R to refresh the page!
+          </div>
         </div>
       )}
 
