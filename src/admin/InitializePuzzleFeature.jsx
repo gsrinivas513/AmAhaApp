@@ -37,13 +37,21 @@ const InitializePuzzleFeature = () => {
 
       // Step 2: Create Categories
       addLog("2️⃣ Creating Categories...");
+      
+      // First, get the Puzzles feature document to get its ID
+      const puzzlesFeatureDoc = await getDoc(doc(db, 'features', 'Puzzles'));
+      const puzzlesFeatureId = puzzlesFeatureDoc.id; // This will be "Puzzles"
+      
       const categories = [
         {
           id: 'visual-puzzles',
           data: {
             categoryName: 'Visual Puzzles',
+            label: 'Visual Puzzles',
+            featureId: puzzlesFeatureId,
             featureName: 'Puzzles',
             featureType: 'puzzle',
+            published: true,
             description: 'Interactive visual puzzle games'
           }
         },
@@ -51,8 +59,11 @@ const InitializePuzzleFeature = () => {
           id: 'traditional-puzzles',
           data: {
             categoryName: 'Traditional Puzzles',
+            label: 'Traditional Puzzles',
+            featureId: puzzlesFeatureId,
             featureName: 'Puzzles',
             featureType: 'puzzle',
+            published: true,
             description: 'Word matching, ordering, and drag-drop games'
           }
         }
@@ -60,7 +71,7 @@ const InitializePuzzleFeature = () => {
 
       for (const cat of categories) {
         await setDoc(doc(db, 'categories', cat.id), cat.data, { merge: true });
-        addLog(`  ✅ Created: ${cat.data.categoryName}`);
+        addLog(`  ✅ Created: ${cat.data.categoryName} (featureId: ${cat.data.featureId})`);
       }
 
       for (const cat of categories) {
@@ -71,17 +82,20 @@ const InitializePuzzleFeature = () => {
       // Step 3: Create Visual Puzzle Types (Topics)
       addLog("3️⃣ Creating Visual Puzzle Types...");
       const visualTypes = [
-        { id: 'picture-word', name: 'Picture Word', category: 'Visual Puzzles' },
-        { id: 'spot-difference', name: 'Spot Difference', category: 'Visual Puzzles' },
-        { id: 'find-pairs', name: 'Find Pairs', category: 'Visual Puzzles' },
-        { id: 'picture-shadow', name: 'Picture Shadow', category: 'Visual Puzzles' },
-        { id: 'matching-pairs', name: 'Matching Pairs', category: 'Visual Puzzles' }
+        { id: 'picture-word', name: 'Picture Word', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
+        { id: 'spot-difference', name: 'Spot Difference', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
+        { id: 'find-pairs', name: 'Find Pairs', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
+        { id: 'picture-shadow', name: 'Picture Shadow', category: 'Visual Puzzles', categoryId: 'visual-puzzles' },
+        { id: 'matching-pairs', name: 'Matching Pairs', category: 'Visual Puzzles', categoryId: 'visual-puzzles' }
       ];
 
       for (const type of visualTypes) {
         await setDoc(doc(db, 'topics', type.id), {
           topicName: type.name,
+          label: type.name,
+          categoryId: type.categoryId,
           categoryName: type.category,
+          puzzleCount: 0,
           description: `${type.name} puzzle type`
         }, { merge: true });
         addLog(`  ✅ Created: ${type.name}`);
@@ -90,14 +104,17 @@ const InitializePuzzleFeature = () => {
       // Step 4: Create Traditional Puzzle Types
       addLog("4️⃣ Creating Traditional Puzzle Types...");
       const traditionalTypes = [
-        { id: 'ordering', name: 'Ordering', category: 'Traditional Puzzles' },
-        { id: 'drag-drop', name: 'Drag & Drop', category: 'Traditional Puzzles' }
+        { id: 'ordering', name: 'Ordering', category: 'Traditional Puzzles', categoryId: 'traditional-puzzles' },
+        { id: 'drag-drop', name: 'Drag & Drop', category: 'Traditional Puzzles', categoryId: 'traditional-puzzles' }
       ];
 
       for (const type of traditionalTypes) {
         await setDoc(doc(db, 'topics', type.id), {
           topicName: type.name,
+          label: type.name,
+          categoryId: type.categoryId,
           categoryName: type.category,
+          puzzleCount: 0,
           description: `${type.name} puzzle type`
         }, { merge: true });
         addLog(`  ✅ Created: ${type.name}`);
