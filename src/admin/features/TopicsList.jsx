@@ -19,12 +19,22 @@ function TopicsList({
     return cat ? cat.label : "Unknown Category";
   };
 
+  const getSelectedCategory = () => {
+    return categories.find((c) => c.id === selectedCategoryId);
+  };
+
+  const isPuzzleCategory = () => {
+    const cat = getSelectedCategory();
+    return cat?.uiMode === "puzzle";
+  };
+
   const getSubtopicCount = (topicId) => {
     if (!subtopics) return 0;
     return subtopics.filter(s => s.topicId === topicId).length;
   };
 
   const getQuizCount = (topic) => topic.quizCount || 0;
+  const getPuzzleCount = (topic) => topic.puzzleCount || 0;
 
   if (!selectedCategoryId) {
     return (
@@ -100,7 +110,7 @@ function TopicsList({
                     {topic.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
-                    {getSubtopicCount(topic.id)} subtopics | {getQuizCount(topic)} quizzes
+                    {getSubtopicCount(topic.id)} subtopics | {isPuzzleCategory() ? `${getPuzzleCount(topic)} puzzles` : `${getQuizCount(topic)} quizzes`}
                   </div>
                 </div>
               </div>

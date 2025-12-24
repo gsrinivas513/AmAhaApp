@@ -559,6 +559,7 @@ export default function FeatureCategoryManagement() {
                 selectedCategoryId={selectedCategoryId}
                 selectedFeatureId={selectedFeatureId}
                 features={featureData.features}
+                topics={allTopics}
                 subtopics={allSubtopics}
                 onSelectCategory={handleSelectCategory}
                 onEditCategory={handleEditCategory}
