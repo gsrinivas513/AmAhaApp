@@ -71,8 +71,15 @@ function PuzzleListPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">All Puzzles</h2>
-      <Link to="/admin/add-puzzle" className="bg-green-600 text-white px-3 py-1 rounded mb-4 inline-block">Add New Puzzle</Link>
+      <h2 className="text-2xl font-bold mb-4">Traditional Puzzles (Drag & Drop)</h2>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+        <Link to="/admin/add-puzzle" className="bg-green-600 text-white px-3 py-1 rounded inline-block">
+          + Add Traditional Puzzle
+        </Link>
+        <Link to="/admin/create-visual-puzzle" className="bg-purple-600 text-white px-3 py-1 rounded inline-block">
+          + Create Visual Puzzle
+        </Link>
+      </div>
       <table className="w-full border mt-4">
         <thead>
           <tr className="bg-gray-100">

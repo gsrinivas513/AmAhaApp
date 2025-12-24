@@ -29,7 +29,7 @@ function Sidebar() {
     if (location.pathname.startsWith("/admin/quiz")) {
       setOpen((o) => ({ ...o, quiz: true }));
     }
-    if (location.pathname.startsWith("/admin/puzzles")) {
+    if (location.pathname.startsWith("/admin/puzzles") || location.pathname.includes("visual-puzzle")) {
       setOpen((o) => ({ ...o, puzzles: true }));
     }
   }, [location.pathname]);
@@ -103,8 +103,9 @@ function Sidebar() {
         open={open.puzzles}
         onToggle={() => toggle("puzzles")}
       >
-        <DisabledItem icon={<PuzzleIcon />} label="Dashboard (Coming soon)" />
-        <DisabledItem icon={<GearIcon />} label="Config (Coming soon)" />
+        <Item icon={<PuzzleIcon />} label="Traditional Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
+        <Item icon={<PuzzleIcon />} label="Visual Puzzles" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
+        <DisabledItem icon={<GearIcon />} label="Dashboard (Coming soon)" />
       </Section>
     </div>
   );

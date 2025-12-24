@@ -70,7 +70,7 @@ function SubTopicsList({
               fontWeight: 700,
             }}
           >
-            📄 Step 4: SubTopics ({filteredSubtopicies.length})
+            ❓ Step 4: Quiz Questions by SubTopics ({filteredSubtopicies.length})
           </h3>
           <div
             style={{
@@ -111,7 +111,7 @@ function SubTopicsList({
                     {sub.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#10b981", fontWeight: 600 }}>
-                    {sub.puzzleCount || 0} puzzles
+                    {sub.questionCount || 0} questions
                   </div>
                   {puzzlePreview[sub.id] && puzzlePreview[sub.id].length > 0 && (
                     <div style={{ marginTop: 6, fontSize: 11, color: '#444' }}>
@@ -141,7 +141,7 @@ function SubTopicsList({
                 }}
               >
                 <Button
-                  title="Add Content"
+                  title="Add Quiz Question"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onAddQuestion) onAddQuestion(sub);
