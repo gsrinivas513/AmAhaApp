@@ -1,6 +1,7 @@
 // src/puzzles/DragPuzzle.jsx
-// Drag & drop puzzle UI (simplified for demo).
+// Drag & drop puzzle UI with attractive design
 import React, { useState, useMemo } from "react";
+import SiteLayout from "../layouts/SiteLayout";
 
 export default function DragPuzzle({ puzzle, onComplete }) {
   // Parse draggables and targets from various data formats
@@ -43,6 +44,9 @@ export default function DragPuzzle({ puzzle, onComplete }) {
 
   const [placed, setPlaced] = useState({});
   const [done, setDone] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [attempts, setAttempts] = useState(0);
 
   function handlePlace(item, target) {
     setPlaced(p => ({ ...p, [item]: target }));
@@ -64,8 +68,19 @@ export default function DragPuzzle({ puzzle, onComplete }) {
       allCorrect = draggables.every(item => placed[item]);
     }
     
+    setIsCorrect(allCorrect);
     setDone(true);
-    if (allCorrect) onComplete();
+    setAttempts(attempts + 1);
+    if (allCorrect) {
+      setTimeout(() => onComplete(), 1500);
+    }
+  }
+
+  function reset() {
+    setDone(false);
+    setIsCorrect(false);
+    setPlaced({});
+    setAttempts(0);
   }
 
   if (draggables.length === 0 || targets.length === 0) {
@@ -73,28 +88,177 @@ export default function DragPuzzle({ puzzle, onComplete }) {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow pastel-card">
-      <h2 className="font-bold text-xl mb-4">Drag to categorize</h2>
-      <div className="mb-4">
-        {draggables.map(item => (
-          <div key={item} className="mb-2 flex items-center gap-2">
-            <span className="px-3 py-1 bg-pink-100 rounded">{item}</span>
-            <select
-              value={placed[item] || ""}
-              onChange={e => handlePlace(item, e.target.value)}
-              className="rounded border p-1"
-              disabled={done}
+    <SiteLayout>
+      {/* Instructions Modal */}
+      {showInstructions && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">How to Play</h2>
+              <button 
+                onClick={() => setShowInstructions(false)}
+                className="text-2xl text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 mb-6">
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">1</span>
+                <p className="text-gray-700">Drag each item to the correct category</p>
+              </div>
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">2</span>
+                <p className="text-gray-700">Match items with their correct drop zone</p>
+              </div>
+              <div className="flex gap-3">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">3</span>
+                <p className="text-gray-700">Click "Check" when all items are placed</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-teal-500 text-white font-bold rounded-lg hover:shadow-lg transition"
             >
-              <option value="">Select category</option>
-              {targets.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+              Got It! 🚀
+            </button>
           </div>
-        ))}
+        </div>
+      )}
+
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-orange-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">🎨 {puzzle.title}</h1>
+            <p className="text-gray-600">{puzzle.description}</p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow p-4 text-center">
+              <div className="text-2xl font-bold text-pink-500">🎯</div>
+              <div className="text-xs text-gray-500 mt-1">Attempts</div>
+              <div className="text-2xl font-bold text-gray-800">{attempts}</div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 text-center">
+              <div className="text-2xl font-bold text-purple-500">✓</div>
+              <div className="text-xs text-gray-500 mt-1">Status</div>
+              <div className="text-sm font-bold text-gray-800">{done ? (isCorrect ? "✅ Done" : "❌ Wrong") : "🎮 Playing"}</div>
+            </div>
+          </div>
+
+          {/* Main Puzzle Area */}
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            {/* Items to Drag */}
+            <div className="mb-10">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">📦 Items to Sort:</h3>
+              <div className="flex flex-wrap gap-3">
+                {draggables.map(item => (
+                  <button
+                    key={item}
+                    onClick={() => handlePlace(item, "")}
+                    className={`px-4 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 ${
+                      placed[item]
+                        ? "bg-gray-200 text-gray-500 opacity-60"
+                        : "bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:shadow-xl"
+                    } ${done ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"}`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Drop Zones */}
+            <div>
+              <h3 className="text-lg font-bold text-gray-800 mb-4">🎯 Categories:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {targets.map(target => (
+                  <div
+                    key={target}
+                    className="border-3 border-dashed border-purple-300 rounded-xl p-6 bg-purple-50 min-h-[140px] transition"
+                  >
+                    <h4 className="font-bold text-purple-700 mb-4 text-lg">📍 {target}</h4>
+                    <div className="space-y-2">
+                      {draggables
+                        .filter(item => placed[item] === target)
+                        .map(item => (
+                          <div
+                            key={item}
+                            className="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 to-teal-400 text-white font-semibold cursor-pointer hover:shadow-md transition"
+                            onClick={() => handlePlace(item, "")}
+                          >
+                            ✓ {item}
+                          </div>
+                        ))}
+                      {draggables.filter(item => placed[item] === target).length === 0 && (
+                        <p className="text-purple-400 text-sm italic">Drag items here...</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Unplaced Items Counter */}
+            {Object.keys(draggables.filter(item => !placed[item])).length > 0 && (
+              <p className="text-center text-gray-600 text-sm mt-6">
+                📌 {draggables.filter(item => !placed[item]).length} items remaining
+              </p>
+            )}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-4 justify-center">
+            {!done ? (
+              <>
+                <button
+                  onClick={() => setShowInstructions(true)}
+                  className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition"
+                >
+                  📋 Rules
+                </button>
+                <button
+                  onClick={reset}
+                  className="px-6 py-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition"
+                >
+                  🔄 Reset
+                </button>
+                <button
+                  onClick={check}
+                  disabled={draggables.some(item => !placed[item])}
+                  className="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-500 hover:shadow-lg text-white font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  ✓ Check Answer
+                </button>
+              </>
+            ) : (
+              <>
+                {isCorrect ? (
+                  <div className="text-center flex-1">
+                    <div className="text-6xl mb-4">🎉</div>
+                    <h2 className="text-2xl font-bold text-green-600 mb-2">Perfect Match!</h2>
+                    <p className="text-gray-600 mb-4">All items are correctly sorted!</p>
+                  </div>
+                ) : (
+                  <div className="text-center flex-1">
+                    <div className="text-6xl mb-4">🤔</div>
+                    <h2 className="text-2xl font-bold text-red-600 mb-2">Not Quite Right</h2>
+                    <p className="text-gray-600 mb-4">Check your placements and try again!</p>
+                    <button
+                      onClick={reset}
+                      className="px-8 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-bold rounded-lg hover:shadow-lg transition"
+                    >
+                      🔄 Try Again
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
-      {!done && <button className="btn-primary" onClick={check}>Check</button>}
-      {done && <div className="mt-4 text-green-600 font-bold">Puzzle Complete!</div>}
-    </div>
+    </SiteLayout>
   );
 }
