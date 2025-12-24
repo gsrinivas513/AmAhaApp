@@ -16,6 +16,7 @@ function SubTopicsList({
   onAddQuestion
 }) {
   const [puzzlePreview, setPuzzlePreview] = useState({});
+  const [questionCounts, setQuestionCounts] = useState({});
 
   const getTopicName = (topicId) => {
     if (!topicId) return "No Topic";
@@ -24,17 +25,27 @@ function SubTopicsList({
   };
 
   useEffect(() => {
-    async function fetchPuzzles() {
+    async function fetchData() {
       if (!subtopics) return;
       const previews = {};
+      const counts = {};
+      
       for (const sub of subtopics) {
         if (!sub.id) continue;
-        const qSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", sub.id)));
-        previews[sub.id] = qSnap.docs.map(d => d.data());
+        
+        // Fetch visual puzzles
+        const puzzlesSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", sub.id)));
+        previews[sub.id] = puzzlesSnap.docs.map(d => d.data());
+        
+        // Fetch questions and count them
+        const questionsSnap = await getDocs(query(collection(db, "questions"), where("subtopicId", "==", sub.id)));
+        counts[sub.id] = questionsSnap.docs.length;
       }
+      
       setPuzzlePreview(previews);
+      setQuestionCounts(counts);
     }
-    fetchPuzzles();
+    fetchData();
   }, [subtopics]);
 
   if (!selectedCategoryId) {
@@ -111,7 +122,7 @@ function SubTopicsList({
                     {sub.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#10b981", fontWeight: 600 }}>
-                    {sub.questionCount || 0} questions
+                    {questionCounts[sub.id] || 0} questions
                   </div>
                   {puzzlePreview[sub.id] && puzzlePreview[sub.id].length > 0 && (
                     <div style={{ marginTop: 6, fontSize: 11, color: '#444' }}>

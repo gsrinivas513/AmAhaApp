@@ -25,7 +25,6 @@ function TopicsList({
   };
 
   const getQuizCount = (topic) => topic.quizCount || 0;
-  const getPuzzleCount = (topic) => topic.puzzleCount || 0;
 
   if (!selectedCategoryId) {
     return (
@@ -101,7 +100,7 @@ function TopicsList({
                     {topic.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
-                    {getSubtopicCount(topic.id)} subtopics | {getQuizCount(topic)} quizzes, {getPuzzleCount(topic)} puzzles
+                    {getSubtopicCount(topic.id)} subtopics | {getQuizCount(topic)} quizzes
                   </div>
                 </div>
               </div>

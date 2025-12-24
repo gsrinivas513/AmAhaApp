@@ -1,6 +1,7 @@
 // src/admin/VisualPuzzleAdminPage.jsx
 // Admin page for creating and managing visual puzzles
 import React, { useState, useRef } from "react";
+import AdminLayout from "./AdminLayout";
 import {
   createVisualPuzzle,
   updateVisualPuzzle,
@@ -256,11 +257,12 @@ function VisualPuzzleAdminPage({ puzzleId }) {
   };
 
   return (
-    <div className="puzzle-admin-container">
-      <div className="puzzle-admin-header">
-        <h1>🧩 Create Visual Puzzle</h1>
-        <p>Design interactive visual puzzles for kids</p>
-      </div>
+    <AdminLayout>
+      <div className="puzzle-admin-container">
+        <div className="puzzle-admin-header">
+          <h1>🧩 Create Visual Puzzle</h1>
+          <p>Design interactive visual puzzles for kids</p>
+        </div>
 
       <form onSubmit={handleSave} className="puzzle-admin-form">
         {/* Alerts */}
@@ -469,6 +471,7 @@ function VisualPuzzleAdminPage({ puzzleId }) {
         </div>
       </form>
     </div>
+    </AdminLayout>
   );
 }
 
