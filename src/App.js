@@ -12,6 +12,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
+import TopNavBar from "./components/navigation/TopNavBar";
 
 /* PUBLIC */
 import HomePage from "./home/HomePage";
@@ -21,6 +22,8 @@ import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
 import DailyChallengePage from "./pages/DailyChallengePage";
 import LeaderboardsPage from "./pages/LeaderboardsPage";
 import StoryMapPage from "./pages/StoryMapPage";
+import CategoryPage from "./pages/CategoryPage";
+import FeaturePage from "./pages/FeaturePage";
 
 /* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
@@ -41,6 +44,7 @@ import ImportQuestionsPage from "./admin/ImportQuestionsPage";
 import UiModeSettingsPage from "./admin/UiModeSettingsPage";
 import AutomationTestPage from "./admin/AutomationTestPage";
 import FeatureCategoryManagement from "./admin/FeatureCategoryManagement";
+import NavigationConfigPage from "./admin/NavigationConfigPage";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
@@ -73,15 +77,20 @@ import VisualPuzzlePlayPage from "./puzzles/VisualPuzzlePlayPage";
 import UnifiedPuzzlePage from "./puzzles/UnifiedPuzzlePage";
 
 function App() {
-      <Route path="/admin/debug-puzzle-fields" element={<DebugPuzzleFields />} />
   return (
     <div className="app-bg">
+      <TopNavBar />
       <Navbar />
 
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/categories" element={<AllFeaturesPage />} />
         <Route path="/explore" element={<ExploreCategoriesPage />} />
+
+        {/* FEATURE & CATEGORY PAGES */}
+        <Route path="/feature/:id" element={<FeaturePage />} />
+        <Route path="/category/:id" element={<CategoryPage />} />
+        <Route path="/category/:id/topic/:topicId" element={<CategoryPage />} />
 
         {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
@@ -112,6 +121,7 @@ function App() {
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
         <Route path="/admin/automation-tests" element={<AutomationTestPage />} />
         <Route path="/admin/features" element={<FeatureCategoryManagement />} />
+        <Route path="/admin/navigation" element={<NavigationConfigPage />} />
 
         {/* ADMIN — QUIZ */}
         <Route path="/admin/add-content" element={<AddQuestionPage />} />

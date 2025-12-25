@@ -1,0 +1,231 @@
+/**
+ * TopNavBar.jsx
+ * Main navigation bar with feature tabs and mega menu
+ * Desktop: Mega menu on hover
+ * Mobile: Hamburger menu with accordion
+ */
+
+import React, { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useNavigationData } from "../../hooks/useNavigationData";
+import AmAhaLogo from "../AmAhaLogo";
+import FeatureMenuItem from "./FeatureMenuItem";
+import MegaMenu from "./MegaMenu";
+import MobileMenu from "./MobileMenu";
+
+function TopNavBar() {
+  const navigate = useNavigate();
+  const { features, categoriesByFeature, config, loading, loadFeatureCategories } =
+    useNavigationData();
+
+  // State management
+  const [activeFeature, setActiveFeature] = useState(null);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuTimeoutRef = useRef(null);
+
+  // Handle feature hover with delay to avoid flickering
+  const handleFeatureHover = (featureId) => {
+    if (menuTimeoutRef.current) {
+      clearTimeout(menuTimeoutRef.current);
+    }
+    setHoveredFeature(featureId);
+  };
+
+  const handleFeatureHoverEnd = () => {
+    menuTimeoutRef.current = setTimeout(() => {
+      setHoveredFeature(null);
+    }, 150);
+  };
+
+  const handleFeatureClick = async (feature) => {
+    setActiveFeature(feature.id);
+    // Load categories if not already loaded
+    await loadFeatureCategories(feature.id);
+    // Navigate to feature page (you can create a feature landing page)
+    navigate(`/feature/${feature.id}`, { state: { featureName: feature.name } });
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  if (loading) {
+    return (
+      <nav
+        style={{
+          background: "white",
+          borderBottom: "1px solid #e0e0e0",
+          padding: "12px 16px",
+          sticky: "top",
+          zIndex: 30,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "56px",
+          }}
+        >
+          <span style={{ color: "#999", fontSize: "14px" }}>Loading menu...</span>
+        </div>
+      </nav>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop Navigation */}
+      <nav
+        style={{
+          background: "white",
+          borderBottom: "2px solid #f0f0f0",
+          position: "sticky",
+          top: 0,
+          zIndex: 30,
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "0 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: "64px",
+          }}
+        >
+          {/* Logo */}
+          <Link
+            to="/"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              flexShrink: 0,
+              marginRight: "32px",
+            }}
+          >
+            <AmAhaLogo size="header" />
+          </Link>
+
+          {/* Desktop Menu - Hidden on mobile */}
+          <div
+            style={{
+              display: "none",
+              "@media (min-width: 768px)": {
+                display: "flex",
+              },
+              gap: "4px",
+              alignItems: "center",
+              flex: 1,
+              position: "relative",
+            }}
+            className="hidden md:flex"
+          >
+            {features.map((feature) => (
+              <div key={feature.id} style={{ position: "relative" }}>
+                <FeatureMenuItem
+                  feature={feature}
+                  categories={categoriesByFeature[feature.id] || []}
+                  isActive={hoveredFeature === feature.id}
+                  onHover={handleFeatureHover}
+                  onHoverEnd={handleFeatureHoverEnd}
+                  onLoadCategories={loadFeatureCategories}
+                  onClick={handleFeatureClick}
+                />
+
+                {/* Mega Menu */}
+                {config?.showMegaMenu && hoveredFeature === feature.id && (
+                  <MegaMenu
+                    feature={feature}
+                    categories={categoriesByFeature[feature.id] || []}
+                    isOpen={true}
+                    onClose={() => setHoveredFeature(null)}
+                    config={config}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile Hamburger Menu - Visible on mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: "flex",
+              "@media (min-width: 768px)": {
+                display: "none",
+              },
+              flexDirection: "column",
+              gap: "5px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "8px",
+            }}
+            className="md:hidden"
+          >
+            <span
+              style={{
+                width: "24px",
+                height: "3px",
+                background: "#0b1220",
+                borderRadius: "2px",
+                transition: "all 250ms ease",
+              }}
+            />
+            <span
+              style={{
+                width: "24px",
+                height: "3px",
+                background: "#0b1220",
+                borderRadius: "2px",
+                transition: "all 250ms ease",
+              }}
+            />
+            <span
+              style={{
+                width: "24px",
+                height: "3px",
+                background: "#0b1220",
+                borderRadius: "2px",
+                transition: "all 250ms ease",
+              }}
+            />
+          </button>
+        </div>
+
+        {/* Mobile menu display fix via CSS */}
+        <style>{`
+          @media (min-width: 768px) {
+            .md\\:flex {
+              display: flex !important;
+            }
+            .md\\:hidden {
+              display: none !important;
+            }
+          }
+        `}</style>
+      </nav>
+
+      {/* Mobile Menu Drawer */}
+      <MobileMenu
+        features={features}
+        categoriesByFeature={categoriesByFeature}
+        isOpen={mobileMenuOpen}
+        onClose={closeMobileMenu}
+        config={config}
+        loadFeatureCategories={loadFeatureCategories}
+      />
+    </>
+  );
+}
+
+export default TopNavBar;

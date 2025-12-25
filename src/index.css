@@ -191,3 +191,64 @@ button {
     #f9fafc;
   min-height: 100vh;
 }
+
+/* ===============================
+   NAVIGATION ANIMATIONS
+=============================== */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+    max-height: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.mega-menu {
+  animation: slideDown 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.mobile-menu {
+  animation: fadeIn 250ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Smooth transitions for menu items */
+.feature-menu-item {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}

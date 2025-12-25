@@ -319,6 +319,7 @@ function Sidebar() {
         <Section title="Global" open={open.global} onToggle={() => toggle("global")}>
           <Item icon={<DashboardIcon />} label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
           <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
+          <Item icon={<GearIcon />} label="Navigation Menu" path="/admin/navigation" active={isActive("/admin/navigation")} />
           <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
           <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
           <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
