@@ -8,6 +8,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
 import PuzzleCard from "../../puzzles/PuzzleCard";
 import { countPuzzlesForCategory } from "../../puzzles/puzzleCountService";
+import CategoryCardItem, { colorSchemes } from "../../components/navigation/CategoryCardItem";
 
 // Topics carousel component
 function TopicsCarouselSection({ topics }) {
@@ -297,18 +298,9 @@ function FeatureCarouselSection({ feature, categories }) {
     </div>
   );
 }
-
 // Default color schemes for categories
-const colorSchemes = [
-  { color: "from-rose-400 via-pink-300 to-rose-300", borderColor: "from-pink-300 to-rose-200" },
-  { color: "from-amber-400 via-orange-300 to-yellow-300", borderColor: "from-orange-300 to-yellow-200" },
-  { color: "from-blue-400 via-cyan-300 to-blue-300", borderColor: "from-blue-300 to-cyan-200" },
-  { color: "from-orange-400 via-amber-300 to-yellow-300", borderColor: "from-amber-300 to-yellow-200" },
-  { color: "from-emerald-400 via-green-300 to-teal-300", borderColor: "from-green-300 to-teal-200" },
-  { color: "from-cyan-400 via-teal-300 to-blue-300", borderColor: "from-cyan-300 to-teal-200" },
-  { color: "from-red-400 via-orange-300 to-amber-300", borderColor: "from-red-300 to-orange-200" },
-  { color: "from-purple-400 via-violet-300 to-pink-300", borderColor: "from-purple-300 to-pink-200" },
-];
+// NOTE: Now imported from CategoryCardItem for consistency
+// const colorSchemes = [...]
 
 // Helper function to generate consistent rating based on category ID and quiz count
 const generateRealisticRating = (quizCount = 0, categoryId = '') => {

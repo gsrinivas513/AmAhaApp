@@ -1,226 +1,151 @@
 /**
  * CategoriesPanel.jsx
- * Shows categories for a selected feature
- * Displays quiz categories, puzzle categories, or navigation categories
- * Categories appear in a grid layout with hover for topics
+ * Shows categories for a selected feature in a horizontal scrollable carousel
+ * Uses CategoryCardItem component for consistent styling with home page
+ * Displays pagination arrows when there are more items to scroll
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import CategoryDropdown from "./CategoryDropdown";
+import CategoryCardItem from "./CategoryCardItem";
 
 function CategoriesPanel({ feature, categories, config, isAbsolute = false }) {
   const navigate = useNavigate();
-  const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = useRef(null);
 
   if (!feature || !categories || categories.length === 0) {
     return null;
   }
 
-  // Determine feature-specific styling
-  const featureStyles = {
-    quizzes: {
-      headerColor: "#6C63FF",
-      cardBg: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
-      cardBorder: "#d9d4ff",
-      hoverBg: "#ffffff",
-      buttonColor: "#6C63FF",
-    },
-    "UpNde0cmlHFDQXgTcQOJ": {
-      headerColor: "#6C63FF",
-      cardBg: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
-      cardBorder: "#d9d4ff",
-      hoverBg: "#ffffff",
-      buttonColor: "#6C63FF",
-    },
-    puzzles: {
-      headerColor: "#10b981",
-      cardBg: "linear-gradient(135deg, #f0fdf4 0%, #fafafa 100%)",
-      cardBorder: "#bbf7d0",
-      hoverBg: "#ffffff",
-      buttonColor: "#10b981",
-    },
-    Puzzles: {
-      headerColor: "#10b981",
-      cardBg: "linear-gradient(135deg, #f0fdf4 0%, #fafafa 100%)",
-      cardBorder: "#bbf7d0",
-      hoverBg: "#ffffff",
-      buttonColor: "#10b981",
-    },
+  // Calculate scroll dimensions
+  const itemWidth = 224; // w-56 width (224px) + gap (24px) = 248px per item
+  const gap = 24;
+  const totalItemWidth = itemWidth + gap;
+  const totalWidth = categories.length * totalItemWidth;
+  const containerWidth = 1200;
+  const maxScroll = Math.max(0, totalWidth - containerWidth);
+
+  // Handle carousel scrolling
+  const scroll = (direction) => {
+    let newPosition = scrollPosition + (direction === "next" ? totalItemWidth : -totalItemWidth);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+    setScrollPosition(newPosition);
   };
 
-  const styles = featureStyles[feature.id] || featureStyles.quizzes;
+  const canScrollPrev = scrollPosition > 0;
+  const canScrollNext = scrollPosition < maxScroll;
 
-  // Handle category click based on feature type
+  // Handle category click navigation
   const handleCategoryClick = (category) => {
-    if (feature.id === "quizzes") {
-      // Navigate to quiz category
-      navigate(`/quiz/${category.key || category.id}`, {
-        state: { categoryName: category.title || category.name },
+    const categoryId = category.key || category.id;
+    const categoryName = category.title || category.name;
+
+    if (feature.id === "quizzes" || feature.id === "UpNde0cmlHFDQXgTcQOJ") {
+      navigate(`/quiz/${categoryId}`, {
+        state: { categoryName },
       });
-    } else if (feature.id === "puzzles") {
-      // Navigate to puzzle category
-      navigate(`/puzzles/${category.key || category.id}`, {
-        state: { categoryName: category.title || category.name },
+    } else if (feature.id === "puzzles" || feature.id === "Puzzles") {
+      navigate(`/puzzles/${categoryId}`, {
+        state: { categoryName },
       });
     } else {
-      // Default navigation category
-      navigate(`/category/${category.id}`, {
-        state: { categoryName: category.name },
+      navigate(`/category/${categoryId}`, {
+        state: { categoryName },
       });
     }
   };
 
   return (
     <div
+      className={`bg-white shadow-2xl rounded-lg overflow-hidden ${
+        isAbsolute ? "absolute top-full left-0 right-0 z-40 mt-0" : "mt-8"
+      }`}
       style={{
-        position: isAbsolute ? "absolute" : "relative",
-        top: isAbsolute ? "100%" : "auto",
-        left: 0,
-        right: 0,
-        width: "100%",
-        borderBottom: "1px solid #f0f0f0",
-        background: styles.cardBg,
-        padding: "24px 16px",
-        animation: `slideDown ${config?.animationDuration || 250}ms ease-out`,
-        zIndex: 40,
-        boxShadow: isAbsolute ? "0 8px 24px rgba(0, 0, 0, 0.12)" : "none",
+        maxWidth: "100%",
       }}
     >
+      {/* Feature Header */}
       <div
+        className="px-8 py-6 border-b-4 border-gray-200"
         style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
+          backgroundColor: `${feature.color || "#6C63FF"}15`,
+          borderLeftColor: feature.color || "#6C63FF",
+          borderLeftWidth: "4px",
         }}
       >
-        {/* Feature Header */}
-        <div style={{ marginBottom: "20px" }}>
-          <h2
+        <div className="flex items-center gap-3 mb-2">
+          {feature.icon && (
+            <span className="text-2xl">{feature.icon}</span>
+          )}
+          <h3 className="text-xl font-bold text-gray-900">
+            {feature.name || feature.title}
+          </h3>
+        </div>
+        {feature.description && (
+          <p className="text-sm text-gray-600">
+            {feature.description}
+          </p>
+        )}
+      </div>
+
+      {/* Categories Carousel */}
+      <div className="px-8 py-6 relative">
+        {/* Scroll Container with overflow hidden */}
+        <div className="overflow-x-hidden">
+          <div
+            ref={containerRef}
+            className="flex gap-6 transition-transform duration-300 ease-out"
             style={{
-              margin: "0 0 8px 0",
-              fontSize: "18px",
-              fontWeight: "700",
-              color: styles.headerColor,
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
+              transform: `translateX(-${scrollPosition}px)`,
             }}
           >
-            {feature.icon && <span style={{ fontSize: "24px" }}>{feature.icon}</span>}
-            {feature.name?.toUpperCase()}
-          </h2>
-          {feature.description && (
-            <p
-              style={{
-                margin: "0",
-                fontSize: "14px",
-                color: "#666",
-                lineHeight: "1.5",
-                fontWeight: "500",
-              }}
-            >
-              {feature.description}
-            </p>
-          )}
-        </div>
-
-        {/* Categories Grid - Consistent Card Layout */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
-            gap: "16px",
-            maxWidth: "1200px",
-          }}
-        >
-          {categories.map((category) => (
-            <div
-              key={category.id || category.key}
-              style={{
-                position: "relative",
-              }}
-              onMouseEnter={() => setHoveredCategory(category.id || category.key)}
-              onMouseLeave={() => setHoveredCategory(null)}
-            >
-              {/* Category Card */}
-              <button
+            {categories.map((category, index) => (
+              <CategoryCardItem
+                key={category.id || category.key || index}
+                category={category}
+                index={index}
                 onClick={() => handleCategoryClick(category)}
-                style={{
-                  width: "100%",
-                  height: "220px",
-                  padding: "16px",
-                  border: `2px solid ${styles.cardBorder}`,
-                  borderRadius: "10px",
-                  background: hoveredCategory === (category.id || category.key) ? styles.hoverBg : "#ffffff",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all 200ms ease",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                  fontSize: "14px",
-                  color: "#0b1220",
-                  boxShadow: hoveredCategory === (category.id || category.key) 
-                    ? `0 8px 16px ${styles.headerColor}33`
-                    : "0 2px 4px rgba(0, 0, 0, 0.05)",
-                  borderColor: hoveredCategory === (category.id || category.key) ? styles.headerColor : styles.cardBorder,
-                  transform: hoveredCategory === (category.id || category.key) ? "translateY(-4px)" : "translateY(0)",
-                }}
-              >
-                {/* Icon and Title */}
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {category.icon && (
-                    <span style={{ fontSize: "24px", flexShrink: 0 }}>
-                      {category.icon}
-                    </span>
-                  )}
-                  <span style={{ fontWeight: "600", fontSize: "15px", flex: 1 }}>
-                    {category.title || category.label || category.name}
-                  </span>
-                </div>
-
-                {/* Description if available */}
-                {category.description && (
-                  <p
-                    style={{
-                      margin: "0",
-                      fontSize: "12px",
-                      color: "#999",
-                      lineHeight: "1.4",
-                    }}
-                  >
-                    {category.description}
-                  </p>
-                )}
-
-                {/* Explore button/link */}
-                <div
-                  style={{
-                    marginTop: "auto",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    color: styles.buttonColor,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                >
-                  Explore <span>→</span>
-                </div>
-              </button>
-
-              {/* Topics Dropdown - only for navigation categories */}
-              {config?.showTopics && !["quizzes", "puzzles"].includes(feature.id) && (
-                <CategoryDropdown
-                  category={category}
-                  isOpen={hoveredCategory === category.id}
-                  onClose={() => setHoveredCategory(null)}
-                  config={config}
-                />
-              )}
-            </div>
-          ))}
+                compact={true}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* Previous Scroll Button */}
+        {canScrollPrev && (
+          <button
+            onClick={() => scroll("prev")}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all duration-200 shadow-lg"
+            aria-label="Scroll left"
+            title="Previous categories"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Next Scroll Button */}
+        {canScrollNext && (
+          <button
+            onClick={() => scroll("next")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all duration-200 shadow-lg"
+            aria-label="Scroll right"
+            title="Next categories"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
+
+        {/* Indicator: Show items count when scrollable */}
+        {(canScrollPrev || canScrollNext) && (
+          <div className="text-center mt-4 text-xs text-gray-500">
+            {Math.ceil((scrollPosition / totalItemWidth) + 1)} - {Math.min(Math.ceil(scrollPosition / totalItemWidth) + 5, categories.length)} of {categories.length}
+          </div>
+        )}
       </div>
     </div>
   );
