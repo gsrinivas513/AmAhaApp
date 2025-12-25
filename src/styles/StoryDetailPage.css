@@ -1,0 +1,392 @@
+/**
+ * StoryDetailPage.css
+ * Styles for the story detail/reading page
+ */
+
+.story-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Header */
+.story-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #6c63ff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #5651d4;
+}
+
+.story-title-section h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0b1220;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.story-description {
+  font-size: 1.1rem;
+  color: #666;
+  line-height: 1.6;
+  max-width: 800px;
+}
+
+/* Progress section */
+.progress-section {
+  background: linear-gradient(135deg, #6c63ff 0%, #8b85ff 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  color: white;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.progress-text {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.completion-badge {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+/* Main content layout */
+.story-content {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+}
+
+/* Chapters sidebar */
+.chapters-sidebar {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.chapters-sidebar h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0b1220;
+  margin-bottom: 16px;
+}
+
+.chapters-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chapter-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.chapter-item:hover {
+  border-color: #ddd;
+  background: #f9f9f9;
+}
+
+.chapter-item.active {
+  border-color: #6c63ff;
+  background: rgba(108, 99, 255, 0.05);
+}
+
+.chapter-item.completed {
+  background: #f0f9f0;
+}
+
+.chapter-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  font-weight: 700;
+  color: #666;
+  font-size: 14px;
+}
+
+.chapter-item.active .chapter-number {
+  background: #6c63ff;
+  color: white;
+}
+
+.chapter-item.completed .chapter-number {
+  background: #4caf50;
+  color: white;
+}
+
+.chapter-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chapter-title {
+  font-weight: 600;
+  color: #0b1220;
+  font-size: 14px;
+  line-clamp: 2;
+}
+
+.chapter-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.completed-badge {
+  font-size: 12px;
+  color: #4caf50;
+  font-weight: 600;
+}
+
+/* Chapter content */
+.chapter-content {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.chapter-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.chapter-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0b1220;
+  margin-bottom: 12px;
+}
+
+.chapter-description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+.chapter-body {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.character-icon {
+  font-size: 80px;
+  min-width: 100px;
+  text-align: center;
+  filter: drop-shadow(0 4px 12px rgba(108, 99, 255, 0.2));
+}
+
+.chapter-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333;
+  flex: 1;
+}
+
+/* Chapter actions */
+.chapter-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.complete-button {
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #6c63ff 0%, #8b85ff 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.complete-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(108, 99, 255, 0.3);
+}
+
+.completed-button {
+  padding: 12px 32px;
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+/* Sign in prompt */
+.signin-prompt {
+  background: linear-gradient(135deg, #fef6f5 0%, #fff9f7 100%);
+  border: 2px solid #ffccb8;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.signin-prompt p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.signin-prompt button {
+  padding: 10px 24px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signin-prompt button:hover {
+  background: #ff5252;
+}
+
+/* No chapter state */
+.no-chapter {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+  font-size: 18px;
+}
+
+/* Loading and error states */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 18px;
+  color: #666;
+}
+
+.error-state h2 {
+  font-size: 24px;
+  color: #d32f2f;
+  margin-bottom: 24px;
+}
+
+.error-state button {
+  padding: 12px 32px;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-state button:hover {
+  background: #5651d4;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .story-detail-page {
+    padding: 20px 16px;
+  }
+
+  .story-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .chapters-sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .chapter-content {
+    padding: 24px;
+  }
+
+  .chapter-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .chapter-body {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .character-icon {
+    font-size: 60px;
+    min-width: auto;
+  }
+
+  .chapter-text {
+    font-size: 1rem;
+  }
+
+  .story-title-section h1 {
+    font-size: 1.8rem;
+  }
+}

@@ -22,6 +22,7 @@ import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
 import DailyChallengePage from "./pages/DailyChallengePage";
 import LeaderboardsPage from "./pages/LeaderboardsPage";
 import StoryMapPage from "./pages/StoryMapPage";
+import StoryDetailPage from "./pages/StoryDetailPage";
 import CategoryPage from "./pages/CategoryPage";
 import FeaturePage from "./pages/FeaturePage";
 
@@ -109,6 +110,7 @@ function App() {
         
         {/* STORIES */}
         <Route path="/stories" element={<StoryMapPage />} />
+        <Route path="/story/:storyId" element={<StoryDetailPage />} />
 
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />
