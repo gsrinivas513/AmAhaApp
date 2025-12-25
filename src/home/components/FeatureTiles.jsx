@@ -9,6 +9,7 @@ import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
 import PuzzleCard from "../../puzzles/PuzzleCard";
 import { countPuzzlesForCategory } from "../../puzzles/puzzleCountService";
 import CategoryCardItem, { colorSchemes } from "../../components/navigation/CategoryCardItem";
+import { getAllStories } from "../../services/storyService";
 
 // Topics carousel component
 function TopicsCarouselSection({ topics }) {
@@ -140,6 +141,131 @@ function TopicsCarouselSection({ topics }) {
       ) : (
         <div className="bg-gray-50 rounded-lg p-8 text-center">
           <p className="text-gray-600">No topics published yet.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Stories carousel component
+function StoriesCarouselSection({ stories }) {
+  const navigate = useNavigate();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = React.useRef(null);
+  
+  const itemsPerView = 4;
+  const itemWidth = 240; // width of card + gap
+  const totalWidth = stories.length * itemWidth;
+  const containerWidth = itemsPerView * itemWidth;
+  const maxScroll = Math.max(0, totalWidth - containerWidth);
+
+  const scroll = (direction) => {
+    if (!containerRef.current) return;
+    
+    let newPosition = scrollPosition + (direction === "next" ? itemWidth : -itemWidth);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+    setScrollPosition(newPosition);
+    
+    containerRef.current.scrollTo({
+      left: newPosition,
+      behavior: "smooth",
+    });
+  };
+
+  const canScrollNext = scrollPosition < maxScroll;
+  const canScrollPrev = scrollPosition > 0;
+
+  return (
+    <div className="mb-16">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">📖</span>
+          <h3 className="text-2xl font-bold text-gray-900">Featured Stories</h3>
+        </div>
+        <button 
+          onClick={() => navigate("/stories")}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
+          See all ({stories.length})
+          <span>→</span>
+        </button>
+      </div>
+
+      {stories.length > 0 ? (
+        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+          <div
+            ref={containerRef}
+            className="flex gap-6 overflow-x-hidden scroll-smooth"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {stories.map((story, index) => {
+              const colorScheme = colorSchemes[index % colorSchemes.length];
+              const hasImage = story.coverImage || story.image;
+              return (
+                <div key={story.id} className="flex-shrink-0 w-56">
+                  <div
+                    onClick={() => navigate(`/story/${story.id}`)}
+                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                  >
+                    {hasImage ? (
+                      <ResponsiveImage
+                        src={story.coverImage || story.image}
+                        cloudinaryId={story.cloudinaryId}
+                        alt={story.title}
+                        fallbackIcon="📖"
+                        className="w-full h-full"
+                        crop="fit"
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                        📖
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <div className="pt-3">
+                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                      {story.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {story.description ? story.description.substring(0, 60) + "..." : "An interactive learning story"}
+                    </p>
+                    <p className="text-xs text-gray-600 font-medium">
+                      📚 {story.chapterCount || story.totalChapters || 0} Chapters
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {canScrollPrev && (
+            <button
+              onClick={() => scroll("prev")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              aria-label="Scroll left"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {canScrollNext && (
+            <button
+              onClick={() => scroll("next")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              aria-label="Scroll right"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-600">No stories available yet. Check back soon!</p>
         </div>
       )}
     </div>
@@ -560,6 +686,7 @@ export default function FeatureTiles() {
   const [featuresWithCategories, setFeaturesWithCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [puzzles, setPuzzles] = useState([]);
+  const [stories, setStories] = useState([]);
 
   useEffect(() => {
     const loadCategoriesAndFeatures = async () => {
@@ -706,6 +833,22 @@ export default function FeatureTiles() {
     getPuzzlesByCategory("Kids Learning").then(setPuzzles); // Example: load for one category
   }, []);
 
+  // Load stories
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        const storiesList = await getAllStories();
+        console.log('Loaded stories for HomePage:', storiesList);
+        setStories(storiesList || []);
+      } catch (error) {
+        console.error("Error loading stories:", error);
+        setStories([]);
+      }
+    };
+
+    loadStories();
+  }, []);
+
   // Load puzzle counts for all puzzle categories
   useEffect(() => {
     const loadPuzzleCounts = async () => {
@@ -759,6 +902,13 @@ export default function FeatureTiles() {
         {!loading && topics.length > 0 && (
           <div className="mb-16 px-4">
             <TopicsCarouselSection topics={topics} />
+          </div>
+        )}
+
+        {/* Stories section */}
+        {!loading && stories.length > 0 && (
+          <div className="mb-16 px-4">
+            <StoriesCarouselSection stories={stories} />
           </div>
         )}
 
