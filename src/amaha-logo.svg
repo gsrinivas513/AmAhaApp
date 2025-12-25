@@ -1,80 +1,56 @@
-<svg viewBox="0 0 3000 3000" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+<svg
+  viewBox="0 0 420 120"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-label="AmAha Logo"
+  preserveAspectRatio="xMidYMid meet"
+>
   <!-- Brain Mascot -->
-  <g id="brain-mascot">
-    <!-- Brain hemisphere left -->
-    <path d="M 900 1500 Q 800 1200 850 900 Q 900 600 1100 500 Q 1200 450 1300 500 Q 1350 800 1300 1200 L 900 1500 Z" fill="#6C63FF" stroke="none"/>
-    
-    <!-- Brain hemisphere right -->
-    <path d="M 2100 1500 Q 2200 1200 2150 900 Q 2100 600 1900 500 Q 1800 450 1700 500 Q 1650 800 1700 1200 L 2100 1500 Z" fill="#6C63FF" stroke="none"/>
-    
-    <!-- Brain center -->
-    <ellipse cx="1500" cy="1000" rx="280" ry="380" fill="#6C63FF"/>
-    
-    <!-- Brain wrinkles - horizontal lines -->
-    <path d="M 1100 900 Q 1500 850 1900 900" stroke="#4F46E5" stroke-width="60" fill="none" stroke-linecap="round"/>
-    <path d="M 1050 1100 Q 1500 1050 1950 1100" stroke="#4F46E5" stroke-width="60" fill="none" stroke-linecap="round"/>
-    <path d="M 1100 1300 Q 1500 1250 1900 1300" stroke="#4F46E5" stroke-width="60" fill="none" stroke-linecap="round"/>
-    <path d="M 1150 1500 Q 1500 1450 1850 1500" stroke="#4F46E5" stroke-width="60" fill="none" stroke-linecap="round"/>
-    
-    <!-- Brain wrinkles - vertical curves -->
-    <path d="M 1200 700 Q 1250 1000 1200 1450" stroke="#4F46E5" stroke-width="50" fill="none" stroke-linecap="round"/>
-    <path d="M 1500 600 Q 1520 1000 1500 1600" stroke="#4F46E5" stroke-width="50" fill="none" stroke-linecap="round"/>
-    <path d="M 1800 700 Q 1750 1000 1800 1450" stroke="#4F46E5" stroke-width="50" fill="none" stroke-linecap="round"/>
-    
-    <!-- Highlight on brain -->
-    <ellipse cx="1350" cy="900" rx="150" ry="200" fill="#A78BFA" opacity="0.6"/>
-    
-    <!-- Eyes - left -->
-    <circle cx="1250" cy="1200" r="90" fill="#FFFFFF"/>
-    <circle cx="1250" cy="1200" r="60" fill="#000000"/>
-    <circle cx="1270" cy="1180" r="20" fill="#FFFFFF" opacity="0.8"/>
-    
-    <!-- Eyes - right -->
-    <circle cx="1750" cy="1200" r="90" fill="#FFFFFF"/>
-    <circle cx="1750" cy="1200" r="60" fill="#000000"/>
-    <circle cx="1770" cy="1180" r="20" fill="#FFFFFF" opacity="0.8"/>
-    
+  <g transform="translate(10,20)">
+    <!-- Brain outline -->
+    <path
+      d="M40 10
+         C25 10, 15 20, 15 35
+         C5 40, 5 55, 15 60
+         C15 75, 30 80, 40 75
+         C50 80, 65 75, 65 60
+         C75 55, 75 40, 65 35
+         C65 20, 55 10, 40 10Z"
+      fill="#F472B6"
+      stroke="#EC4899"
+      stroke-width="3"
+    />
+
+    <!-- Brain folds -->
+    <path d="M28 28 C35 22, 45 22, 52 28" stroke="#DB2777" stroke-width="2" fill="none"/>
+    <path d="M25 40 C35 35, 45 35, 55 40" stroke="#DB2777" stroke-width="2" fill="none"/>
+    <path d="M28 52 C35 48, 45 48, 52 52" stroke="#DB2777" stroke-width="2" fill="none"/>
+
+    <!-- Eyes -->
+    <circle cx="32" cy="42" r="3" fill="#1F2937"/>
+    <circle cx="48" cy="42" r="3" fill="#1F2937"/>
+
     <!-- Smile -->
-    <path d="M 1350 1400 Q 1500 1500 1650 1400" stroke="#000000" stroke-width="40" fill="none" stroke-linecap="round"/>
-    
-    <!-- Lightbulb crown -->
-    <g id="lightbulb">
-      <!-- Bulb -->
-      <circle cx="1500" cy="350" r="140" fill="#FFD166" stroke="none"/>
-      <!-- Highlight -->
-      <ellipse cx="1450" cy="300" rx="70" ry="90" fill="#FFE5A3" opacity="0.7"/>
-      <!-- Base -->
-      <rect x="1400" y="480" width="200" height="80" rx="20" fill="#FFB800"/>
-      <!-- Threads -->
-      <rect x="1430" y="530" width="30" height="50" fill="#8B7000"/>
-      <rect x="1540" y="530" width="30" height="50" fill="#8B7000"/>
+    <path d="M32 50 Q40 56 48 50" stroke="#1F2937" stroke-width="2" fill="none"/>
+
+    <!-- Star -->
+    <g transform="translate(60, 8)">
+      <polygon
+        points="8,0 10,6 16,6 11,10 13,16 8,12 3,16 5,10 0,6 6,6"
+        fill="#FBBF24"
+      />
     </g>
   </g>
-  
-  <!-- "AmAha" Wordmark -->
-  <g id="wordmark" font-family="'Inter', 'Helvetica', 'Arial', sans-serif" font-weight="900" letter-spacing="-20">
-    <!-- A -->
-    <text x="500" y="2300" font-size="550" fill="#6C63FF">A</text>
-    <!-- m -->
-    <text x="1050" y="2300" font-size="550" fill="#6C63FF">m</text>
-    <!-- A (smaller, styled differently) -->
-    <text x="1850" y="2300" font-size="550" fill="#FF8FAB">A</text>
-    <!-- h -->
-    <text x="2350" y="2300" font-size="550" fill="#6C63FF">h</text>
-    <!-- a -->
-    <text x="2800" y="2300" font-size="550" fill="#FF8FAB">a</text>
-  </g>
-  
-  <!-- Decorative sparkles -->
-  <g id="sparkles" fill="#FFD166">
-    <!-- Top left sparkle -->
-    <circle cx="600" cy="500" r="40"/>
-    <circle cx="600" cy="500" r="20" fill="#FFFFFF"/>
-    <!-- Top right sparkle -->
-    <circle cx="2400" cy="600" r="35"/>
-    <circle cx="2400" cy="600" r="18" fill="#FFFFFF"/>
-    <!-- Bottom left sparkle -->
-    <circle cx="800" cy="2600" r="30"/>
-    <circle cx="800" cy="2600" r="15" fill="#FFFFFF"/>
-  </g>
+
+  <!-- AmAha Text -->
+  <text
+    x="100"
+    y="78"
+    font-size="56"
+    font-weight="800"
+    font-family="Poppins, Inter, Arial, sans-serif"
+    fill="#1F2937"
+  >
+    AmAha
+  </text>
 </svg>
