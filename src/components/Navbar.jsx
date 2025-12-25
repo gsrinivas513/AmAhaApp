@@ -7,6 +7,7 @@ import { db } from "../firebase/firebaseConfig";
 import { Button, Avatar } from "./ui";
 import AchievementsBadge from "./AchievementsBadge";
 import StreakDisplay from "./StreakDisplay/StreakDisplay";
+import amahaLogo from "../amaha.png";
 
 function Navbar() {
   const { user, signInWithGoogle, signOut } = useAuth();
@@ -68,24 +69,18 @@ function Navbar() {
           }}
           className="hover:scale-105"
         >
-          {/* Premium Icon Badge */}
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: 14,
-            background: "linear-gradient(135deg, #6C63FF 0%, #0284c7 50%, #06b6d4 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontWeight: 900,
-            fontSize: 24,
-            boxShadow: "0 12px 32px rgba(108,99,255,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
-            border: "2px solid rgba(255,255,255,0.3)",
-            position: "relative",
-          }}>
-            ✨
-          </div>
+          {/* Logo Image */}
+          <img 
+            src={amahaLogo} 
+            alt="AmAha Logo" 
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              objectFit: "contain",
+              boxShadow: "0 12px 32px rgba(108,99,255,0.3)",
+            }}
+          />
           
           {/* Logo Text - Premium Style */}
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
