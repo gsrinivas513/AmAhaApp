@@ -193,11 +193,21 @@ function TopNavBar() {
               features.map((feature) => (
                 <button
                   key={feature.id}
+                  onClick={() => {
+                    // Stories feature navigates directly to /stories
+                    if (feature.id === "stories") {
+                      navigate("/stories");
+                      handleFeatureHover(null);
+                    }
+                  }}
                   onMouseEnter={() => {
                     if (menuTimeoutRef.current) {
                       clearTimeout(menuTimeoutRef.current);
                     }
-                    handleFeatureHover(feature);
+                    // Don't show categories panel for stories feature
+                    if (feature.id !== "stories") {
+                      handleFeatureHover(feature);
+                    }
                   }}
                   onMouseLeave={() => {
                     menuTimeoutRef.current = setTimeout(() => {

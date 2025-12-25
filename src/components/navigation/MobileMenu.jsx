@@ -16,6 +16,13 @@ function MobileMenu({ features, categoriesByFeature, isOpen, onClose, config, lo
   const [loadingTopics, setLoadingTopics] = useState(null);
 
   const handleFeatureClick = async (feature) => {
+    // Stories feature navigates directly to /stories
+    if (feature.id === "stories") {
+      navigate("/stories");
+      onClose();
+      return;
+    }
+
     if (expandedFeature === feature.id) {
       setExpandedFeature(null);
     } else {
