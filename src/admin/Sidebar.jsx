@@ -11,8 +11,7 @@ import {
   PuzzleIcon,
   GearIcon,
 } from "../components/icons/Icons";
-import DailyChallengeModal from "./modals/DailyChallengeModal";
-import StoryModal from "./modals/StoryModal";
+// Modals removed - using route-based page components instead
 
 /* ================= COMPONENTS ================= */
 
@@ -165,9 +164,7 @@ function Sidebar() {
 
   const isActive = (path) => location.pathname === path;
 
-  /* Modal State */
-  const [showDailyChallenge, setShowDailyChallenge] = useState(false);
-  const [showStories, setShowStories] = useState(false);
+  // Route-based navigation - no modal state needed
 
   /* Collapse State */
   const [open, setOpen] = useState({
@@ -236,8 +233,8 @@ function Sidebar() {
           <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
           <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
           <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
-          <ModalItem icon={<TrophyIcon />} label="Daily Challenge" onClick={() => setShowDailyChallenge(true)} />
-          <ModalItem icon={<DocumentIcon />} label="Stories" onClick={() => setShowStories(true)} />
+          <Item icon={<TrophyIcon />} label="Daily Challenge" path="/admin/daily-challenge" active={isActive("/admin/daily-challenge")} />
+          <Item icon={<DocumentIcon />} label="Stories" path="/admin/stories" active={isActive("/admin/stories")} />
           <Item icon={<ChartIcon />} label="Analytics" path="/admin/analytics" active={isActive("/admin/analytics")} />
           <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
           <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
@@ -266,9 +263,7 @@ function Sidebar() {
         </Section>
       </div>
 
-      {/* Modals - Outside of sidebar div so they render properly */}
-      {showDailyChallenge && <DailyChallengeModal isOpen={showDailyChallenge} onClose={() => setShowDailyChallenge(false)} />}
-      {showStories && <StoryModal isOpen={showStories} onClose={() => setShowStories(false)} />}
+      {/* Routes now handled via React Router in App.js */}
     </>
   );
 }

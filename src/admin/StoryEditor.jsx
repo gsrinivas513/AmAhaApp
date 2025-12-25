@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import AdminLayout from './AdminLayout';
 import {
   getAllStoriesAdmin,
   createStory,
@@ -144,8 +145,9 @@ export default function StoryEditor() {
   if (loading) return <div className="admin-loading">Loading stories...</div>;
 
   return (
-    <div className="story-editor">
-      <h2>📖 Story Management</h2>
+    <AdminLayout>
+      <div className="story-editor">
+        <h2>📖 Story Management</h2>
 
       {message && (
         <div className={`message ${message.type}`}>
@@ -290,5 +292,6 @@ export default function StoryEditor() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }

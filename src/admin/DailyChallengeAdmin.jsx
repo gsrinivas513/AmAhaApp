@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import AdminLayout from './AdminLayout';
 import {
   getTodayChallenge,
   getUpcomingChallenges,
@@ -99,7 +100,8 @@ export default function DailyChallengeAdmin() {
   if (loading) return <div className="admin-loading">Loading challenges...</div>;
 
   return (
-    <div className="daily-challenge-admin">
+    <AdminLayout>
+      <div className="daily-challenge-admin">
       <h2>🎯 Daily Challenge Management</h2>
 
       {message && (
@@ -275,5 +277,6 @@ export default function DailyChallengeAdmin() {
         </div>
       </section>
     </div>
+    </AdminLayout>
   );
 }
