@@ -207,47 +207,47 @@ This document provides a comprehensive reference for all routes, URLs, and navig
 
 ### Admin Panel Structure
 
-The admin panel uses a **collapsible sidebar** with three main sections: Global, Quiz, and Puzzles. Some items open inline modals instead of navigating to new pages.
+The admin panel uses a **collapsible sidebar** with three main sections: Global, Quiz, and Puzzles. **All items navigate to inline pages** - there are no modals.
 
 ```
 Admin Panel Sidebar
 ├─ GLOBAL (Collapsible Section)
-│  ├─ 📊 Dashboard → /admin/dashboard (Page Route)
-│  ├─ 📁 Features & Categories → /admin/features (Page Route)
-│  ├─ ➕ Add Content → /admin/add-content (Page Route)
-│  ├─ 🏆 Scores → /admin/scores (Page Route)
-│  ├─ 🎬 Social Media → /admin/social-media (Page Route)
-│  ├─ ⏰ Daily Challenge → Opens Modal (Inline)
-│  ├─ 📖 Stories → Opens Modal (Inline)
-│  ├─ 📊 Analytics → /admin/analytics (Page Route)
-│  ├─ ⚙️ System Tools → /admin/system-tools (Page Route)
-│  └─ 🤖 Automation Tests → /admin/automation-tests (Page Route)
+│  ├─ 📊 Dashboard → /admin/dashboard (Page)
+│  ├─ 📁 Features & Categories → /admin/features (Page)
+│  ├─ ➕ Add Content → /admin/add-content (Page)
+│  ├─ 🏆 Scores → /admin/scores (Page)
+│  ├─ 🎬 Social Media → /admin/social-media (Page)
+│  ├─ ⏰ Daily Challenge → /admin/daily-challenge (Page)
+│  ├─ 📖 Stories → /admin/stories (Page)
+│  ├─ 📊 Analytics → /admin/analytics (Page)
+│  ├─ ⚙️ System Tools → /admin/system-tools (Page)
+│  └─ 🤖 Automation Tests → /admin/automation-tests (Page)
 │
 ├─ QUIZ (Collapsible Section)
-│  ├─ 📄 View Questions → /admin/view-questions (Page Route)
-│  ├─ 📊 Quiz Analytics → /admin/quiz/analytics (Page Route)
-│  └─ 🎬 Quiz UI Animations → /admin/quiz-ui (Page Route)
+│  ├─ 📄 View Questions → /admin/view-questions (Page)
+│  ├─ 📊 Quiz Analytics → /admin/quiz/analytics (Page)
+│  └─ 🎬 Quiz UI Animations → /admin/quiz-ui (Page)
 │
 └─ PUZZLES (Collapsible Section)
-   ├─ 📑 Traditional Puzzles → /admin/puzzles (Page Route)
-   ├─ 🎨 Visual Puzzles → /admin/create-visual-puzzle (Page Route)
+   ├─ 📑 Traditional Puzzles → /admin/puzzles (Page)
+   ├─ 🎨 Visual Puzzles → /admin/create-visual-puzzle (Page)
    └─ 🎮 Dashboard (Coming soon) - Disabled
 ```
 
 ### Global Admin Routes
 
-| Sidebar Label | Path | Component | Display Type | Purpose |
-|---------------|------|-----------|--------------|---------|
-| **Dashboard** | `/admin/dashboard` | `AdminDashboard` | Page | Main admin control center with scores & analytics |
-| **Features & Categories** | `/admin/features` | `FeatureCategoryManagement` | Page | Manage quiz categories and features |
-| **Add Content** | `/admin/add-content` | `AddQuestionPage` | Page | Create new quiz questions |
-| **Scores** | `/admin/scores` | `AdminScoresPage` | Page | View user scores, attempts, and performance |
-| **Social Media** | `/admin/social-media` | `SocialMediaManagerPage` | Page | Manage social sharing content |
-| **Daily Challenge** | (Modal) | `DailyChallengeModal` | Modal (Inline) | Configure daily challenges without page navigation |
-| **Stories** | (Modal) | `StoryModal` | Modal (Inline) | Create/edit story content inline |
-| **Analytics** | `/admin/analytics` | `AnalyticsPage` | Page | View user and content analytics dashboard |
-| **System Tools** | `/admin/system-tools` | `SystemToolsPage` | Page | Database utilities and system maintenance tools |
-| **Automation Tests** | `/admin/automation-tests` | `AutomationTestPage` | Page | Run automated test suites |
+| Sidebar Label | Path | Component | Purpose |
+|---------------|------|-----------|---------|
+| **Dashboard** | `/admin/dashboard` | `AdminDashboard` | Main admin control center with scores & analytics |
+| **Features & Categories** | `/admin/features` | `FeatureCategoryManagement` | Manage quiz categories and features |
+| **Add Content** | `/admin/add-content` | `AddQuestionPage` | Create new quiz questions |
+| **Scores** | `/admin/scores` | `AdminScoresPage` | View user scores, attempts, and performance |
+| **Social Media** | `/admin/social-media` | `SocialMediaManagerPage` | Manage social sharing content |
+| **Daily Challenge** | `/admin/daily-challenge` | `DailyChallengeAdmin` | Configure daily challenges (inline page) |
+| **Stories** | `/admin/stories` | `StoryEditor` | Create/edit story content (inline page) |
+| **Analytics** | `/admin/analytics` | `AnalyticsPage` | View user and content analytics dashboard |
+| **System Tools** | `/admin/system-tools` | `SystemToolsPage` | Database utilities and system maintenance tools |
+| **Automation Tests** | `/admin/automation-tests` | `AutomationTestPage` | Run automated test suites |
 
 ### Quiz Admin Routes
 
@@ -460,44 +460,25 @@ Admin Panel Sidebar
 
 ---
 
-## 📱 Modal Routes vs Page Routes
+## 📱 All Routes are Page Routes (No Modals)
 
-### What's the Difference?
+### Admin Panel Navigation Style
 
-**Page Routes** (Navigate to new page):
-- URL changes (added to browser history)
-- Full page load or view swap
-- Examples: `/admin/dashboard`, `/admin/view-questions`, `/admin/analytics`
-- User sees sidebar collapse/expand, main content changes
+The admin panel uses a **consistent page-based routing approach**:
 
-**Modal Routes** (Open inline dialog):
-- URL does NOT change
-- Dialog/modal appears on top of current view
-- Examples: Daily Challenge (modal), Stories (modal)
-- User stays in admin panel context
-- Sidebar remains visible and accessible
-- Faster, more seamless experience
+- ✅ All sidebar items navigate to dedicated pages
+- ✅ Each page renders within the AdminLayout wrapper
+- ✅ No modal overlays or dark backgrounds
+- ✅ Consistent UI/UX with rest of admin panel
+- ✅ Full browser history support
 
-### Admin Modal Items (Inline Display)
+### Route Navigation
 
-| Item | Opens As | Behavior |
-|------|----------|----------|
-| **Daily Challenge** | Modal Dialog | Opens config form without page navigation |
-| **Stories** | Modal Dialog | Opens story editor without page navigation |
-
-### When to Use Modal vs Page?
-
-**Use Modal When:**
-- ✅ Quick edits or configuration
-- ✅ Small forms or brief dialogs
-- ✅ User needs to maintain context
-- ✅ No need to navigate away
-
-**Use Page Route When:**
-- ✅ Large, complex interfaces
-- ✅ Multiple tabs/sections
-- ✅ Need to show navigation history
-- ✅ Dedicated admin workspace needed
+When you click a sidebar item:
+1. URL changes (added to browser history)
+2. Content area updates to show selected page
+3. Sidebar remains visible for easy navigation
+4. You can use browser back/forward buttons
 
 ---
 
@@ -556,15 +537,15 @@ The admin panel features a **collapsible left sidebar** with three sections:
    - Shows: Social media templates and settings
    - Features: Create, edit social content
 
-6. **Daily Challenge** → Modal (Inline)
+6. **Daily Challenge** → `/admin/daily-challenge`
    - Purpose: Configure daily challenges
-   - Shows: Modal dialog form
-   - Features: Set challenge parameters, no page navigation
+   - Shows: Challenge creation form, today's challenge, upcoming challenges
+   - Features: Create challenges, view stats, set rewards
 
-7. **Stories** → Modal (Inline)
+7. **Stories** → `/admin/stories`
    - Purpose: Create and edit story content
-   - Shows: Modal story editor
-   - Features: Story management, no page navigation
+   - Shows: Story list, story editor, chapter management
+   - Features: Story creation, chapter editing, publish/unpublish
 
 8. **Analytics** → `/admin/analytics`
    - Purpose: View comprehensive analytics
@@ -726,24 +707,18 @@ navigate(`/quiz/${categoryName}`);
 | Daily Challenge | 1 | `/daily-challenge` |
 | Stories | 1 | `/stories` |
 | User Account | 2 | `/profile`, `/settings` |
-| Admin Global | 10 | Dashboard, Features, Add Content, Scores, Social Media, Daily Challenge (Modal), Stories (Modal), Analytics, System Tools, Automation Tests |
+| Admin Global | 10 | Dashboard, Features, Add Content, Scores, Social Media, Daily Challenge, Stories, Analytics, System Tools, Automation Tests |
 | Admin Quiz | 3 | View Questions, Quiz Analytics, Quiz UI Animations |
 | Admin Puzzles | 3 | Traditional Puzzles, Visual Puzzles, Dashboard (Coming) |
 | **TOTAL** | **34** | **All routes listed above** |
 
-### Admin Modal Routes (Inline, No Page Navigation)
+### Navigation Style
 
-| Feature | Trigger | Display Type | Purpose |
-|---------|---------|--------------|---------|
-| **Daily Challenge** | Sidebar Item Click | Modal (Inline) | Configure daily challenges without leaving sidebar |
-| **Stories** | Sidebar Item Click | Modal (Inline) | Create/edit stories inline without page change |
-
-**Key Difference from Page Routes:**
-- ✅ Modal routes DO NOT navigate to new pages
-- ✅ Modal routes open inline dialogs within current view
-- ✅ No URL change (no new route added to history)
-- ✅ User stays in admin panel context
-- ✅ Cleaner, faster admin experience
+✅ **All admin routes are page-based (no modals)**
+- Every sidebar item navigates to a dedicated page
+- Consistent UI across entire admin panel
+- No dark overlays or modal dialogs
+- Full browser history support
 
 ---
 
@@ -765,7 +740,7 @@ SETTINGS:    /settings
 ### Admin Dashboard
 
 ```
-SIDEBAR NAVIGATION (Collapsible)
+SIDEBAR NAVIGATION (Collapsible, All Pages)
 
 GLOBAL (Click to Expand)
 ├─ Dashboard:        /admin/dashboard
@@ -773,8 +748,8 @@ GLOBAL (Click to Expand)
 ├─ Add Content:      /admin/add-content
 ├─ Scores:           /admin/scores
 ├─ Social Media:     /admin/social-media
-├─ Daily Challenge:  📱 Modal (Inline)
-├─ Stories:          📱 Modal (Inline)
+├─ Daily Challenge:  /admin/daily-challenge
+├─ Stories:          /admin/stories
 ├─ Analytics:        /admin/analytics
 ├─ System Tools:     /admin/system-tools
 └─ Automation Tests: /admin/automation-tests
@@ -789,7 +764,7 @@ PUZZLES (Click to Expand)
 ├─ Visual Puzzles:   /admin/create-visual-puzzle
 └─ Dashboard:        Coming Soon (Disabled)
 
-NOTE: 📱 = Opens modal dialog inline (no page navigation)
+All items navigate to full page routes (no modals)
 ```
 
 ---
