@@ -28,9 +28,9 @@ function TopNavBar() {
   const [coins, setCoins] = useState(null);
 
   // State management
-  const [selectedFeature, setSelectedFeature] = useState(null);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedFeatureCategories, setSelectedFeatureCategories] = useState([]);
+  const [hoveredFeatureCategories, setHoveredFeatureCategories] = useState([]);
   const menuTimeoutRef = useRef(null);
 
   // Fetch user coins
@@ -71,22 +71,21 @@ function TopNavBar() {
     };
   }, [user]);
 
-  // Handle feature click to show categories
-  const handleFeatureClick = async (feature) => {
-    // If clicking same feature, toggle it closed
-    if (selectedFeature?.id === feature.id) {
-      setSelectedFeature(null);
-      setSelectedFeatureCategories([]);
-    } else {
-      setSelectedFeature(feature);
-      // Load categories - pass feature object for featureType matching
-      try {
-        const cats = await loadFeatureCategories(feature.id, feature);
-        setSelectedFeatureCategories(cats);
-      } catch (err) {
-        console.error("Error loading categories:", err);
-        setSelectedFeatureCategories([]);
-      }
+  // Handle feature hover to show categories
+  const handleFeatureHover = async (feature) => {
+    if (!feature) {
+      setHoveredFeature(null);
+      setHoveredFeatureCategories([]);
+      return;
+    }
+
+    setHoveredFeature(feature);
+    try {
+      const cats = await loadFeatureCategories(feature.id, feature);
+      setHoveredFeatureCategories(cats);
+    } catch (err) {
+      console.error("Error loading categories:", err);
+      setHoveredFeatureCategories([]);
     }
   };
 
@@ -186,20 +185,21 @@ function TopNavBar() {
               features.map((feature) => (
                 <button
                   key={feature.id}
-                  onClick={() => handleFeatureClick(feature)}
+                  onMouseEnter={() => handleFeatureHover(feature)}
+                  onMouseLeave={() => handleFeatureHover(null)}
                   style={{
                     padding: "8px 16px",
                     border: "none",
                     background:
-                      selectedFeature?.id === feature.id
+                      hoveredFeature?.id === feature.id
                         ? "#6C63FF"
                         : "transparent",
                     color:
-                      selectedFeature?.id === feature.id
+                      hoveredFeature?.id === feature.id
                         ? "white"
                         : "#0b1220",
                     cursor: "pointer",
-                    borderRadius: "4px 4px 0 0",
+                    borderRadius: "4px",
                     fontSize: "14px",
                     fontWeight: "500",
                     transition: "all 150ms ease",
@@ -207,16 +207,6 @@ function TopNavBar() {
                     alignItems: "center",
                     gap: "6px",
                     whiteSpace: "nowrap",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedFeature?.id !== feature.id) {
-                      e.target.style.background = "#f0f0f0";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedFeature?.id !== feature.id) {
-                      e.target.style.background = "transparent";
-                    }
                   }}
                 >
                   {feature.icon && <span style={{ fontSize: "16px" }}>{feature.icon}</span>}
@@ -408,14 +398,23 @@ function TopNavBar() {
         `}</style>
       </nav>
 
-      {/* Categories Panel - Shows below feature tabs */}
-      {selectedFeature && !mobileMenuOpen && (
-        <CategoriesPanel
-          feature={selectedFeature}
-          categories={selectedFeatureCategories}
-          config={config}
-        />
-      )}
+      {/* Categories Panel - Shows on hover, positioned absolutely over content */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 40,
+        }}
+        onMouseLeave={() => handleFeatureHover(null)}
+      >
+        {hoveredFeature && !mobileMenuOpen && (
+          <CategoriesPanel
+            feature={hoveredFeature}
+            categories={hoveredFeatureCategories}
+            config={config}
+            isAbsolute={true}
+          />
+        )}
+      </div>
 
       {/* Mobile Menu Drawer */}
       <MobileMenu

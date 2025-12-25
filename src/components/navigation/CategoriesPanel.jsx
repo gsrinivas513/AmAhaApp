@@ -9,13 +9,47 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryDropdown from "./CategoryDropdown";
 
-function CategoriesPanel({ feature, categories, config }) {
+function CategoriesPanel({ feature, categories, config, isAbsolute = false }) {
   const navigate = useNavigate();
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
   if (!feature || !categories || categories.length === 0) {
     return null;
   }
+
+  // Determine feature-specific styling
+  const featureStyles = {
+    quizzes: {
+      headerColor: "#6C63FF",
+      cardBg: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
+      cardBorder: "#d9d4ff",
+      hoverBg: "#ffffff",
+      buttonColor: "#6C63FF",
+    },
+    "UpNde0cmlHFDQXgTcQOJ": {
+      headerColor: "#6C63FF",
+      cardBg: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
+      cardBorder: "#d9d4ff",
+      hoverBg: "#ffffff",
+      buttonColor: "#6C63FF",
+    },
+    puzzles: {
+      headerColor: "#10b981",
+      cardBg: "linear-gradient(135deg, #f0fdf4 0%, #fafafa 100%)",
+      cardBorder: "#bbf7d0",
+      hoverBg: "#ffffff",
+      buttonColor: "#10b981",
+    },
+    Puzzles: {
+      headerColor: "#10b981",
+      cardBg: "linear-gradient(135deg, #f0fdf4 0%, #fafafa 100%)",
+      cardBorder: "#bbf7d0",
+      hoverBg: "#ffffff",
+      buttonColor: "#10b981",
+    },
+  };
+
+  const styles = featureStyles[feature.id] || featureStyles.quizzes;
 
   // Handle category click based on feature type
   const handleCategoryClick = (category) => {
@@ -40,10 +74,17 @@ function CategoriesPanel({ feature, categories, config }) {
   return (
     <div
       style={{
+        position: isAbsolute ? "absolute" : "relative",
+        top: isAbsolute ? "100%" : "auto",
+        left: 0,
+        right: 0,
+        width: "100%",
         borderBottom: "1px solid #f0f0f0",
-        background: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
+        background: styles.cardBg,
         padding: "24px 16px",
         animation: `slideDown ${config?.animationDuration || 250}ms ease-out`,
+        zIndex: 40,
+        boxShadow: isAbsolute ? "0 8px 24px rgba(0, 0, 0, 0.12)" : "none",
       }}
     >
       <div
@@ -59,7 +100,7 @@ function CategoriesPanel({ feature, categories, config }) {
               margin: "0 0 8px 0",
               fontSize: "18px",
               fontWeight: "700",
-              color: "#0b1220",
+              color: styles.headerColor,
               display: "flex",
               alignItems: "center",
               gap: "10px",
@@ -83,12 +124,13 @@ function CategoriesPanel({ feature, categories, config }) {
           )}
         </div>
 
-        {/* Categories Grid - Card Layout */}
+        {/* Categories Grid - Consistent Card Layout */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(auto-fill, minmax(200px, 1fr))`,
+            gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))`,
             gap: "16px",
+            maxWidth: "1200px",
           }}
         >
           {categories.map((category) => (
@@ -105,10 +147,11 @@ function CategoriesPanel({ feature, categories, config }) {
                 onClick={() => handleCategoryClick(category)}
                 style={{
                   width: "100%",
+                  height: "220px",
                   padding: "16px",
-                  border: "2px solid #e8e8f0",
+                  border: `2px solid ${styles.cardBorder}`,
                   borderRadius: "10px",
-                  background: hoveredCategory === (category.id || category.key) ? "white" : "#ffffff",
+                  background: hoveredCategory === (category.id || category.key) ? styles.hoverBg : "#ffffff",
                   cursor: "pointer",
                   textAlign: "left",
                   transition: "all 200ms ease",
@@ -118,9 +161,9 @@ function CategoriesPanel({ feature, categories, config }) {
                   fontSize: "14px",
                   color: "#0b1220",
                   boxShadow: hoveredCategory === (category.id || category.key) 
-                    ? "0 8px 16px rgba(108, 99, 255, 0.2)" 
+                    ? `0 8px 16px ${styles.headerColor}33`
                     : "0 2px 4px rgba(0, 0, 0, 0.05)",
-                  borderColor: hoveredCategory === (category.id || category.key) ? "#6C63FF" : "#e8e8f0",
+                  borderColor: hoveredCategory === (category.id || category.key) ? styles.headerColor : styles.cardBorder,
                   transform: hoveredCategory === (category.id || category.key) ? "translateY(-4px)" : "translateY(0)",
                 }}
               >
@@ -153,10 +196,10 @@ function CategoriesPanel({ feature, categories, config }) {
                 {/* Explore button/link */}
                 <div
                   style={{
-                    marginTop: "8px",
+                    marginTop: "auto",
                     fontSize: "13px",
                     fontWeight: "600",
-                    color: "#6C63FF",
+                    color: styles.buttonColor,
                     display: "flex",
                     alignItems: "center",
                     gap: "4px",
