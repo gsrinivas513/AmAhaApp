@@ -1,16 +1,16 @@
 /**
  * TopNavBar.jsx
- * Main navigation bar with feature tabs and mega menu
- * Desktop: Mega menu on hover
- * Mobile: Hamburger menu with accordion
+ * Main navigation bar with feature tabs (all visible) and category panel below
+ * Features shown as tabs - click to show categories
+ * Hover category to show topics in dropdown
+ * Frozen/sticky on scroll
  */
 
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useNavigationData } from "../../hooks/useNavigationData";
 import AmAhaLogo from "../AmAhaLogo";
-import FeatureMenuItem from "./FeatureMenuItem";
-import MegaMenu from "./MegaMenu";
+import CategoriesPanel from "./CategoriesPanel";
 import MobileMenu from "./MobileMenu";
 
 function TopNavBar() {
@@ -19,31 +19,20 @@ function TopNavBar() {
     useNavigationData();
 
   // State management
-  const [activeFeature, setActiveFeature] = useState(null);
-  const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [selectedFeature, setSelectedFeature] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuTimeoutRef = useRef(null);
 
-  // Handle feature hover with delay to avoid flickering
-  const handleFeatureHover = (featureId) => {
-    if (menuTimeoutRef.current) {
-      clearTimeout(menuTimeoutRef.current);
-    }
-    setHoveredFeature(featureId);
-  };
-
-  const handleFeatureHoverEnd = () => {
-    menuTimeoutRef.current = setTimeout(() => {
-      setHoveredFeature(null);
-    }, 150);
-  };
-
+  // Handle feature click to show categories
   const handleFeatureClick = async (feature) => {
-    setActiveFeature(feature.id);
-    // Load categories if not already loaded
-    await loadFeatureCategories(feature.id);
-    // Navigate to feature page (you can create a feature landing page)
-    navigate(`/feature/${feature.id}`, { state: { featureName: feature.name } });
+    // If clicking same feature, toggle it
+    if (selectedFeature?.id === feature.id) {
+      setSelectedFeature(null);
+    } else {
+      setSelectedFeature(feature);
+      // Load categories if not already loaded
+      await loadFeatureCategories(feature.id);
+    }
   };
 
   const closeMobileMenu = () => {
@@ -115,7 +104,7 @@ function TopNavBar() {
             <AmAhaLogo size="header" />
           </Link>
 
-          {/* Desktop Menu - Hidden on mobile */}
+          {/* Desktop Feature Tabs - Hidden on mobile */}
           <div
             style={{
               display: "none",
@@ -126,33 +115,56 @@ function TopNavBar() {
               alignItems: "center",
               flex: 1,
               position: "relative",
+              flexWrap: "wrap",
             }}
             className="hidden md:flex"
           >
-            {features.map((feature) => (
-              <div key={feature.id} style={{ position: "relative" }}>
-                <FeatureMenuItem
-                  feature={feature}
-                  categories={categoriesByFeature[feature.id] || []}
-                  isActive={hoveredFeature === feature.id}
-                  onHover={handleFeatureHover}
-                  onHoverEnd={handleFeatureHoverEnd}
-                  onLoadCategories={loadFeatureCategories}
-                  onClick={handleFeatureClick}
-                />
-
-                {/* Mega Menu */}
-                {config?.showMegaMenu && hoveredFeature === feature.id && (
-                  <MegaMenu
-                    feature={feature}
-                    categories={categoriesByFeature[feature.id] || []}
-                    isOpen={true}
-                    onClose={() => setHoveredFeature(null)}
-                    config={config}
-                  />
-                )}
-              </div>
-            ))}
+            {loading ? (
+              <span style={{ color: "#999", fontSize: "14px" }}>Loading features...</span>
+            ) : features.length === 0 ? (
+              <span style={{ color: "#999", fontSize: "14px" }}>No features available</span>
+            ) : (
+              features.map((feature) => (
+                <button
+                  key={feature.id}
+                  onClick={() => handleFeatureClick(feature)}
+                  style={{
+                    padding: "8px 16px",
+                    border: "none",
+                    background:
+                      selectedFeature?.id === feature.id
+                        ? "#6C63FF"
+                        : "transparent",
+                    color:
+                      selectedFeature?.id === feature.id
+                        ? "white"
+                        : "#0b1220",
+                    cursor: "pointer",
+                    borderRadius: "4px 4px 0 0",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    transition: "all 150ms ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedFeature?.id !== feature.id) {
+                      e.target.style.background = "#f0f0f0";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedFeature?.id !== feature.id) {
+                      e.target.style.background = "transparent";
+                    }
+                  }}
+                >
+                  {feature.icon && <span style={{ fontSize: "16px" }}>{feature.icon}</span>}
+                  {feature.name}
+                </button>
+              ))
+            )}
           </div>
 
           {/* Mobile Hamburger Menu - Visible on mobile */}
@@ -214,6 +226,15 @@ function TopNavBar() {
           }
         `}</style>
       </nav>
+
+      {/* Categories Panel - Shows below feature tabs */}
+      {selectedFeature && !mobileMenuOpen && (
+        <CategoriesPanel
+          feature={selectedFeature}
+          categories={categoriesByFeature[selectedFeature.id] || []}
+          config={config}
+        />
+      )}
 
       {/* Mobile Menu Drawer */}
       <MobileMenu
