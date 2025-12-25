@@ -30,6 +30,7 @@ function TopNavBar() {
   // State management
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedFeatureCategories, setSelectedFeatureCategories] = useState([]);
   const menuTimeoutRef = useRef(null);
 
   // Fetch user coins
@@ -72,20 +73,30 @@ function TopNavBar() {
 
   // Handle feature click to show categories
   const handleFeatureClick = async (feature) => {
-    console.log("Feature clicked:", feature.id, feature.name);
+    console.log("=== Feature clicked ===");
+    console.log("Feature:", feature.id, feature.name);
+    console.log("Feature data:", feature);
+    console.log("Currently selectedFeature:", selectedFeature?.id);
+    console.log("Current categoriesByFeature:", categoriesByFeature);
+    
     // If clicking same feature, toggle it closed
     if (selectedFeature?.id === feature.id) {
       console.log("Toggling feature closed");
       setSelectedFeature(null);
+      setSelectedFeatureCategories([]);
     } else {
       console.log("Loading categories for:", feature.id);
       setSelectedFeature(feature);
       // Load categories if not already loaded
       try {
-        const cats = await loadFeatureCategories(feature.id);
+        const cats = await loadFeatureCategories(feature.id, feature);
         console.log("Categories loaded:", cats);
+        console.log("Setting selectedFeatureCategories to:", cats);
+        setSelectedFeatureCategories(cats);
+        console.log("categoriesByFeature after load:", categoriesByFeature);
       } catch (err) {
         console.error("Error loading categories:", err);
+        setSelectedFeatureCategories([]);
       }
     }
   };
@@ -412,7 +423,7 @@ function TopNavBar() {
       {selectedFeature && !mobileMenuOpen && (
         <CategoriesPanel
           feature={selectedFeature}
-          categories={categoriesByFeature[selectedFeature.id] || []}
+          categories={selectedFeatureCategories}
           config={config}
         />
       )}

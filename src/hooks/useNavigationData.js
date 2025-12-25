@@ -50,23 +50,35 @@ export function useNavigationData() {
   /**
    * Load categories for a specific feature (lazy load on hover/click)
    * @param {string} featureId - The feature ID
+   * @param {Object} featureData - Optional feature data object
    */
   const loadFeatureCategories = useCallback(
-    async (featureId) => {
-      // Skip if already loaded
-      if (categoriesByFeature[featureId]) {
+    async (featureId, featureData = null) => {
+      console.log(`[useNavigationData] loadFeatureCategories called with featureId: ${featureId}`, featureData);
+      console.log(`[useNavigationData] Current categoriesByFeature:`, categoriesByFeature);
+      
+      // Skip if already loaded - check before async to avoid race conditions
+      if (categoriesByFeature[featureId]?.length > 0) {
+        console.log(`[useNavigationData] Categories already loaded for ${featureId}:`, categoriesByFeature[featureId]);
         return categoriesByFeature[featureId];
       }
 
       try {
-        const categories = await fetchCategoriesByFeature(featureId);
-        setCategoriesByFeature((prev) => ({
-          ...prev,
-          [featureId]: categories,
-        }));
+        console.log(`[useNavigationData] Fetching categories from service for ${featureId}...`);
+        const categories = await fetchCategoriesByFeature(featureId, featureData);
+        console.log(`[useNavigationData] Got ${categories.length} categories from service:`, categories);
+        
+        setCategoriesByFeature((prev) => {
+          const updated = {
+            ...prev,
+            [featureId]: categories,
+          };
+          console.log(`[useNavigationData] Updated categoriesByFeature state:`, updated);
+          return updated;
+        });
         return categories;
       } catch (err) {
-        console.error(`Error loading categories for feature ${featureId}:`, err);
+        console.error(`[useNavigationData] Error loading categories for feature ${featureId}:`, err);
         return [];
       }
     },
