@@ -153,6 +153,8 @@ function StoriesCarouselSection({ stories }) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const containerRef = React.useRef(null);
   
+  console.log('📖 StoriesCarouselSection received stories:', stories);
+  
   const itemsPerView = 4;
   const itemWidth = 240; // width of card + gap
   const totalWidth = stories.length * itemWidth;
@@ -199,28 +201,31 @@ function StoriesCarouselSection({ stories }) {
             style={{ scrollBehavior: "smooth" }}
           >
             {stories.map((story, index) => {
-              const colorScheme = colorSchemes[index % colorSchemes.length];
-              const hasImage = story.coverImage || story.image;
-              return (
-                <div key={story.id} className="flex-shrink-0 w-56">
-                  <div
-                    onClick={() => navigate(`/story/${story.id}`)}
-                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
-                  >
-                    {hasImage ? (
-                      <ResponsiveImage
-                        src={story.coverImage || story.image}
-                        cloudinaryId={story.cloudinaryId}
-                        alt={story.title}
-                        fallbackIcon="📖"
-                        className="w-full h-full"
-                        crop="fit"
-                      />
-                    ) : (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
-                        📖
-                      </div>
-                    )}
+              try {
+                const colorScheme = colorSchemes[index % colorSchemes.length];
+                const hasImage = story.coverImage || story.image;
+                console.log(`Rendering story ${index}:`, story.id, story.title, 'hasImage:', hasImage);
+                
+                return (
+                  <div key={story.id} className="flex-shrink-0 w-56">
+                    <div
+                      onClick={() => navigate(`/story/${story.id}`)}
+                      className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                    >
+                      {hasImage ? (
+                        <ResponsiveImage
+                          src={story.coverImage || story.image}
+                          cloudinaryId={story.cloudinaryId}
+                          alt={story.title}
+                          fallbackIcon="📖"
+                          className="w-full h-full"
+                          crop="fit"
+                        />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                          📖
+                        </div>
+                      )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
                   <div className="pt-3">
@@ -235,7 +240,11 @@ function StoriesCarouselSection({ stories }) {
                     </p>
                   </div>
                 </div>
-              );
+                );
+              } catch (error) {
+                console.error('❌ Error rendering story:', error, story);
+                return null;
+              }
             })}
           </div>
 
