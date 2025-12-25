@@ -45,7 +45,10 @@ function TopicsCarouselSection({ topics }) {
           <span className="text-4xl">📚</span>
           <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
         </div>
-        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate("/explore")}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({topics.length})
           <span>→</span>
         </button>
@@ -193,7 +196,10 @@ function FeatureCarouselSection({ feature, categories }) {
             )}
           </div>
         </div>
-        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate(`/feature/${feature.id}`)}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({categories.length})
           <span>→</span>
         </button>
@@ -450,7 +456,10 @@ function CarouselSection({ section }) {
       {/* Header with See All */}
       <div className="flex items-center justify-between mb-6 px-4">
         <h3 className="text-2xl font-bold text-gray-900">{section.title}</h3>
-        <button className="text-primary-600 hover:text-primary-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate(`/feature/${section.featureId}`)}
+          className="text-primary-600 hover:text-primary-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({section.categories.length})
           <span>→</span>
         </button>
