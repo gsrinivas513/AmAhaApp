@@ -10,6 +10,7 @@ export default function SiteLayout({ children }) {
         flexDirection: "column",
         background: "#f9f9fb",
         color: "#111",
+        paddingTop: "64px", // Account for fixed navbar
       }}
     >
       {/* Main content area */}
@@ -18,7 +19,7 @@ export default function SiteLayout({ children }) {
           flex: 1,
           width: "100%",
           maxWidth: 1000,
-          margin: "80px auto 40px auto", // positions content correctly under navbar
+          margin: "40px auto",
           padding: "0 16px",
           boxSizing: "border-box",
         }}
