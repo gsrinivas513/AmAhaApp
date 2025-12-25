@@ -89,6 +89,7 @@ export async function getAllStories(filters = {}) {
       });
     });
 
+    console.log('[storyService] getAllStories() found', stories.length, 'published stories');
     return stories;
   } catch (error) {
     console.error('Error fetching stories:', error);

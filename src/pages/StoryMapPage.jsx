@@ -20,6 +20,7 @@ export default function StoryMapPage() {
       try {
         setLoading(true);
         const storiesList = await getAllStories();
+        console.log('Fetched stories from Firestore:', storiesList);
         setStories(storiesList || []);
         applyFilter(storiesList, filterType);
       } catch (err) {
