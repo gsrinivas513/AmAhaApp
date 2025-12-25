@@ -79,16 +79,21 @@ export async function fetchPublishedFeatures() {
   }
 
   try {
+    // Query without orderBy to avoid composite index requirement
+    // Sorting is done in JavaScript instead
     const q = query(
       collection(db, "features"),
-      where("isPublished", "==", true),
-      orderBy("order", "asc")
+      where("isPublished", "==", true)
     );
     const snapshot = await getDocs(q);
-    const features = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const features = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        order: doc.data().order || 999,
+        ...doc.data(),
+      }))
+      // Sort by order field
+      .sort((a, b) => (a.order || 999) - (b.order || 999));
 
     // Use default features if none found in Firestore
     const featuresToCache = features.length > 0 ? features : DEFAULT_FEATURES;
@@ -120,24 +125,29 @@ export async function fetchCategoriesByFeature(featureId) {
     let categories = [];
 
     // Fetch categories from the categories collection for this feature
+    // Note: We use only two where clauses (no orderBy) to avoid requiring a composite index
+    // Sorting is done in JavaScript instead
     const q = query(
       collection(db, "categories"),
       where("featureId", "==", featureId),
-      where("isPublished", "==", true),
-      orderBy("order", "asc")
+      where("isPublished", "==", true)
     );
     const snapshot = await getDocs(q);
-    categories = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      key: doc.id,
-      title: doc.data().label || doc.data().name || doc.id,
-      name: doc.data().name || doc.id,
-      label: doc.data().label || doc.data().name || doc.id,
-      description: doc.data().description,
-      icon: doc.data().icon,
-      featureId: doc.data().featureId,
-      ...doc.data(),
-    }));
+    categories = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        key: doc.id,
+        title: doc.data().label || doc.data().name || doc.id,
+        name: doc.data().name || doc.id,
+        label: doc.data().label || doc.data().name || doc.id,
+        description: doc.data().description,
+        icon: doc.data().icon,
+        featureId: doc.data().featureId,
+        order: doc.data().order || 999, // Default order for sorting
+        ...doc.data(),
+      }))
+      // Sort by order field
+      .sort((a, b) => (a.order || 999) - (b.order || 999));
 
     // Cache the result
     cache.categories[featureId] = categories;
