@@ -4,24 +4,71 @@
  * Features shown as tabs - click to show categories
  * Hover category to show topics in dropdown
  * Frozen/sticky on scroll
+ * Integrated auth, coins, and achievements
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useNavigationData } from "../../hooks/useNavigationData";
+import { useAuth } from "../AuthProvider";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 import AmAhaLogo from "../AmAhaLogo";
 import CategoriesPanel from "./CategoriesPanel";
 import MobileMenu from "./MobileMenu";
+import { Button, Avatar } from "../ui";
+import AchievementsBadge from "../AchievementsBadge";
+import StreakDisplay from "../StreakDisplay/StreakDisplay";
 
 function TopNavBar() {
   const navigate = useNavigate();
   const { features, categoriesByFeature, config, loading, loadFeatureCategories } =
     useNavigationData();
+  const { user, signInWithGoogle, signOut } = useAuth();
+  const [coins, setCoins] = useState(null);
 
   // State management
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuTimeoutRef = useRef(null);
+
+  // Fetch user coins
+  useEffect(() => {
+    let unsub = null;
+    if (!user || !user.uid) {
+      setCoins(null);
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+
+    unsub = onSnapshot(
+      userRef,
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          setCoins(0);
+          return;
+        }
+        const data = snapshot.data() || {};
+        const stats = data.stats || {};
+        setCoins(typeof stats.coins === "number" ? stats.coins : 0);
+      },
+      (err) => {
+        console.error("TopNavBar onSnapshot error:", err);
+        getDoc(userRef)
+          .then((snap) => {
+            if (!snap.exists()) return setCoins(0);
+            const d = snap.data() || {};
+            setCoins((d.stats && typeof d.stats.coins === "number") ? d.stats.coins : 0);
+          })
+          .catch(() => setCoins(0));
+      }
+    );
+
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [user]);
 
   // Handle feature click to show categories
   const handleFeatureClick = async (feature) => {
@@ -167,51 +214,146 @@ function TopNavBar() {
             )}
           </div>
 
-          {/* Mobile Hamburger Menu - Visible on mobile */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {/* Right Side - User Info & Auth (Desktop) */}
+          <div
             style={{
               display: "flex",
-              "@media (min-width: 768px)": {
-                display: "none",
-              },
-              flexDirection: "column",
-              gap: "5px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "8px",
+              alignItems: "center",
+              gap: "12px",
+              marginLeft: "auto",
+            }}
+            className="hidden md:flex"
+          >
+            {/* Streak Display */}
+            {user && (
+              <div style={{ marginRight: "4px" }}>
+                <StreakDisplay compact={true} />
+              </div>
+            )}
+
+            {/* Coins Display */}
+            {coins !== null && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#fef3c7",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #fcd34d",
+                  fontSize: "13px",
+                }}
+              >
+                <span>🪙</span>
+                <span style={{ fontWeight: "bold", color: "#92400e" }}>{coins}</span>
+              </div>
+            )}
+
+            {/* Achievements Badge */}
+            {user && <AchievementsBadge userId={user.uid} />}
+
+            {/* Auth Section */}
+            {user ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Avatar 
+                  name={user.displayName || user.email} 
+                  src={user.photoURL}
+                  size="sm"
+                />
+                <div style={{ fontSize: "13px" }}>
+                  <p style={{ margin: "0", fontWeight: "600", color: "#0b1220" }}>
+                    {user.displayName || user.email?.split("@")[0]}
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => signOut()}
+                  style={{ fontSize: "12px" }}
+                >
+                  Sign out
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => signInWithGoogle()}
+                style={{ fontSize: "12px" }}
+              >
+                👤 Sign in
+              </Button>
+            )}
+          </div>
+
+          {/* Mobile Hamburger Menu - Visible on mobile */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginLeft: "auto",
             }}
             className="md:hidden"
           >
-            <span
+            {/* Mobile User Avatar */}
+            {user && (
+              <Avatar 
+                name={user.displayName || user.email} 
+                src={user.photoURL}
+                size="sm"
+              />
+            )}
+
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               style={{
-                width: "24px",
-                height: "3px",
-                background: "#0b1220",
-                borderRadius: "2px",
-                transition: "all 250ms ease",
+                display: "flex",
+                flexDirection: "column",
+                gap: "5px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "8px",
               }}
-            />
-            <span
-              style={{
-                width: "24px",
-                height: "3px",
-                background: "#0b1220",
-                borderRadius: "2px",
-                transition: "all 250ms ease",
-              }}
-            />
-            <span
-              style={{
-                width: "24px",
-                height: "3px",
-                background: "#0b1220",
-                borderRadius: "2px",
-                transition: "all 250ms ease",
-              }}
-            />
-          </button>
+            >
+              <span
+                style={{
+                  width: "24px",
+                  height: "3px",
+                  background: "#0b1220",
+                  borderRadius: "2px",
+                  transition: "all 250ms ease",
+                }}
+              />
+              <span
+                style={{
+                  width: "24px",
+                  height: "3px",
+                  background: "#0b1220",
+                  borderRadius: "2px",
+                  transition: "all 250ms ease",
+                }}
+              />
+              <span
+                style={{
+                  width: "24px",
+                  height: "3px",
+                  background: "#0b1220",
+                  borderRadius: "2px",
+                  transition: "all 250ms ease",
+                }}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Mobile menu display fix via CSS */}

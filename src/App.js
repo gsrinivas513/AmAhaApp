@@ -11,7 +11,7 @@ import PuzzlePlayHierarchicalPage from "./puzzles/PuzzlePlayHierarchicalPage";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar"; // DEPRECATED: Functionality moved to TopNavBar
 import TopNavBar from "./components/navigation/TopNavBar";
 
 /* PUBLIC */
@@ -80,7 +80,8 @@ function App() {
   return (
     <div className="app-bg">
       <TopNavBar />
-      <Navbar />
+      {/* DEPRECATED: Navbar component merged into TopNavBar to avoid duplicate panels */}
+      {/* <Navbar /> */}
 
       <Routes>
         <Route path="/" element={<HomePage />} />
