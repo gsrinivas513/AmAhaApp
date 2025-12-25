@@ -42,7 +42,7 @@ const DEFAULT_FEATURES = [
     isPublished: true,
     showInMenu: true,
     description: "Think • Match • Solve",
-    route: "/puzzles"
+    route: "/puzzle"
   },
   {
     id: "games",
@@ -104,6 +104,8 @@ export async function fetchPublishedFeatures() {
 
 /**
  * Fetch categories for a specific feature
+ * For quizzes/puzzles, fetches from their respective collections
+ * For other features, fetches from navigation categories
  * Cached per feature to minimize Firestore reads
  * @param {string} featureId - The feature ID
  * @returns {Promise<Array>} Array of category objects
@@ -115,26 +117,57 @@ export async function fetchCategoriesByFeature(featureId) {
   }
 
   try {
-    const q = query(
-      collection(db, "categories"),
-      where("featureId", "==", featureId),
-      where("isPublished", "==", true),
-      orderBy("order", "asc")
-    );
-    const snapshot = await getDocs(q);
-    const categories = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    let categories = [];
+
+    // For quizzes, fetch from quizzes/categories collection
+    if (featureId === "quizzes") {
+      const q = query(
+        collection(db, "quizzes", "metadata", "categories"),
+        orderBy("order", "asc")
+      );
+      const snapshot = await getDocs(q);
+      categories = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    }
+    // For puzzles, fetch from puzzles collection
+    else if (featureId === "puzzles") {
+      const q = query(
+        collection(db, "puzzles"),
+        where("isPublished", "==", true),
+        orderBy("order", "asc")
+      );
+      const snapshot = await getDocs(q);
+      categories = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    }
+    // For other features, use navigation categories
+    else {
+      const q = query(
+        collection(db, "categories"),
+        where("featureId", "==", featureId),
+        where("isPublished", "==", true),
+        orderBy("order", "asc")
+      );
+      const snapshot = await getDocs(q);
+      categories = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    }
 
     // Cache the result
     cache.categories[featureId] = categories;
     return categories;
   } catch (error) {
-    console.error(
+    console.warn(
       `Error fetching categories for feature ${featureId}:`,
       error
     );
+    // Return empty array on error (CategoriesPanel will handle it gracefully)
     return [];
   }
 }

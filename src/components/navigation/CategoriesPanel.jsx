@@ -1,7 +1,8 @@
 /**
  * CategoriesPanel.jsx
  * Shows categories for a selected feature
- * Categories appear in a horizontal or grid layout with hover for topics
+ * Displays quiz categories, puzzle categories, or navigation categories
+ * Categories appear in a grid layout with hover for topics
  */
 
 import React, { useState } from "react";
@@ -16,10 +17,24 @@ function CategoriesPanel({ feature, categories, config }) {
     return null;
   }
 
+  // Handle category click based on feature type
   const handleCategoryClick = (category) => {
-    navigate(`/category/${category.id}`, {
-      state: { categoryName: category.name },
-    });
+    if (feature.id === "quizzes") {
+      // Navigate to quiz category
+      navigate(`/quiz/${category.key || category.id}`, {
+        state: { categoryName: category.title || category.name },
+      });
+    } else if (feature.id === "puzzles") {
+      // Navigate to puzzle category
+      navigate(`/puzzles/${category.key || category.id}`, {
+        state: { categoryName: category.title || category.name },
+      });
+    } else {
+      // Default navigation category
+      navigate(`/category/${category.id}`, {
+        state: { categoryName: category.name },
+      });
+    }
   };
 
   return (
@@ -77,11 +92,11 @@ function CategoriesPanel({ feature, categories, config }) {
         >
           {categories.map((category) => (
             <div
-              key={category.id}
+              key={category.id || category.key}
               style={{
                 position: "relative",
               }}
-              onMouseEnter={() => setHoveredCategory(category.id)}
+              onMouseEnter={() => setHoveredCategory(category.id || category.key)}
               onMouseLeave={() => setHoveredCategory(null)}
             >
               {/* Category Card */}
@@ -102,21 +117,25 @@ function CategoriesPanel({ feature, categories, config }) {
                   fontSize: "14px",
                   fontWeight: "500",
                   color: "#0b1220",
-                  boxShadow: hoveredCategory === category.id ? "0 2px 8px rgba(108, 99, 255, 0.15)" : "none",
-                  borderColor: hoveredCategory === category.id ? "#6C63FF" : "#e0e0e0",
-                  background: hoveredCategory === category.id ? "#f8f7ff" : "white",
+                  boxShadow: hoveredCategory === (category.id || category.key) ? "0 2px 8px rgba(108, 99, 255, 0.15)" : "none",
+                  borderColor: hoveredCategory === (category.id || category.key) ? "#6C63FF" : "#e0e0e0",
+                  background: hoveredCategory === (category.id || category.key) ? "#f8f7ff" : "white",
                 }}
               >
+                {/* Icon - for quizzes/puzzles with color backgrounds */}
                 {category.icon && (
                   <span style={{ fontSize: "18px", flexShrink: 0 }}>
                     {category.icon}
                   </span>
                 )}
-                <span style={{ flex: 1 }}>{category.name}</span>
+                {/* Title - prioritize 'title' field (quiz categories) over 'name' */}
+                <span style={{ flex: 1 }}>
+                  {category.title || category.name}
+                </span>
               </button>
 
-              {/* Topics Dropdown */}
-              {config?.showTopics && (
+              {/* Topics Dropdown - only for navigation categories */}
+              {config?.showTopics && !["quizzes", "puzzles"].includes(feature.id) && (
                 <CategoryDropdown
                   category={category}
                   isOpen={hoveredCategory === category.id}

@@ -70,16 +70,9 @@ function TopNavBar() {
     };
   }, [user]);
 
-  // Handle feature click to show categories or navigate to feature page
+  // Handle feature click to show categories
   const handleFeatureClick = async (feature) => {
-    // If feature has a direct route (like /quiz or /puzzles), navigate there
-    if (feature.route) {
-      navigate(feature.route);
-      return;
-    }
-
-    // Otherwise, show categories panel (for features with categories)
-    // If clicking same feature, toggle it
+    // If clicking same feature, toggle it closed
     if (selectedFeature?.id === feature.id) {
       setSelectedFeature(null);
     } else {
