@@ -8,7 +8,7 @@ export default function SiteLayout({ children }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#f9f9fb",
+        background: "transparent",
         color: "#111",
         paddingTop: "64px", // Account for fixed navbar
       }}
