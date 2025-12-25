@@ -31,7 +31,8 @@ const DEFAULT_FEATURES = [
     order: 1,
     isPublished: true,
     showInMenu: true,
-    description: "Learn by playing fun quizzes"
+    description: "Learn by playing fun quizzes",
+    route: "/quiz"
   },
   {
     id: "puzzles",
@@ -40,7 +41,8 @@ const DEFAULT_FEATURES = [
     order: 2,
     isPublished: true,
     showInMenu: true,
-    description: "Think • Match • Solve"
+    description: "Think • Match • Solve",
+    route: "/puzzles"
   },
   {
     id: "games",
@@ -49,7 +51,8 @@ const DEFAULT_FEATURES = [
     order: 3,
     isPublished: true,
     showInMenu: true,
-    description: "Play and learn"
+    description: "Play and learn",
+    route: "/games"
   },
   {
     id: "stories",
@@ -58,7 +61,8 @@ const DEFAULT_FEATURES = [
     order: 4,
     isPublished: true,
     showInMenu: true,
-    description: "Interactive stories"
+    description: "Interactive stories",
+    route: "/stories"
   },
 ];
 

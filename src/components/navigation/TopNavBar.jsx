@@ -70,8 +70,15 @@ function TopNavBar() {
     };
   }, [user]);
 
-  // Handle feature click to show categories
+  // Handle feature click to show categories or navigate to feature page
   const handleFeatureClick = async (feature) => {
+    // If feature has a direct route (like /quiz or /puzzles), navigate there
+    if (feature.route) {
+      navigate(feature.route);
+      return;
+    }
+
+    // Otherwise, show categories panel (for features with categories)
     // If clicking same feature, toggle it
     if (selectedFeature?.id === feature.id) {
       setSelectedFeature(null);
@@ -93,13 +100,15 @@ function TopNavBar() {
           background: "white",
           borderBottom: "1px solid #e0e0e0",
           padding: "12px 16px",
-          sticky: "top",
+          position: "sticky",
+          top: 0,
           zIndex: 30,
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
         }}
       >
         <div
           style={{
-            maxWidth: "1200px",
+            maxWidth: "1400px",
             margin: "0 auto",
             display: "flex",
             alignItems: "center",
