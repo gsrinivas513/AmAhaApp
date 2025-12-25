@@ -58,39 +58,48 @@ function CategoriesPanel({ feature, categories, config, isAbsolute = false }) {
 
   return (
     <div
-      className={`bg-white shadow-2xl rounded-lg overflow-hidden ${
+      className={`bg-gradient-to-b from-blue-50 via-purple-50 to-pink-50 shadow-2xl rounded-2xl overflow-hidden ${
         isAbsolute ? "absolute top-full left-0 right-0 z-40 mt-0" : "mt-8"
       }`}
       style={{
         maxWidth: "100%",
+        borderTop: `6px solid ${feature.color || "#6C63FF"}`,
       }}
     >
-      {/* Feature Header */}
+      {/* Feature Header - Colorful and Kid-Friendly */}
       <div
-        className="px-8 py-6 border-b-4 border-gray-200"
+        className="px-8 py-5 border-b-2"
         style={{
-          backgroundColor: `${feature.color || "#6C63FF"}15`,
-          borderLeftColor: feature.color || "#6C63FF",
-          borderLeftWidth: "4px",
+          background: `linear-gradient(135deg, ${feature.color || "#6C63FF"}1a 0%, ${feature.color || "#6C63FF"}08 100%)`,
+          borderBottomColor: `${feature.color || "#6C63FF"}30`,
+          borderBottomWidth: "2px",
         }}
       >
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3 mb-3">
           {feature.icon && (
-            <span className="text-2xl">{feature.icon}</span>
+            <span className="text-4xl drop-shadow-lg">{feature.icon}</span>
           )}
-          <h3 className="text-xl font-bold text-gray-900">
-            {feature.name || feature.title}
-          </h3>
+          <div>
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {feature.name || feature.title}
+            </h3>
+          </div>
         </div>
         {feature.description && (
-          <p className="text-sm text-gray-600">
-            {feature.description}
+          <p className="text-sm font-medium text-gray-700 ml-12">
+            ✨ {feature.description}
           </p>
         )}
       </div>
 
-      {/* Categories Carousel */}
-      <div className="px-8 py-6 relative">
+      {/* Categories Carousel - Colorful & Interactive */}
+      <div className="px-8 py-8 relative bg-gradient-to-b from-white to-blue-50">
+        <div className="mb-2">
+          <p className="text-xs font-bold text-purple-600 uppercase tracking-wider">
+            🎯 Choose a category to explore
+          </p>
+        </div>
+        
         {/* Scroll Container with overflow hidden */}
         <div className="overflow-x-hidden">
           <div
@@ -116,12 +125,12 @@ function CategoriesPanel({ feature, categories, config, isAbsolute = false }) {
         {canScrollPrev && (
           <button
             onClick={() => scroll("prev")}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all duration-200 shadow-lg"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-purple-50 text-purple-600 p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 group"
             aria-label="Scroll left"
             title="Previous categories"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
         )}
@@ -130,20 +139,22 @@ function CategoriesPanel({ feature, categories, config, isAbsolute = false }) {
         {canScrollNext && (
           <button
             onClick={() => scroll("next")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full transition-all duration-200 shadow-lg"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-purple-50 text-purple-600 p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 group"
             aria-label="Scroll right"
             title="Next categories"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         )}
 
         {/* Indicator: Show items count when scrollable */}
         {(canScrollPrev || canScrollNext) && (
-          <div className="text-center mt-4 text-xs text-gray-500">
+          <div className="text-center mt-4 text-xs font-bold text-purple-600 flex items-center justify-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
             {Math.ceil((scrollPosition / totalItemWidth) + 1)} - {Math.min(Math.ceil(scrollPosition / totalItemWidth) + 5, categories.length)} of {categories.length}
+            <span className="inline-block w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
           </div>
         )}
       </div>

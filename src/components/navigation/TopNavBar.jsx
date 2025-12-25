@@ -185,8 +185,17 @@ function TopNavBar() {
               features.map((feature) => (
                 <button
                   key={feature.id}
-                  onMouseEnter={() => handleFeatureHover(feature)}
-                  onMouseLeave={() => handleFeatureHover(null)}
+                  onMouseEnter={() => {
+                    if (menuTimeoutRef.current) {
+                      clearTimeout(menuTimeoutRef.current);
+                    }
+                    handleFeatureHover(feature);
+                  }}
+                  onMouseLeave={() => {
+                    menuTimeoutRef.current = setTimeout(() => {
+                      handleFeatureHover(null);
+                    }, 200);
+                  }}
                   style={{
                     padding: "8px 16px",
                     border: "none",
@@ -199,17 +208,18 @@ function TopNavBar() {
                         ? "white"
                         : "#0b1220",
                     cursor: "pointer",
-                    borderRadius: "4px",
+                    borderRadius: "6px",
                     fontSize: "14px",
-                    fontWeight: "500",
+                    fontWeight: "600",
                     transition: "all 150ms ease",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
                     whiteSpace: "nowrap",
+                    boxShadow: hoveredFeature?.id === feature.id ? "0 4px 8px rgba(108, 99, 255, 0.2)" : "none",
                   }}
                 >
-                  {feature.icon && <span style={{ fontSize: "16px" }}>{feature.icon}</span>}
+                  {feature.icon && <span style={{ fontSize: "18px" }}>{feature.icon}</span>}
                   {feature.name}
                 </button>
               ))
@@ -398,23 +408,46 @@ function TopNavBar() {
         `}</style>
       </nav>
 
-      {/* Categories Panel - Shows on hover, positioned absolutely over content */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 40,
-        }}
-        onMouseLeave={() => handleFeatureHover(null)}
-      >
-        {hoveredFeature && !mobileMenuOpen && (
-          <CategoriesPanel
-            feature={hoveredFeature}
-            categories={hoveredFeatureCategories}
-            config={config}
-            isAbsolute={true}
-          />
-        )}
-      </div>
+      {/* Categories Panel - Shows on hover, positioned fixed over content */}
+      {hoveredFeature && !mobileMenuOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: "64px",
+            left: 0,
+            right: 0,
+            zIndex: 40,
+            background: "transparent",
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: "1400px",
+              margin: "0 auto",
+              padding: "0 16px",
+              pointerEvents: "auto",
+            }}
+            onMouseLeave={() => {
+              menuTimeoutRef.current = setTimeout(() => {
+                handleFeatureHover(null);
+              }, 100);
+            }}
+            onMouseEnter={() => {
+              if (menuTimeoutRef.current) {
+                clearTimeout(menuTimeoutRef.current);
+              }
+            }}
+          >
+            <CategoriesPanel
+              feature={hoveredFeature}
+              categories={hoveredFeatureCategories}
+              config={config}
+              isAbsolute={false}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Mobile Menu Drawer */}
       <MobileMenu
