@@ -22,7 +22,7 @@ import StreakDisplay from "../StreakDisplay/StreakDisplay";
 
 function TopNavBar() {
   const navigate = useNavigate();
-  const { features, categoriesByFeature, config, loading, loadFeatureCategories } =
+  const { features, categoriesByFeature, config, loading, error, loadFeatureCategories } =
     useNavigationData();
   const { user, signInWithGoogle, signOut } = useAuth();
   const [coins, setCoins] = useState(null);
@@ -168,6 +168,8 @@ function TopNavBar() {
           >
             {loading ? (
               <span style={{ color: "#999", fontSize: "14px" }}>Loading features...</span>
+            ) : error ? (
+              <span style={{ color: "#d32f2f", fontSize: "14px" }}>Error loading features: {error}</span>
             ) : features.length === 0 ? (
               <span style={{ color: "#999", fontSize: "14px" }}>No features available</span>
             ) : (
@@ -212,6 +214,33 @@ function TopNavBar() {
                 </button>
               ))
             )}
+
+            {/* Admin Link */}
+            <Link
+              to="/admin/dashboard"
+              style={{
+                marginLeft: "auto",
+                padding: "8px 16px",
+                textDecoration: "none",
+                color: "#0b1220",
+                fontSize: "14px",
+                fontWeight: "500",
+                transition: "all 150ms ease",
+                cursor: "pointer",
+                borderRadius: "4px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "#f0f0f0";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "transparent";
+              }}
+            >
+              ⚙️ Admin
+            </Link>
           </div>
 
           {/* Right Side - User Info & Auth (Desktop) */}

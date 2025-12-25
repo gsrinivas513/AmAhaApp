@@ -2,6 +2,7 @@
  * navigationService.js
  * Handles all Firestore queries for top navigation menu
  * Caches features and lazily loads categories per feature
+ * Falls back to hardcoded features if none exist in Firestore
  */
 
 import {
@@ -21,9 +22,50 @@ const cache = {
   config: null,
 };
 
+// Default features matching AmAha_Menu.md design
+const DEFAULT_FEATURES = [
+  {
+    id: "quizzes",
+    name: "Quizzes",
+    icon: "🧠",
+    order: 1,
+    isPublished: true,
+    showInMenu: true,
+    description: "Learn by playing fun quizzes"
+  },
+  {
+    id: "puzzles",
+    name: "Puzzles",
+    icon: "🧩",
+    order: 2,
+    isPublished: true,
+    showInMenu: true,
+    description: "Think • Match • Solve"
+  },
+  {
+    id: "games",
+    name: "Games",
+    icon: "🎮",
+    order: 3,
+    isPublished: true,
+    showInMenu: true,
+    description: "Play and learn"
+  },
+  {
+    id: "stories",
+    name: "Stories",
+    icon: "📖",
+    order: 4,
+    isPublished: true,
+    showInMenu: true,
+    description: "Interactive stories"
+  },
+];
+
 /**
  * Fetch all published features from Firestore
  * Cached to avoid repeated queries
+ * Falls back to default features if none exist
  * @returns {Promise<Array>} Array of feature objects
  */
 export async function fetchPublishedFeatures() {
@@ -44,12 +86,15 @@ export async function fetchPublishedFeatures() {
       ...doc.data(),
     }));
 
-    // Cache the result
-    cache.features = features;
-    return features;
+    // Use default features if none found in Firestore
+    const featuresToCache = features.length > 0 ? features : DEFAULT_FEATURES;
+    cache.features = featuresToCache;
+    return featuresToCache;
   } catch (error) {
-    console.error("Error fetching features:", error);
-    return [];
+    console.warn("Error fetching features from Firestore, using defaults:", error);
+    // Use default features on error
+    cache.features = DEFAULT_FEATURES;
+    return DEFAULT_FEATURES;
   }
 }
 
