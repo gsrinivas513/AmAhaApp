@@ -60,18 +60,18 @@ export async function getStory(storyId) {
 
 /**
  * Get all published stories
+ * Uses simple where clause to avoid Firestore index errors
  */
 export async function getAllStories(filters = {}) {
   try {
-    // First try to fetch with published filter
-    let q = query(
+    // Try to fetch with published filter (no orderBy to avoid index requirement)
+    const q = query(
       collection(db, 'stories'),
-      where('published', '==', true),
-      orderBy('createdAt', 'desc')
+      where('published', '==', true)
     );
 
-    let querySnapshot = await getDocs(q);
-    let stories = [];
+    const querySnapshot = await getDocs(q);
+    const stories = [];
 
     querySnapshot.forEach((doc) => {
       stories.push({
@@ -81,42 +81,36 @@ export async function getAllStories(filters = {}) {
     });
 
     console.log('[storyService] getAllStories() found', stories.length, 'published stories');
-
-    // If no published stories found, try fetching all stories (in case published field is missing)
-    if (stories.length === 0) {
-      console.log('[storyService] No published stories found, trying to fetch all stories...');
-      const allStoriesSnapshot = await getDocs(collection(db, 'stories'));
-      
-      allStoriesSnapshot.forEach((doc) => {
-        const data = doc.data();
-        // Include stories that don't have published field set to false
-        if (data.published !== false) {
-          stories.push({
-            id: doc.id,
-            ...data
-          });
-        }
-      });
-      
-      console.log('[storyService] Found', stories.length, 'stories (including unpublished/unset)');
-    }
+    
+    // Sort by createdAt in JavaScript (avoids index requirement)
+    stories.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // descending order
+    });
 
     return stories;
   } catch (error) {
     console.error('Error fetching stories:', error);
-    // Fallback: try to fetch without where clause
+    // Fallback: fetch all stories without filter
     try {
       console.log('[storyService] Falling back to fetching all stories without filter');
       const snapshot = await getDocs(collection(db, 'stories'));
       const stories = [];
+      
       snapshot.forEach((doc) => {
+        const data = doc.data();
         stories.push({
           id: doc.id,
-          ...doc.data()
+          ...data
         });
       });
-      console.log('[storyService] Fallback: found', stories.length, 'stories');
-      return stories;
+      
+      // Filter to only published (or those where published field is not false)
+      const published = stories.filter(s => s.published !== false);
+      
+      console.log('[storyService] Fallback: found', published.length, 'stories');
+      return published;
     } catch (fallbackError) {
       console.error('Fallback story fetch failed:', fallbackError);
       return [];

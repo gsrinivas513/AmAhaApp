@@ -9,7 +9,7 @@
  */
 
 import { db } from '../firebase/firebaseConfig';
-import { collection, getDocs, query, where, addDoc, writeBatch, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, writeBatch, doc, updateDoc, setDoc } from 'firebase/firestore';
 
 export const debugStories = {
   /**
@@ -39,6 +39,46 @@ export const debugStories = {
       };
     } catch (error) {
       console.error('❌ Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Add Stories feature to features collection
+   * This makes Stories appear in navigation and home page
+   */
+  async addStoriesFeature() {
+    console.log('📖 Adding Stories feature to Firestore...\n');
+    try {
+      const storiesFeature = {
+        id: 'stories',
+        name: 'Stories',
+        label: 'Stories',
+        description: 'Interactive stories for learning and adventure',
+        icon: '📖',
+        featureType: 'story',
+        type: 'story',
+        enabled: true,
+        status: 'enabled',
+        isPublished: true,
+        showInMenu: true,
+        order: 4,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      await setDoc(doc(db, 'features', 'stories'), storiesFeature);
+      
+      console.log('✅ Stories feature created successfully!');
+      console.log(storiesFeature);
+      console.log('\n✅ Stories will now appear in:');
+      console.log('  - Home page navigation');
+      console.log('  - Top navigation bar');
+      console.log('  - Mobile menu');
+      
+      return storiesFeature;
+    } catch (error) {
+      console.error('❌ Error adding Stories feature:', error);
       throw error;
     }
   },
