@@ -5,7 +5,7 @@ import ImageUpload from "../../../components/ImageUpload";
 import ImageCropControl from "../../../components/ImageCropControl";
 
 export default function TopicModal({ show, editingId, form, setForm, onSave, onClose }) {
-  const [showImageControls, setShowImageControls] = useState(false);
+  const [showImageControls, setShowImageControls] = useState(!!form.imageUrl); // Auto-expand if image exists
 
   if (!show) return null;
 
