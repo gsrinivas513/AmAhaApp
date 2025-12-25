@@ -50,8 +50,8 @@ function CategoriesPanel({ feature, categories, config }) {
     <div
       style={{
         borderBottom: "1px solid #f0f0f0",
-        background: "#fafafa",
-        padding: "16px",
+        background: "linear-gradient(135deg, #f8f7ff 0%, #fafafa 100%)",
+        padding: "24px 16px",
         animation: `slideDown ${config?.animationDuration || 250}ms ease-out`,
       }}
     >
@@ -61,29 +61,30 @@ function CategoriesPanel({ feature, categories, config }) {
           margin: "0 auto",
         }}
       >
-        {/* Feature Title */}
-        <div style={{ marginBottom: "12px" }}>
-          <h3
+        {/* Feature Header */}
+        <div style={{ marginBottom: "20px" }}>
+          <h2
             style={{
               margin: "0 0 8px 0",
-              fontSize: "16px",
-              fontWeight: "600",
+              fontSize: "18px",
+              fontWeight: "700",
               color: "#0b1220",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "10px",
             }}
           >
-            {feature.icon && <span style={{ fontSize: "20px" }}>{feature.icon}</span>}
-            {feature.name}
-          </h3>
+            {feature.icon && <span style={{ fontSize: "24px" }}>{feature.icon}</span>}
+            {feature.name?.toUpperCase()}
+          </h2>
           {feature.description && (
             <p
               style={{
                 margin: "0",
-                fontSize: "13px",
+                fontSize: "14px",
                 color: "#666",
-                lineHeight: "1.4",
+                lineHeight: "1.5",
+                fontWeight: "500",
               }}
             >
               {feature.description}
@@ -91,12 +92,12 @@ function CategoriesPanel({ feature, categories, config }) {
           )}
         </div>
 
-        {/* Categories Grid */}
+        {/* Categories Grid - Card Layout */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(auto-fill, minmax(180px, 1fr))`,
-            gap: "12px",
+            gridTemplateColumns: `repeat(auto-fill, minmax(200px, 1fr))`,
+            gap: "16px",
           }}
         >
           {categories.map((category) => (
@@ -113,34 +114,65 @@ function CategoriesPanel({ feature, categories, config }) {
                 onClick={() => handleCategoryClick(category)}
                 style={{
                   width: "100%",
-                  padding: "12px 14px",
-                  border: "1px solid #e0e0e0",
-                  borderRadius: "6px",
-                  background: "white",
+                  padding: "16px",
+                  border: "2px solid #e8e8f0",
+                  borderRadius: "10px",
+                  background: hoveredCategory === (category.id || category.key) ? "white" : "#ffffff",
                   cursor: "pointer",
                   textAlign: "left",
-                  transition: "all 150ms ease",
+                  transition: "all 200ms ease",
                   display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
+                  flexDirection: "column",
+                  gap: "10px",
                   fontSize: "14px",
-                  fontWeight: "500",
                   color: "#0b1220",
-                  boxShadow: hoveredCategory === (category.id || category.key) ? "0 2px 8px rgba(108, 99, 255, 0.15)" : "none",
-                  borderColor: hoveredCategory === (category.id || category.key) ? "#6C63FF" : "#e0e0e0",
-                  background: hoveredCategory === (category.id || category.key) ? "#f8f7ff" : "white",
+                  boxShadow: hoveredCategory === (category.id || category.key) 
+                    ? "0 8px 16px rgba(108, 99, 255, 0.2)" 
+                    : "0 2px 4px rgba(0, 0, 0, 0.05)",
+                  borderColor: hoveredCategory === (category.id || category.key) ? "#6C63FF" : "#e8e8f0",
+                  transform: hoveredCategory === (category.id || category.key) ? "translateY(-4px)" : "translateY(0)",
                 }}
               >
-                {/* Icon - for quizzes/puzzles with color backgrounds */}
-                {category.icon && (
-                  <span style={{ fontSize: "18px", flexShrink: 0 }}>
-                    {category.icon}
+                {/* Icon and Title */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  {category.icon && (
+                    <span style={{ fontSize: "24px", flexShrink: 0 }}>
+                      {category.icon}
+                    </span>
+                  )}
+                  <span style={{ fontWeight: "600", fontSize: "15px", flex: 1 }}>
+                    {category.title || category.label || category.name}
                   </span>
+                </div>
+
+                {/* Description if available */}
+                {category.description && (
+                  <p
+                    style={{
+                      margin: "0",
+                      fontSize: "12px",
+                      color: "#999",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {category.description}
+                  </p>
                 )}
-                {/* Title - prioritize 'title' field (quiz categories) over 'name' */}
-                <span style={{ flex: 1 }}>
-                  {category.title || category.name}
-                </span>
+
+                {/* Explore button/link */}
+                <div
+                  style={{
+                    marginTop: "8px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: "#6C63FF",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  Explore <span>→</span>
+                </div>
               </button>
 
               {/* Topics Dropdown - only for navigation categories */}
@@ -153,6 +185,11 @@ function CategoriesPanel({ feature, categories, config }) {
                 />
               )}
             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
           ))}
         </div>
       </div>
