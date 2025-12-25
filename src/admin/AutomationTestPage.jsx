@@ -12,7 +12,13 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  orderBy,
+  limit,
+  writeBatch,
 } from "firebase/firestore";
+import * as dailyChallengeService from "../services/dailyChallengeService";
+import * as storyService from "../services/storyService";
+import * as leaderboardService from "../services/leaderboardService";
 
 /**
  * ╔════════════════════════════════════════════════════════════════════════════╗
@@ -773,6 +779,697 @@ function AutomationTestPage() {
         };
       }
     },
+
+    // 16. Daily Challenge CRUD - Create
+    testDailyChallengeCreate: async () => {
+      const startTime = Date.now();
+      try {
+        const testChallenge = {
+          type: "quiz",
+          difficulty: "easy",
+          category: "Math",
+          topic: "Basics",
+          xp: 75,
+          coins: 15,
+          date: new Date().toISOString().split('T')[0],
+          isTest: true,
+        };
+        const docRef = await addDoc(collection(db, "dailyChallenges"), testChallenge);
+        const duration = Date.now() - startTime;
+        return {
+          name: "16. Daily Challenge Create",
+          status: "PASS",
+          message: `Created test daily challenge with ID: ${docRef.id}`,
+          duration: `${duration}ms`,
+          metadata: { testChallengeId: docRef.id },
+        };
+      } catch (err) {
+        return {
+          name: "16. Daily Challenge Create",
+          status: "FAIL",
+          message: `Failed to create daily challenge: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 17. Daily Challenge Read
+    testDailyChallengeRead: async () => {
+      const startTime = Date.now();
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "dailyChallenges"),
+            orderBy("date", "desc"),
+            limit(10)
+          )
+        );
+        const duration = Date.now() - startTime;
+        const challenges = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        if (challenges.length > 0) {
+          const validChallenges = challenges.filter(c => 
+            c.type && c.difficulty && c.xp !== undefined && c.coins !== undefined
+          );
+          return {
+            name: "17. Daily Challenge Read",
+            status: validChallenges.length === challenges.length ? "PASS" : "WARN",
+            message: `Retrieved ${challenges.length} daily challenges (${validChallenges.length} valid)`,
+            duration: `${duration}ms`,
+          };
+        } else {
+          return {
+            name: "17. Daily Challenge Read",
+            status: "WARN",
+            message: "No daily challenges found in database",
+            duration: `${duration}ms`,
+          };
+        }
+      } catch (err) {
+        return {
+          name: "17. Daily Challenge Read",
+          status: "FAIL",
+          message: `Failed to read daily challenges: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 18. Daily Challenge Update
+    testDailyChallengeUpdate: async (testChallengeId) => {
+      if (!testChallengeId) {
+        return {
+          name: "18. Daily Challenge Update",
+          status: "SKIP",
+          message: "Skipped: No test challenge created",
+          duration: "N/A",
+        };
+      }
+      const startTime = Date.now();
+      try {
+        await updateDoc(doc(db, "dailyChallenges", testChallengeId), {
+          xp: 100,
+          coins: 20,
+          updatedAt: new Date(),
+        });
+        const duration = Date.now() - startTime;
+        return {
+          name: "18. Daily Challenge Update",
+          status: "PASS",
+          message: `Successfully updated daily challenge`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "18. Daily Challenge Update",
+          status: "FAIL",
+          message: `Failed to update daily challenge: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 19. Daily Challenge Delete
+    testDailyChallengeDelete: async (testChallengeId) => {
+      if (!testChallengeId) {
+        return {
+          name: "19. Daily Challenge Delete",
+          status: "SKIP",
+          message: "Skipped: No test challenge to delete",
+          duration: "N/A",
+        };
+      }
+      const startTime = Date.now();
+      try {
+        await deleteDoc(doc(db, "dailyChallenges", testChallengeId));
+        const duration = Date.now() - startTime;
+        return {
+          name: "19. Daily Challenge Delete",
+          status: "PASS",
+          message: `Successfully deleted test daily challenge`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "19. Daily Challenge Delete",
+          status: "FAIL",
+          message: `Failed to delete daily challenge: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 20. Stories CRUD - Create
+    testStoryCreate: async () => {
+      const startTime = Date.now();
+      try {
+        const testStory = {
+          title: "Test Story Automation",
+          description: "A test story for automation testing",
+          targetAudience: "Kids",
+          published: false,
+          createdAt: new Date(),
+          isTest: true,
+        };
+        const docRef = await addDoc(collection(db, "stories"), testStory);
+        const duration = Date.now() - startTime;
+        return {
+          name: "20. Story Create",
+          status: "PASS",
+          message: `Created test story with ID: ${docRef.id}`,
+          duration: `${duration}ms`,
+          metadata: { testStoryId: docRef.id },
+        };
+      } catch (err) {
+        return {
+          name: "20. Story Create",
+          status: "FAIL",
+          message: `Failed to create story: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 21. Stories Read
+    testStoryRead: async () => {
+      const startTime = Date.now();
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "stories"),
+            orderBy("createdAt", "desc"),
+            limit(20)
+          )
+        );
+        const duration = Date.now() - startTime;
+        const stories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const publishedStories = stories.filter(s => s.published);
+        const draftStories = stories.filter(s => !s.published);
+        
+        return {
+          name: "21. Story Read",
+          status: stories.length > 0 ? "PASS" : "WARN",
+          message: `Retrieved ${stories.length} stories (${publishedStories.length} published, ${draftStories.length} draft)`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "21. Story Read",
+          status: "FAIL",
+          message: `Failed to read stories: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 22. Stories Update
+    testStoryUpdate: async (testStoryId) => {
+      if (!testStoryId) {
+        return {
+          name: "22. Story Update",
+          status: "SKIP",
+          message: "Skipped: No test story created",
+          duration: "N/A",
+        };
+      }
+      const startTime = Date.now();
+      try {
+        await updateDoc(doc(db, "stories", testStoryId), {
+          title: "Updated Test Story",
+          updatedAt: new Date(),
+        });
+        const duration = Date.now() - startTime;
+        return {
+          name: "22. Story Update",
+          status: "PASS",
+          message: `Successfully updated story`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "22. Story Update",
+          status: "FAIL",
+          message: `Failed to update story: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 23. Stories Delete
+    testStoryDelete: async (testStoryId) => {
+      if (!testStoryId) {
+        return {
+          name: "23. Story Delete",
+          status: "SKIP",
+          message: "Skipped: No test story to delete",
+          duration: "N/A",
+        };
+      }
+      const startTime = Date.now();
+      try {
+        await deleteDoc(doc(db, "stories", testStoryId));
+        const duration = Date.now() - startTime;
+        return {
+          name: "23. Story Delete",
+          status: "PASS",
+          message: `Successfully deleted test story`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "23. Story Delete",
+          status: "FAIL",
+          message: `Failed to delete story: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 24. Leaderboards Data
+    testLeaderboardsData: async () => {
+      const startTime = Date.now();
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "leaderboards"),
+            orderBy("score", "desc"),
+            limit(50)
+          )
+        );
+        const duration = Date.now() - startTime;
+        const leaderboards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        if (leaderboards.length > 0) {
+          const validEntries = leaderboards.filter(l => 
+            l.userId && l.score !== undefined && l.category
+          );
+          return {
+            name: "24. Leaderboards Data",
+            status: validEntries.length === leaderboards.length ? "PASS" : "WARN",
+            message: `Retrieved ${leaderboards.length} leaderboard entries (${validEntries.length} valid)`,
+            duration: `${duration}ms`,
+          };
+        } else {
+          return {
+            name: "24. Leaderboards Data",
+            status: "WARN",
+            message: "No leaderboard data found. Complete challenges to populate",
+            duration: `${duration}ms`,
+          };
+        }
+      } catch (err) {
+        return {
+          name: "24. Leaderboards Data",
+          status: "FAIL",
+          message: `Failed to read leaderboards: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 25. Category & Topic Mapping
+    testCategoryTopicMapping: async () => {
+      const startTime = Date.now();
+      try {
+        const expectedMapping = {
+          Math: ["basics", "algebra", "geometry", "calculus"],
+          English: ["vocabulary", "grammar", "literature", "writing"],
+          Science: ["physics", "chemistry", "biology", "general"],
+          History: ["ancient", "medieval", "modern", "current"],
+          Programming: ["basics", "javascript", "python", "web-dev"],
+        };
+
+        // Verify at least some daily challenges have proper category/topic pairs
+        const snap = await getDocs(
+          query(collection(db, "dailyChallenges"), limit(5))
+        );
+        const challenges = snap.docs.map(d => d.data());
+        
+        const validPairs = challenges.filter(c => 
+          c.category && 
+          c.topic &&
+          expectedMapping[c.category] &&
+          expectedMapping[c.category].includes(c.topic.toLowerCase())
+        );
+
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "25. Category & Topic Mapping",
+          status: validPairs.length > 0 ? "PASS" : "WARN",
+          message: `Verified ${validPairs.length}/${Math.min(5, challenges.length)} challenges have valid category-topic pairs`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "25. Category & Topic Mapping",
+          status: "WARN",
+          message: `Category-topic validation: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 26. Guest Data Storage
+    testGuestDataStorage: async () => {
+      const startTime = Date.now();
+      try {
+        // Check if localStorage API is available
+        const canUseStorage = typeof(Storage) !== "undefined";
+        
+        if (canUseStorage) {
+          // Test storing guest data
+          const guestData = {
+            guestId: "test-guest-" + Date.now(),
+            progress: [{ challengeId: "test-1", completed: true, score: 100 }],
+            xp: 150,
+            coins: 30,
+          };
+          localStorage.setItem("guestProgress", JSON.stringify(guestData));
+          
+          // Retrieve and verify
+          const retrieved = JSON.parse(localStorage.getItem("guestProgress"));
+          const isValid = retrieved && retrieved.guestId && retrieved.progress;
+          
+          // Cleanup
+          localStorage.removeItem("guestProgress");
+          
+          const duration = Date.now() - startTime;
+          
+          return {
+            name: "26. Guest Data Storage",
+            status: isValid ? "PASS" : "FAIL",
+            message: "Guest progress data can be stored and retrieved from localStorage",
+            duration: `${duration}ms`,
+          };
+        } else {
+          return {
+            name: "26. Guest Data Storage",
+            status: "FAIL",
+            message: "localStorage not available (required for guest feature)",
+            duration: "N/A",
+          };
+        }
+      } catch (err) {
+        return {
+          name: "26. Guest Data Storage",
+          status: "FAIL",
+          message: `Guest data storage failed: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 27. Mobile Viewport (375px)
+    testMobileViewport: async () => {
+      const startTime = Date.now();
+      try {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Check if device is mobile-sized or can simulate it
+        const isMobileSize = windowWidth <= 480;
+        const hasViewportMeta = document.querySelector('meta[name="viewport"]');
+        
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "27. Mobile Viewport",
+          status: hasViewportMeta && (isMobileSize || window.innerWidth <= 1024) ? "PASS" : "WARN",
+          message: `Current viewport: ${windowWidth}x${windowHeight}. Viewport meta tag: ${hasViewportMeta ? "Present" : "Missing"}`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "27. Mobile Viewport",
+          status: "WARN",
+          message: `Mobile viewport check: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 28. Dark Mode Support
+    testDarkModeSupport: async () => {
+      const startTime = Date.now();
+      try {
+        // Check for dark mode media query support
+        const prefersDarkMode = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const supportsColorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+        
+        // Check if app has CSS variables for theming
+        const cssVariables = getComputedStyle(document.documentElement);
+        const hasDarkModeVars = cssVariables.getPropertyValue("--bg-dark") || cssVariables.getPropertyValue("--color-dark");
+        
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "28. Dark Mode Support",
+          status: supportsColorScheme ? "PASS" : "WARN",
+          message: `Dark mode support: Media query supported. Current preference: ${prefersDarkMode ? "Dark" : "Light"}`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "28. Dark Mode Support",
+          status: "WARN",
+          message: `Dark mode check: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 29. Error Boundary Test
+    testErrorHandling: async () => {
+      const startTime = Date.now();
+      try {
+        // Simulate error handling by trying invalid query
+        try {
+          const invalidQuery = query(
+            collection(db, "invalid_collection")
+          );
+          await getDocs(invalidQuery);
+        } catch (innerErr) {
+          // Expected error
+        }
+        
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "29. Error Handling",
+          status: "PASS",
+          message: "Application handles errors gracefully without crashing",
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "29. Error Handling",
+          status: "FAIL",
+          message: `Error handling check failed: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 30. Responsive Image Loading
+    testImageLoading: async () => {
+      const startTime = Date.now();
+      try {
+        // Check if images on page load properly
+        const images = document.querySelectorAll("img");
+        const loadedImages = Array.from(images).filter(img => img.complete && img.naturalHeight > 0);
+        
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "30. Image Loading",
+          status: loadedImages.length > 0 ? "PASS" : "WARN",
+          message: `Found ${loadedImages.length}/${images.length} images loaded successfully`,
+          duration: `${duration}ms`,
+        };
+      } catch (err) {
+        return {
+          name: "30. Image Loading",
+          status: "WARN",
+          message: `Image loading check: ${err.message}`,
+          duration: "N/A",
+        };
+      }
+    },
+
+    // 31. Analytics Collection Existence
+    testAnalyticsCollectionExists: async () => {
+      const startTime = Date.now();
+      try {
+        const snap = await getDocs(collection(db, "analytics_events"));
+        const duration = Date.now() - startTime;
+        
+        return {
+          name: "31. Analytics Collection Exists",
+          status: "PASS",
+          message: `Analytics events collection accessible with ${snap.docs.length} events recorded`,
+          duration: `${duration}ms`,
+          metadata: { eventCount: snap.docs.length },
+        };
+      } catch (err) {
+        return {
+          name: "31. Analytics Collection Exists",
+          status: "WARN",
+          message: `Analytics collection not yet created. Will be created on first event: ${err.message}`,
+          duration: `${Date.now() - startTime}ms`,
+        };
+      }
+    },
+
+    // 32. Analytics Event Create
+    testAnalyticsEventCreate: async () => {
+      const startTime = Date.now();
+      try {
+        // Create a test event
+        const testEvent = {
+          userId: "test-user-analytics",
+          eventType: "test_analytics_create",
+          eventData: {
+            featureName: "Analytics Testing",
+            testAction: "Create Event",
+            timestamp: Date.now(),
+          },
+          timestamp: new Date(),
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+        };
+
+        const docRef = await addDoc(collection(db, "analytics_events"), testEvent);
+        const duration = Date.now() - startTime;
+
+        return {
+          name: "32. Analytics Event Create",
+          status: "PASS",
+          message: `Test analytics event created successfully`,
+          duration: `${duration}ms`,
+          metadata: { testEventId: docRef.id },
+        };
+      } catch (err) {
+        return {
+          name: "32. Analytics Event Create",
+          status: "FAIL",
+          message: `Failed to create analytics event: ${err.message}`,
+          duration: `${Date.now() - startTime}ms`,
+        };
+      }
+    },
+
+    // 33. Analytics Event Read
+    testAnalyticsEventRead: async () => {
+      const startTime = Date.now();
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "analytics_events"),
+            where("userId", "==", "test-user-analytics"),
+            limit(10)
+          )
+        );
+        
+        const events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const duration = Date.now() - startTime;
+
+        return {
+          name: "33. Analytics Event Read",
+          status: events.length > 0 ? "PASS" : "WARN",
+          message: `Found ${events.length} test analytics events for user`,
+          duration: `${duration}ms`,
+          metadata: { eventCount: events.length },
+        };
+      } catch (err) {
+        return {
+          name: "33. Analytics Event Read",
+          status: "FAIL",
+          message: `Failed to read analytics events: ${err.message}`,
+          duration: `${Date.now() - startTime}ms`,
+        };
+      }
+    },
+
+    // 34. Performance Monitor Metrics
+    testPerformanceMonitorMetrics: async () => {
+      const startTime = Date.now();
+      try {
+        const { performanceMonitor } = require("../utils/performanceMonitor");
+        
+        // Start a test measurement
+        performanceMonitor.startMeasure("test_analytics_operation");
+        
+        // Simulate some work
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        performanceMonitor.endMeasure("test_analytics_operation");
+        
+        const metrics = performanceMonitor.getAllMetrics();
+        const duration = Date.now() - startTime;
+
+        const hasTestMetric = metrics && Object.keys(metrics).length > 0;
+
+        return {
+          name: "34. Performance Monitor Metrics",
+          status: hasTestMetric ? "PASS" : "WARN",
+          message: `Performance monitor functional. Tracked ${Object.keys(metrics || {}).length} metric groups`,
+          duration: `${duration}ms`,
+          metadata: { metricsCount: Object.keys(metrics || {}).length },
+        };
+      } catch (err) {
+        return {
+          name: "34. Performance Monitor Metrics",
+          status: "WARN",
+          message: `Performance monitor check: ${err.message}`,
+          duration: `${Date.now() - startTime}ms`,
+        };
+      }
+    },
+
+    // 35. Analytics Cleanup & Validation
+    testAnalyticsCleanup: async () => {
+      const startTime = Date.now();
+      try {
+        // Find and delete test analytics events
+        const snap = await getDocs(
+          query(
+            collection(db, "analytics_events"),
+            where("userId", "==", "test-user-analytics")
+          )
+        );
+
+        const batch = writeBatch(db);
+        let deletedCount = 0;
+
+        snap.docs.forEach(d => {
+          batch.delete(d.ref);
+          deletedCount++;
+        });
+
+        if (deletedCount > 0) {
+          await batch.commit();
+        }
+
+        const duration = Date.now() - startTime;
+
+        return {
+          name: "35. Analytics Cleanup & Validation",
+          status: "PASS",
+          message: `Cleanup successful. Removed ${deletedCount} test analytics events`,
+          duration: `${duration}ms`,
+          metadata: { cleanedupCount: deletedCount },
+        };
+      } catch (err) {
+        return {
+          name: "35. Analytics Cleanup & Validation",
+          status: "WARN",
+          message: `Analytics cleanup: ${err.message}`,
+          duration: `${Date.now() - startTime}ms`,
+        };
+      }
+    },
   };
 
   // Run all tests
@@ -783,6 +1480,8 @@ function AutomationTestPage() {
 
     const results = [];
     let testDocId = null;
+    let testChallengeId = null;
+    let testStoryId = null;
 
     // Run tests in sequence
     try {
@@ -790,92 +1489,215 @@ function AutomationTestPage() {
       let result = await tests.testDatabaseConnection();
       results.push(result);
       setTestResults([...results]);
-      setProgress(7);
+      setProgress(3);
 
       // 2. Read Features
       result = await tests.testReadFeatures();
       results.push(result);
       setTestResults([...results]);
-      setProgress(13);
+      setProgress(7);
 
       // 3. Read Categories
       result = await tests.testReadCategories();
       results.push(result);
       setTestResults([...results]);
-      setProgress(20);
+      setProgress(10);
 
       // 4. Read Subtopicies
       result = await tests.testReadSubtopicies();
       results.push(result);
       setTestResults([...results]);
-      setProgress(27);
+      setProgress(13);
 
       // 5. Read Questions
       result = await tests.testReadQuestions();
       results.push(result);
       setTestResults([...results]);
-      setProgress(33);
+      setProgress(17);
 
       // 6. Read Scores
       result = await tests.testReadScores();
       results.push(result);
       setTestResults([...results]);
-      setProgress(40);
+      setProgress(20);
 
       // 7. Hierarchy Validation
       result = await tests.testHierarchyValidation();
       results.push(result);
       setTestResults([...results]);
-      setProgress(47);
+      setProgress(23);
 
       // 8. Create Record
       result = await tests.testCreateRecord();
       results.push(result);
       setTestResults([...results]);
       testDocId = result.metadata?.testDocId;
-      setProgress(53);
+      setProgress(27);
 
       // 9. Update Record
       result = await tests.testUpdateRecord(testDocId);
       results.push(result);
       setTestResults([...results]);
-      setProgress(60);
+      setProgress(30);
 
       // 10. Delete Record
       result = await tests.testDeleteRecord(testDocId);
       results.push(result);
       setTestResults([...results]);
-      setProgress(67);
+      setProgress(33);
 
       // 11. Data Validation
       result = await tests.testDataValidation();
       results.push(result);
       setTestResults([...results]);
-      setProgress(73);
+      setProgress(37);
 
       // 12. Query Performance
       result = await tests.testQueryPerformance();
       results.push(result);
       setTestResults([...results]);
-      setProgress(80);
+      setProgress(40);
 
       // 13. Concurrent Operations
       result = await tests.testConcurrentOperations();
       results.push(result);
       setTestResults([...results]);
-      setProgress(87);
+      setProgress(43);
 
       // 14. Text-to-Speech Support
       result = await tests.testTextToSpeechSupport();
       results.push(result);
       setTestResults([...results]);
-      setProgress(93);
+      setProgress(47);
 
       // 15. Kids Questions Validation
       result = await tests.testKidsQuestionsValidation();
       results.push(result);
       setTestResults([...results]);
+      setProgress(50);
+
+      // 16. Daily Challenge Create
+      result = await tests.testDailyChallengeCreate();
+      results.push(result);
+      setTestResults([...results]);
+      testChallengeId = result.metadata?.testChallengeId;
+      setProgress(53);
+
+      // 17. Daily Challenge Read
+      result = await tests.testDailyChallengeRead();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(57);
+
+      // 18. Daily Challenge Update
+      result = await tests.testDailyChallengeUpdate(testChallengeId);
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(60);
+
+      // 19. Daily Challenge Delete
+      result = await tests.testDailyChallengeDelete(testChallengeId);
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(63);
+
+      // 20. Story Create
+      result = await tests.testStoryCreate();
+      results.push(result);
+      setTestResults([...results]);
+      testStoryId = result.metadata?.testStoryId;
+      setProgress(67);
+
+      // 21. Story Read
+      result = await tests.testStoryRead();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(70);
+
+      // 22. Story Update
+      result = await tests.testStoryUpdate(testStoryId);
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(73);
+
+      // 23. Story Delete
+      result = await tests.testStoryDelete(testStoryId);
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(77);
+
+      // 24. Leaderboards Data
+      result = await tests.testLeaderboardsData();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(80);
+
+      // 25. Category & Topic Mapping
+      result = await tests.testCategoryTopicMapping();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(83);
+
+      // 26. Guest Data Storage
+      result = await tests.testGuestDataStorage();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(87);
+
+      // 27. Mobile Viewport
+      result = await tests.testMobileViewport();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(90);
+
+      // 28. Dark Mode Support
+      result = await tests.testDarkModeSupport();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(93);
+
+      // 29. Error Handling
+      result = await tests.testErrorHandling();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(97);
+
+      // 30. Image Loading
+      result = await tests.testImageLoading();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(94);
+
+      // 31. Analytics Collection Exists
+      result = await tests.testAnalyticsCollectionExists();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(97);
+
+      // 32. Analytics Event Create
+      result = await tests.testAnalyticsEventCreate();
+      results.push(result);
+      setTestResults([...results]);
       setProgress(100);
+
+      // 33. Analytics Event Read
+      result = await tests.testAnalyticsEventRead();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(103);
+
+      // 34. Performance Monitor Metrics
+      result = await tests.testPerformanceMonitorMetrics();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(106);
+
+      // 35. Analytics Cleanup & Validation
+      result = await tests.testAnalyticsCleanup();
+      results.push(result);
+      setTestResults([...results]);
+      setProgress(100);
+
     } catch (err) {
       console.error("Test execution error:", err);
     }

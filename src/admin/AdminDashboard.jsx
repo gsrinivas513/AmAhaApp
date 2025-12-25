@@ -5,6 +5,8 @@ import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Card, Button } from "../components/ui";
 import InitializePuzzleFeature from "./InitializePuzzleFeature";
+import DailyChallengeModal from "./modals/DailyChallengeModal";
+import StoryModal from "./modals/StoryModal";
 
 /**
  * AdminDashboard
@@ -22,6 +24,9 @@ function AdminDashboard() {
 
   const [filterCategory, setFilterCategory] = useState("all");
   const [limitRows, setLimitRows] = useState(30);
+  
+  const [showDailyChallenge, setShowDailyChallenge] = useState(false);
+  const [showStories, setShowStories] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -207,11 +212,17 @@ function AdminDashboard() {
         )}
       </div>
 
-      <div style={{ marginTop: 32, display: "flex", gap: 16 }}>
+      <div style={{ marginTop: 32, display: "flex", gap: 16, flexWrap: "wrap" }}>
         <a href="/admin/add-content" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Quiz Questions</a>
         <a href="/admin/add-puzzle" className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Add Puzzles</a>
         <a href="/admin/puzzles" className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500">View All Puzzles</a>
+        <button onClick={() => setShowDailyChallenge(true)} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">🎯 Daily Challenges</button>
+        <button onClick={() => setShowStories(true)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📖 Stories</button>
       </div>
+
+      {/* Modals */}
+      <DailyChallengeModal isOpen={showDailyChallenge} onClose={() => setShowDailyChallenge(false)} />
+      <StoryModal isOpen={showStories} onClose={() => setShowStories(false)} />
     </AdminLayout>
   );
 }

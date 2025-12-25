@@ -153,3 +153,124 @@ export async function mergeGuestProgressToUser(user) {
   // 🧹 cleanup
   clearGuestProgress();
 }
+
+/**
+ * Save daily challenge completion (user)
+ * Extended for daily challenge feature
+ */
+export async function saveDailyChallengeCompletion(
+  user,
+  score,
+  xpEarned = 50,
+  coinsEarned = 10
+) {
+  if (!user) return;
+
+  const today = new Date().toISOString().split('T')[0];
+  const ref = doc(
+    db,
+    "user_daily_challenges",
+    user.uid,
+    "completions",
+    today
+  );
+
+  await setDoc(
+    ref,
+    {
+      dateISO: today,
+      completed: true,
+      completedAt: new Date().toISOString(),
+      score,
+      xpEarned,
+      coinsEarned
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Get daily challenge history (user)
+ */
+export async function getDailyChallengeHistory(user, days = 30) {
+  if (!user) return [];
+
+  const ref = doc(db, "user_daily_challenges", user.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) return [];
+
+  const data = snap.data();
+  return Object.entries(data)
+    .slice(0, days)
+    .map(([date, info]) => ({
+      date,
+      ...info
+    }));
+}
+
+/**
+ * Save story progress (user)
+ * Extended for story-based learning feature
+ */
+export async function saveStoryProgress(
+  user,
+  storyId,
+  chapterId,
+  xpEarned = 0
+) {
+  if (!user) return;
+
+  const ref = doc(
+    db,
+    "user_story_progress",
+    user.uid,
+    "stories",
+    storyId
+  );
+
+  const snap = await getDoc(ref);
+  const prev = snap.exists() ? snap.data() : { completedChapters: [] };
+
+  const completedChapters = [
+    ...new Set([...(prev.completedChapters || []), chapterId])
+  ];
+
+  await setDoc(
+    ref,
+    {
+      storyId,
+      completedChapters,
+      currentChapter: chapterId,
+      totalXpEarned: (prev.totalXpEarned || 0) + xpEarned,
+      lastPlayed: new Date().toISOString()
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Get story progress (user)
+ */
+export async function getStoryProgress(user, storyId) {
+  if (!user) return null;
+
+  const ref = doc(
+    db,
+    "user_story_progress",
+    user.uid,
+    "stories",
+    storyId
+  );
+
+  const snap = await getDoc(ref);
+  return snap.exists()
+    ? snap.data()
+    : {
+        storyId,
+        completedChapters: [],
+        currentChapter: 1,
+        totalXpEarned: 0,
+        lastPlayed: null
+      };
+}
