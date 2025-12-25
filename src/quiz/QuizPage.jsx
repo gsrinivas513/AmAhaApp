@@ -17,12 +17,15 @@ import QuizActions from "./ui/QuizActions";
 import { useQuizQuestions } from "./hooks/useQuizQuestions";
 import { useQuizFlow } from "./hooks/useQuizFlow";
 import { useQuizTimer } from "./hooks/useQuizTimer";
+import { QUESTION_TIME_SECONDS } from "./constants";
 import { useResumeQuiz } from "./hooks/useResumeQuiz";
 import { useSoundFX } from "./hooks/useSoundFX";
 
 import ConfettiBurst from "./ui/ConfettiBurst";
 import { useCelebration } from "./hooks/useCelebration";
 import { trackEvent } from "../analytics/trackEvent";
+import { trackQuizCompletion as trackQuizAnalytics } from "../utils/integratedTracking";
+import { checkAndUnlockAchievements, updateUserLevel } from "../services/gamificationService";
 
 import RewardToast from "./ui/RewardToast";
 import { useRewardToast } from "./ui/useRewardToast";
@@ -213,8 +216,27 @@ export default function QuizPage() {
     if (!flow.finished || completionTracked.current || !categoryId) return;
 
     const passed = flow.correctCount === flow.totalQuestions;
+    const timeSpentSeconds = Math.max(0, (QUESTION_TIME_SECONDS * flow.totalQuestions) - (timer?.timeMs || 0) / 1000);
 
-    // 📊 Analytics
+    // 📊 Analytics - Track to analytics_events collection
+    trackQuizAnalytics({
+      category: categoryName || 'Unknown',
+      difficulty: difficulty || 'Medium',
+      score: Math.round((flow.correctCount / flow.totalQuestions) * 100) || 0,
+      timeSpent: Math.round(timeSpentSeconds),
+      questionsAnswered: flow.totalQuestions,
+      correctAnswers: flow.correctCount,
+      xpEarned: flow.xpEarned || 10,
+      coinsEarned: flow.coinsEarned || 5,
+    });
+
+    // 🏆 Gamification - Check for achievements
+    if (user?.uid) {
+      checkAndUnlockAchievements(user.uid);
+      updateUserLevel(user.uid, (flow.xpEarned || 10));
+    }
+
+    // Legacy tracking (can remove later)
     trackEvent("quiz_complete", {
       userId: user?.uid || "guest",
       category: categoryId,

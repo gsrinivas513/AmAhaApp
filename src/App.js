@@ -18,6 +18,9 @@ import HomePage from "./home/HomePage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import AllFeaturesPage from "./pages/AllFeaturesPage";
 import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
+import DailyChallengePage from "./pages/DailyChallengePage";
+import LeaderboardsPage from "./pages/LeaderboardsPage";
+import StoryMapPage from "./pages/StoryMapPage";
 
 /* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
@@ -57,6 +60,9 @@ import PuzzleListPage from "./admin/PuzzleListPage";
 import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
 import VisualPuzzleAdminPage from "./admin/VisualPuzzleAdminPage";
 import SocialMediaManagerPage from "./admin/SocialMediaManagerPage";
+import DailyChallengeAdmin from "./admin/DailyChallengeAdmin";
+import StoryEditor from "./admin/StoryEditor";
+import AnalyticsPage from "./admin/AnalyticsPage";
 
 /* PUZZLES - USER */
 import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
@@ -86,6 +92,13 @@ function App() {
 
         {/* LEADERBOARD */}
         <Route path="/leaderboard/:categoryId" element={<LeaderboardPage />} />
+        <Route path="/leaderboards" element={<LeaderboardsPage />} />
+        
+        {/* DAILY CHALLENGE */}
+        <Route path="/daily-challenge" element={<DailyChallengePage />} />
+        
+        {/* STORIES */}
+        <Route path="/stories" element={<StoryMapPage />} />
 
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />
@@ -120,6 +133,9 @@ function App() {
         <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
+        <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
+        <Route path="/admin/stories" element={<StoryEditor />} />
+        <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
         <Route path="/admin/debug-categories" element={<DebugCategories />} />
         <Route path="/admin/fix-puzzle-categories" element={<FixPuzzleCategories />} />

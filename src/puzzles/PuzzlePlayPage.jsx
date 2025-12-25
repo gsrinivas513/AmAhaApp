@@ -2,16 +2,21 @@
 // Loads a puzzle and renders the correct type.
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../components/AuthProvider";
 import { getPuzzleById } from "../quiz/services/puzzleService";
 import MatchingPuzzle from "./MatchingPuzzle";
 import OrderingPuzzle from "./OrderingPuzzle";
 import DragPuzzle from "./DragPuzzle";
 import PuzzleFinish from "./PuzzleFinish";
+import { trackPuzzleCompletion } from "../utils/integratedTracking";
+import { checkAndUnlockAchievements, updateUserLevel } from "../services/gamificationService";
 
 export default function PuzzlePlayPage() {
   const { categoryName, topicName, subtopicName, puzzleId } = useParams();
+  const { user } = useAuth();
   const [puzzle, setPuzzle] = useState(null);
   const [completed, setCompleted] = useState(false);
+  const [startTime] = useState(Date.now());
 
   useEffect(() => {
     getPuzzleById(puzzleId).then(data => {
@@ -24,8 +29,33 @@ export default function PuzzlePlayPage() {
     });
   }, [puzzleId]);
 
+  const handlePuzzleComplete = async () => {
+    // Track puzzle completion
+    const timeSpentSeconds = Math.round((Date.now() - startTime) / 1000);
+    
+    if (puzzle) {
+      await trackPuzzleCompletion({
+        puzzleId: puzzle.id,
+        puzzleTitle: puzzle.title,
+        category: categoryName || puzzle.category || 'Unknown',
+        difficulty: puzzle.difficulty || 'Medium',
+        timeSpent: timeSpentSeconds,
+        xpEarned: puzzle.xp || 10,
+        coinsEarned: puzzle.coins || 5,
+      });
+
+      // Check for achievements
+      if (user?.uid) {
+        await checkAndUnlockAchievements(user.uid);
+        await updateUserLevel(user.uid, puzzle.xp || 10);
+      }
+    }
+
+    setCompleted(true);
+  };
+
   if (!puzzle) return <div className="p-8 text-center">Loading...</div>;
-  if (completed) return <PuzzleFinish puzzle={puzzle} />;
+  if (completed) return <PuzzleFinish puzzle={puzzle} user={user} />;
 
   console.log("🎮 Rendering puzzle type:", puzzle.type);
 
@@ -36,12 +66,12 @@ export default function PuzzlePlayPage() {
     case "matching":
     case "matchingpairs":
     case "findpairs":
-      return <MatchingPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
+      return <MatchingPuzzle puzzle={puzzle} onComplete={handlePuzzleComplete} />;
     case "ordering":
-      return <OrderingPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
+      return <OrderingPuzzle puzzle={puzzle} onComplete={handlePuzzleComplete} />;
     case "drag":
     case "dragdrop":
-      return <DragPuzzle puzzle={puzzle} onComplete={() => setCompleted(true)} />;
+      return <DragPuzzle puzzle={puzzle} onComplete={handlePuzzleComplete} />;
     case "pictureword":
     case "spotdifference":
     case "pictureshadow":
@@ -80,7 +110,7 @@ export default function PuzzlePlayPage() {
           </div>
           
           <button 
-            onClick={() => setCompleted(true)}
+            onClick={handlePuzzleComplete}
             className="mt-6 px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600"
           >
             ✓ Mark as Complete

@@ -22,7 +22,7 @@ export default function Footer() {
       >
         {/* BRAND */}
         <div>
-          <h3 style={{ fontWeight: 800 }}>AmAhA.com</h3>
+          <h3 style={{ fontWeight: 800 }}>AmAha</h3>
           <p style={{ marginTop: 8 }}>
             Play. Learn. Grow smarter every day.
           </p>
@@ -63,7 +63,7 @@ export default function Footer() {
           color: "#6b7280",
         }}
       >
-        © {new Date().getFullYear()} AmAhA.com. Built with ❤️ for learners.
+        © {new Date().getFullYear()} AmAha Built with ❤️ for learners.
       </div>
     </footer>
   );

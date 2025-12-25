@@ -5,6 +5,7 @@ import { useAuth } from "./AuthProvider";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { Button, Avatar } from "./ui";
+import AchievementsBadge from "./AchievementsBadge";
 
 function Navbar() {
   const { user, signInWithGoogle, signOut } = useAuth();
@@ -127,6 +128,11 @@ function Navbar() {
               <span className="text-xl">🪙</span>
               <span className="font-bold text-amber-900">{coins}</span>
             </div>
+          )}
+
+          {/* Achievements Badge */}
+          {user && (
+            <AchievementsBadge userId={user.uid} />
           )}
 
           {/* Auth Buttons */}
