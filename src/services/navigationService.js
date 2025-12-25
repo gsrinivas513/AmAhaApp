@@ -115,14 +115,12 @@ export async function fetchPublishedFeatures() {
  * Filters by featureId and isPublished status
  * Cached per feature to minimize Firestore reads
  * @param {string} featureId - The feature ID
+ * @param {Object} feature - Optional feature object with featureType
  * @returns {Promise<Array>} Array of category objects
  */
-export async function fetchCategoriesByFeature(featureId) {
-  console.log(`[navigationService] fetchCategoriesByFeature called with featureId: ${featureId}`);
-  
+export async function fetchCategoriesByFeature(featureId, feature = null) {
   // Return cached categories if available
   if (cache.categories[featureId]) {
-    console.log(`[navigationService] Returning cached categories for ${featureId}:`, cache.categories[featureId]);
     return cache.categories[featureId];
   }
 
@@ -131,12 +129,10 @@ export async function fetchCategoriesByFeature(featureId) {
 
     // Fetch ALL categories first, then filter in JavaScript
     // This handles various field naming conventions (featureId, featureType, etc.)
-    console.log(`[navigationService] Fetching all categories to filter for feature: ${featureId}`);
     const allSnapshot = await getDocs(collection(db, "categories"));
-    console.log(`[navigationService] Total categories in Firestore: ${allSnapshot.docs.length}`);
 
     // Determine the expected feature type based on the featureId
-    // Map feature IDs to feature types for matching
+    // Use feature.featureType if available, otherwise map from featureId
     const featureTypeMap = {
       "quizzes": "quiz",
       "UpNde0cmlHFDQXgTcQOJ": "quiz", // The actual ID for Quizzes feature
@@ -146,8 +142,7 @@ export async function fetchCategoriesByFeature(featureId) {
       "stories": "story"
     };
 
-    const featureType = featureTypeMap[featureId];
-    console.log(`[navigationService] Looking for categories with featureId=${featureId} or featureType=${featureType}`);
+    const featureType = feature?.featureType || featureTypeMap[featureId];
 
     categories = allSnapshot.docs
       .filter((doc) => {
@@ -161,11 +156,7 @@ export async function fetchCategoriesByFeature(featureId) {
         // Also check if published/enabled (default to true if not specified)
         const isEnabled = data.isPublished !== false && data.enabled !== false && data.status !== "disabled";
         
-        const matches = (matchesFeatureId || matchesFeatureType || matchesFeatureName) && isEnabled;
-        if (matches) {
-          console.log(`[navigationService] ✓ Matched category: ${doc.id}`, { featureId: data.featureId, featureType: data.featureType });
-        }
-        return matches;
+        return (matchesFeatureId || matchesFeatureType || matchesFeatureName) && isEnabled;
       })
       .map((doc) => ({
         id: doc.id,
@@ -182,14 +173,12 @@ export async function fetchCategoriesByFeature(featureId) {
       // Sort by order field
       .sort((a, b) => (a.order || 999) - (b.order || 999));
 
-    console.log(`[navigationService] Found ${categories.length} categories for ${featureId}:`, categories);
-
     // Cache the result
     cache.categories[featureId] = categories;
     return categories;
   } catch (error) {
     console.error(
-      `[navigationService] Error fetching categories for feature ${featureId}:`,
+      `Error fetching categories for feature ${featureId}:`,
       error
     );
     // Return empty array on error (CategoriesPanel will handle it gracefully)

@@ -13,16 +13,7 @@ function CategoriesPanel({ feature, categories, config }) {
   const navigate = useNavigate();
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
-  console.log("[CategoriesPanel] Rendering with:");
-  console.log("  feature:", feature);
-  console.log("  categories:", categories);
-  console.log("  categories.length:", categories?.length);
-
   if (!feature || !categories || categories.length === 0) {
-    console.log("[CategoriesPanel] Returning null - not showing panel");
-    console.log("  feature exists:", !!feature);
-    console.log("  categories exists:", !!categories);
-    console.log("  categories.length > 0:", categories?.length > 0);
     return null;
   }
 
@@ -185,11 +176,6 @@ function CategoriesPanel({ feature, categories, config }) {
                 />
               )}
             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
           ))}
         </div>
       </div>
