@@ -57,14 +57,13 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo - Premium Distinctive Style */}
+        {/* Logo - Full Width Image */}
         <Link 
           to="/" 
           style={{
             textDecoration: "none",
             display: "flex",
             alignItems: "center",
-            gap: 12,
             transition: "transform 200ms ease",
           }}
           className="hover:scale-105"
@@ -74,39 +73,13 @@ function Navbar() {
             src={amahaLogo} 
             alt="AmAha Logo" 
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
+              height: 80,
+              width: "auto",
               objectFit: "contain",
-              boxShadow: "0 12px 32px rgba(108,99,255,0.3)",
+              objectPosition: "center",
+              boxShadow: "0 4px 12px rgba(108,99,255,0.2)",
             }}
           />
-          
-          {/* Logo Text - Premium Style */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <div style={{
-              fontSize: 24,
-              fontWeight: 900,
-              background: "linear-gradient(135deg, #6C63FF 0%, #0284c7 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              letterSpacing: 0.5,
-              lineHeight: 1,
-            }}>
-              AMAHA.com
-            </div>
-            <div style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#6C63FF",
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              lineHeight: 1,
-            }}>
-              Play. Learn. Master
-            </div>
-          </div>
         </Link>
 
         {/* Desktop Navigation */}
