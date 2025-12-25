@@ -1,0 +1,506 @@
+/**
+ * StreakDisplay.css
+ * Styling for streak display components
+ */
+
+/* ============ COMPACT STREAK DISPLAY ============ */
+
+.streak-display-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #FFD166, #FF8FAB);
+  border-radius: 0.75rem;
+  border: 2px solid #FF6B9D;
+}
+
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: white;
+  font-size: 1rem;
+}
+
+.streak-emoji {
+  font-size: 1.25rem;
+}
+
+.streak-count {
+  font-size: 1.1rem;
+}
+
+.streak-next {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ============ FULL STREAK DISPLAY ============ */
+
+.streak-display-full {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
+  border-radius: 2rem;
+}
+
+/* ============ STREAK CARD ============ */
+
+.streak-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  border: 2px solid #FFE4B5;
+  box-shadow: 0 8px 16px rgba(255, 209, 102, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.streak-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.streak-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.streak-header h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #1F2937;
+}
+
+.streak-icon {
+  font-size: 2rem;
+  animation: trophy-bounce 2s infinite;
+}
+
+@keyframes trophy-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ============ STREAK STATS ============ */
+
+.streak-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.streak-stat {
+  text-align: center;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-radius: 1rem;
+  border: 2px solid #FFD166;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #9CA3AF;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #6C63FF;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.stat-unit {
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.stat-value.current-streak {
+  color: #FF8FAB;
+}
+
+.stat-value.longest-streak {
+  color: #06D6A0;
+}
+
+/* ============ PROGRESS SECTION ============ */
+
+.streak-progress-section {
+  padding: 1.5rem;
+  background: #F9FAFB;
+  border-radius: 1rem;
+  border-left: 4px solid #FFD166;
+  margin-bottom: 1.5rem;
+}
+
+.progress-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.milestone-emoji {
+  font-size: 1.5rem;
+  animation: float 2s infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.progress-bar {
+  width: 100%;
+  height: 0.75rem;
+  background: #E5E7EB;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD166, #FF8FAB);
+  border-radius: 0.5rem;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.milestone-complete {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+  border-radius: 0.75rem;
+  border: 2px dashed #06D6A0;
+  color: #047857;
+  font-weight: 600;
+}
+
+.milestone-complete p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ============ CTA SECTIONS ============ */
+
+.streak-cta,
+.streak-start {
+  padding: 1rem;
+  background: linear-gradient(135deg, #EFF6FF, #E0F2FE);
+  border-radius: 1rem;
+  border-left: 4px solid #0369A1;
+  text-align: center;
+}
+
+.streak-cta p,
+.streak-start p {
+  margin: 0 0 0.75rem 0;
+  color: #1F2937;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.streak-cta {
+  color: #0369A1;
+}
+
+.streak-start {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-left-color: #D97706;
+}
+
+.cta-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #D97706, #EA580C);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(217, 119, 6, 0.4);
+}
+
+/* ============ MILESTONES SECTION ============ */
+
+.milestones-section {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1.75rem;
+  border: 2px solid #E5E7EB;
+}
+
+.milestones-section h4 {
+  font-size: 1.25rem;
+  color: #1F2937;
+  margin: 0 0 1.25rem 0;
+}
+
+.milestones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+}
+
+.milestone-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #F9FAFB;
+  border: 2px solid #E5E7EB;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.milestone-item.unlocked {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border-color: #FFD166;
+  box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
+  transform: scale(1.05);
+}
+
+.milestone-item.locked {
+  opacity: 0.5;
+}
+
+.milestone-emoji {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.milestone-item.unlocked .milestone-emoji {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 209, 102, 0.5)); }
+  50% { filter: drop-shadow(0 0 10px rgba(255, 209, 102, 1)); }
+}
+
+.milestone-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.milestone-reward {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  font-weight: 600;
+}
+
+.milestone-item.unlocked .milestone-label,
+.milestone-item.unlocked .milestone-reward {
+  color: #92400E;
+}
+
+/* ============ MILESTONE MODAL ============ */
+
+.milestone-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.milestone-modal {
+  background: white;
+  border-radius: 2rem;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  animation: bounceIn 0.5s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.milestone-celebration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.celebration-emoji {
+  animation: celebrate 0.6s ease;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(0) rotate(-180deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.milestone-modal h2 {
+  font-size: 1.75rem;
+  margin: 1rem 0 0.5rem 0;
+  color: #1F2937;
+}
+
+.milestone-text {
+  font-size: 1rem;
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+}
+
+.reward-box {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #FFD166, #FF8FAB);
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.reward-emoji {
+  font-size: 1.5rem;
+}
+
+.reward-text {
+  font-weight: 700;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.encouragement {
+  color: #6B7280;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.close-button {
+  padding: 0.85rem 2rem;
+  background: linear-gradient(135deg, #6C63FF, #00D4FF);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 12px rgba(108, 99, 255, 0.3);
+}
+
+.close-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(108, 99, 255, 0.4);
+}
+
+/* Confetti animation */
+.confetti-animation {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 640px) {
+  .streak-display-full {
+    padding: 1.25rem;
+  }
+
+  .streak-card {
+    padding: 1.25rem;
+  }
+
+  .streak-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .milestones-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .milestone-item {
+    padding: 0.75rem;
+  }
+
+  .milestone-emoji {
+    font-size: 1.5rem;
+  }
+
+  .milestone-modal {
+    padding: 1.5rem;
+    width: 95%;
+  }
+
+  .milestone-modal h2 {
+    font-size: 1.5rem;
+  }
+
+  .celebration-emoji {
+    font-size: 3rem !important;
+  }
+}

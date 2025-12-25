@@ -30,6 +30,12 @@ import { checkAndUnlockAchievements, updateUserLevel } from "../services/gamific
 import RewardToast from "./ui/RewardToast";
 import { useRewardToast } from "./ui/useRewardToast";
 
+// Game Mode Integration
+import GameModeSelector from "../components/GameModeWrappers/GameModeSelector";
+import TimedModeWrapper from "../components/GameModeWrappers/TimedModeWrapper";
+import SpeedModeWrapper from "../components/GameModeWrappers/SpeedModeWrapper";
+import PracticeModeWrapper from "../components/GameModeWrappers/PracticeModeWrapper";
+
 export default function QuizPage() {
   const { categoryName, topicName, subtopicName, difficulty, level } = useParams();
   const currentLevel = Number(level);
@@ -78,6 +84,10 @@ export default function QuizPage() {
   /* 🔊 Sound */
   const [soundOn, setSoundOn] = useState(true);
   const sound = useSoundFX(soundOn);
+
+  /* 🎮 Game Mode Selection */
+  const [selectedGameMode, setSelectedGameMode] = useState(null);
+  const [showModeSelector, setShowModeSelector] = useState(false);
 
   /* 🎁 Reward toast */
   const { reward, showReward } = useRewardToast();
@@ -218,6 +228,22 @@ export default function QuizPage() {
     const passed = flow.correctCount === flow.totalQuestions;
     const timeSpentSeconds = Math.max(0, (QUESTION_TIME_SECONDS * flow.totalQuestions) - (timer?.timeMs || 0) / 1000);
 
+    // Apply game mode multiplier to XP
+    let xpEarned = flow.xpEarned || 10;
+    let coinsEarned = flow.coinsEarned || 5;
+    
+    if (selectedGameMode) {
+      const modeMultipliers = {
+        timed: 1.5,
+        speed: 2.0,
+        practice: 0.25,
+        challenge: 1.0,
+      };
+      const multiplier = modeMultipliers[selectedGameMode] || 1.0;
+      xpEarned = Math.ceil(xpEarned * multiplier);
+      coinsEarned = Math.ceil(coinsEarned * multiplier);
+    }
+
     // 📊 Analytics - Track to analytics_events collection
     trackQuizAnalytics({
       category: categoryName || 'Unknown',
@@ -226,14 +252,15 @@ export default function QuizPage() {
       timeSpent: Math.round(timeSpentSeconds),
       questionsAnswered: flow.totalQuestions,
       correctAnswers: flow.correctCount,
-      xpEarned: flow.xpEarned || 10,
-      coinsEarned: flow.coinsEarned || 5,
+      xpEarned,
+      coinsEarned,
+      gameMode: selectedGameMode || 'classic',
     });
 
     // 🏆 Gamification - Check for achievements
     if (user?.uid) {
       checkAndUnlockAchievements(user.uid);
-      updateUserLevel(user.uid, (flow.xpEarned || 10));
+      updateUserLevel(user.uid, xpEarned);
     }
 
     // Legacy tracking (can remove later)
@@ -243,6 +270,7 @@ export default function QuizPage() {
       difficulty,
       level: currentLevel,
       passed,
+      gameMode: selectedGameMode || 'classic',
     });
 
     // ✅ Save progress (guest OR user)
@@ -256,8 +284,8 @@ export default function QuizPage() {
 
       // 🎁 Show XP & Coins (guest + user)
       showReward({
-        xp: flow.xpEarned,
-        coins: flow.coinsEarned,
+        xp: xpEarned,
+        coins: coinsEarned,
       });
     }
 
@@ -272,8 +300,18 @@ export default function QuizPage() {
     categoryId,
     difficulty,
     currentLevel,
+    selectedGameMode,
     showReward,
   ]);
+
+  /* --------------------------------------------------
+   * 🎮 Show mode selector when quiz starts
+   * -------------------------------------------------- */
+  useEffect(() => {
+    if (!loading && questions.length > 0 && !showModeSelector && !selectedGameMode) {
+      setShowModeSelector(true);
+    }
+  }, [loading, questions.length, showModeSelector, selectedGameMode]);
 
   /* --------------------------------------------------
    * Loading
@@ -287,8 +325,117 @@ export default function QuizPage() {
   }
 
   /* --------------------------------------------------
-   * Render
+   * Render: Show mode selector OR quiz
    * -------------------------------------------------- */
+  const renderQuizContent = () => {
+    const quizComponent = (
+      <>
+        <QuizHeader
+          category={subtopicName}
+          difficulty={difficulty}
+          level={currentLevel}
+          categoryName={categoryName}
+          topicName={topicName}
+          soundOn={soundOn}
+          onToggleSound={() => setSoundOn((s) => !s)}
+          onNavigate={(target) => {
+            switch(target) {
+              case 'home':
+                navigate('/');
+                break;
+              case 'category':
+                navigate(`/quiz/${categoryName}`);
+                break;
+              case 'topic':
+                navigate(`/quiz/${categoryName}/${topicName}`);
+                break;
+              case 'levels':
+                navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`);
+                break;
+            }
+          }}
+        />
+
+        {/* ⏱️ Timer */}
+        {!isQuizPaused && !flow.finished && (
+          <QuizProgressTimer
+            progressPct={flow.progressPct}
+            timeMs={timer.timeMs}
+            totalMs={timer.totalMs}
+            warn={timer.warn}
+          />
+        )}
+
+        {/* ❓ Quiz */}
+        {!isQuizPaused && !flow.finished && flow.current && (
+          <>
+            <QuizQuestionCard {...flow.questionProps} />
+            <QuizActions {...flow.actionProps} />
+          </>
+        )}
+
+        {/* 🎉 Finish */}
+        {flow.finished && (
+          <QuizFinish
+            correctCount={flow.correctCount}
+            totalQuestions={flow.totalQuestions}
+            xpEarned={flow.xpEarned}
+            coinsEarned={flow.coinsEarned}
+            gameMode={selectedGameMode}
+            onNextLevel={() =>
+              navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${currentLevel + 1}`)
+            }
+            onRetry={() => {
+              setSelectedGameMode(null);
+              setShowModeSelector(true);
+              flow.reset();
+            }}
+            onBack={() =>
+              navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`)
+            }
+          />
+        )}
+      </>
+    );
+
+    // Wrap quiz with selected game mode
+    if (selectedGameMode === 'timed') {
+      return (
+        <TimedModeWrapper
+          timeLimit={60}
+          difficulty={difficulty}
+          onTimeUp={() => {}}
+          onComplete={() => {}}
+        >
+          {quizComponent}
+        </TimedModeWrapper>
+      );
+    } else if (selectedGameMode === 'speed') {
+      return (
+        <SpeedModeWrapper
+          timeLimit={30}
+          baseXP={100}
+          onTimeUp={() => {}}
+          onComplete={() => {}}
+        >
+          {quizComponent}
+        </SpeedModeWrapper>
+      );
+    } else if (selectedGameMode === 'practice') {
+      return (
+        <PracticeModeWrapper
+          baseXP={100}
+          hints={true}
+          explanations={true}
+        >
+          {quizComponent}
+        </PracticeModeWrapper>
+      );
+    }
+
+    return quizComponent;
+  };
+
   return (
     <SiteLayout>
       {/* 🎉 CONFETTI */}
@@ -310,79 +457,70 @@ export default function QuizPage() {
       {/* 🔁 Resume */}
       {resume.banner}
 
-      {/* Main Quiz Container - Clean white background */}
-      <div
-        style={{
-          background: "#ffffff",
-          minHeight: "100vh",
-          padding: "12px 12px 32px 12px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={{ maxWidth: 800, margin: "0 auto", flex: 1, width: "100%", display: "flex", flexDirection: "column" }}>
-          <QuizHeader
-            category={subtopicName}
-            difficulty={difficulty}
-            level={currentLevel}
-            categoryName={categoryName}
-            topicName={topicName}
-            soundOn={soundOn}
-            onToggleSound={() => setSoundOn((s) => !s)}
-            onNavigate={(target) => {
-              switch(target) {
-                case 'home':
-                  navigate('/');
-                  break;
-                case 'category':
-                  navigate(`/quiz/${categoryName}`);
-                  break;
-                case 'topic':
-                  navigate(`/quiz/${categoryName}/${topicName}`);
-                  break;
-                case 'levels':
-                  navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`);
-                  break;
-              }
-            }}
-          />
-
-          {/* ⏱️ Timer */}
-          {!isQuizPaused && !flow.finished && (
-            <QuizProgressTimer
-              progressPct={flow.progressPct}
-              timeMs={timer.timeMs}
-              totalMs={timer.totalMs}
-              warn={timer.warn}
+      {/* Game Mode Selector OR Quiz */}
+      {!selectedGameMode && showModeSelector ? (
+        <div
+          style={{
+            background: "#ffffff",
+            minHeight: "100vh",
+            padding: "12px 12px 32px 12px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ maxWidth: 800, margin: "0 auto", flex: 1, width: "100%", display: "flex", flexDirection: "column" }}>
+            <QuizHeader
+              category={subtopicName}
+              difficulty={difficulty}
+              level={currentLevel}
+              categoryName={categoryName}
+              topicName={topicName}
+              soundOn={soundOn}
+              onToggleSound={() => setSoundOn((s) => !s)}
+              onNavigate={(target) => {
+                switch(target) {
+                  case 'home':
+                    navigate('/');
+                    break;
+                  case 'category':
+                    navigate(`/quiz/${categoryName}`);
+                    break;
+                  case 'topic':
+                    navigate(`/quiz/${categoryName}/${topicName}`);
+                    break;
+                  case 'levels':
+                    navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`);
+                    break;
+                }
+              }}
             />
-          )}
-
-          {/* ❓ Quiz */}
-          {!isQuizPaused && !flow.finished && flow.current && (
-            <>
-              <QuizQuestionCard {...flow.questionProps} />
-              <QuizActions {...flow.actionProps} />
-            </>
-          )}
-
-          {/* 🎉 Finish */}
-          {flow.finished && (
-            <QuizFinish
-              correctCount={flow.correctCount}
-              totalQuestions={flow.totalQuestions}
-              xpEarned={flow.xpEarned}
-              coinsEarned={flow.coinsEarned}
-              onNextLevel={() =>
-                navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}/${currentLevel + 1}`)
-              }
-              onRetry={flow.reset}
-              onBack={() =>
-                navigate(`/quiz/${categoryName}/${topicName}/${subtopicName}/${difficulty}`)
-              }
+            <GameModeSelector
+              onSelectMode={(mode) => {
+                setSelectedGameMode(mode);
+                setShowModeSelector(false);
+              }}
+              userLevel={currentLevel}
+              currentXP={0}
+              suggestedMode={difficulty === 'Hard' ? 'speed' : 'timed'}
             />
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Main Quiz Container - Clean white background */
+        <div
+          style={{
+            background: "#ffffff",
+            minHeight: "100vh",
+            padding: "12px 12px 32px 12px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div style={{ maxWidth: 800, margin: "0 auto", flex: 1, width: "100%", display: "flex", flexDirection: "column" }}>
+            {renderQuizContent()}
+          </div>
+        </div>
+      )}
     </SiteLayout>
   );
 }

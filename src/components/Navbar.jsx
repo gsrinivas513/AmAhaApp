@@ -6,6 +6,7 @@ import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { Button, Avatar } from "./ui";
 import AchievementsBadge from "./AchievementsBadge";
+import StreakDisplay from "./StreakDisplay/StreakDisplay";
 
 function Navbar() {
   const { user, signInWithGoogle, signOut } = useAuth();
@@ -122,6 +123,13 @@ function Navbar() {
 
         {/* Right Side - Coins & Auth */}
         <div className="flex items-center gap-4">
+          {/* Streak Display (Compact) */}
+          {user && (
+            <div style={{ marginRight: 8 }}>
+              <StreakDisplay compact={true} />
+            </div>
+          )}
+
           {/* Coins Display */}
           {coins !== null && (
             <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
