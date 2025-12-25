@@ -102,8 +102,10 @@ function TopNavBar() {
           padding: "12px 16px",
           position: "sticky",
           top: 0,
-          zIndex: 30,
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+          zIndex: 50,
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          backdropFilter: "blur(4px)",
+          backgroundColor: "rgba(255, 255, 255, 0.98)",
         }}
       >
         <div
@@ -131,8 +133,10 @@ function TopNavBar() {
           borderBottom: "2px solid #f0f0f0",
           position: "sticky",
           top: 0,
-          zIndex: 30,
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+          zIndex: 50,
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          backdropFilter: "blur(4px)",
+          backgroundColor: "rgba(255, 255, 255, 0.98)",
         }}
       >
         <div
@@ -416,7 +420,7 @@ function TopNavBar() {
             top: "64px",
             left: 0,
             right: 0,
-            zIndex: 40,
+            zIndex: 49,
             background: "transparent",
             pointerEvents: "none",
           }}
