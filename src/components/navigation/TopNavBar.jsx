@@ -72,13 +72,21 @@ function TopNavBar() {
 
   // Handle feature click to show categories
   const handleFeatureClick = async (feature) => {
+    console.log("Feature clicked:", feature.id, feature.name);
     // If clicking same feature, toggle it closed
     if (selectedFeature?.id === feature.id) {
+      console.log("Toggling feature closed");
       setSelectedFeature(null);
     } else {
+      console.log("Loading categories for:", feature.id);
       setSelectedFeature(feature);
       // Load categories if not already loaded
-      await loadFeatureCategories(feature.id);
+      try {
+        const cats = await loadFeatureCategories(feature.id);
+        console.log("Categories loaded:", cats);
+      } catch (err) {
+        console.error("Error loading categories:", err);
+      }
     }
   };
 
