@@ -243,6 +243,11 @@ export default function FeatureCategoryManagement() {
       description: category.description || "",
       featureId: category.featureId,
       defaultUiMode: category.defaultUiMode || "playful",
+      imageUrl: category.imageUrl || "",
+      imageCrop: category.imageCrop || "cover",
+      imageZoom: category.imageZoom || 1,
+      imageOffsetX: category.imageOffsetX || 0,
+      imageOffsetY: category.imageOffsetY || 0,
     });
     setEditingCategoryId(category.id);
     setShowCategoryModal(true);
@@ -297,6 +302,11 @@ export default function FeatureCategoryManagement() {
       sortOrder: topic.sortOrder || 0,
       categoryId: topic.categoryId,
       isPublished: topic.isPublished !== false,
+      imageUrl: topic.imageUrl || "",
+      imageCrop: topic.imageCrop || "cover",
+      imageZoom: topic.imageZoom || 1,
+      imageOffsetX: topic.imageOffsetX || 0,
+      imageOffsetY: topic.imageOffsetY || 0,
     });
     setEditingTopicId(topic.id);
     setShowTopicModal(true);
@@ -341,6 +351,11 @@ export default function FeatureCategoryManagement() {
       description: subtopic.description || "",
       categoryId: subtopic.categoryId || "",
       topicId: subtopic.topicId || "",
+      imageUrl: subtopic.imageUrl || "",
+      imageCrop: subtopic.imageCrop || "cover",
+      imageZoom: subtopic.imageZoom || 1,
+      imageOffsetX: subtopic.imageOffsetX || 0,
+      imageOffsetY: subtopic.imageOffsetY || 0,
     });
     setEditingSubtopicId(subtopic.id);
     setShowSubtopicModal(true);
