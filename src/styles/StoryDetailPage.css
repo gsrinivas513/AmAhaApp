@@ -1,118 +1,245 @@
-/**
- * StoryDetailPage.css
- * Styles for the story detail/reading page
- */
+/* ==========================================
+   StoryDetailPage - Kid-Friendly Story Reading
+   ========================================== */
 
 .story-detail-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  position: relative;
 }
 
-/* Header */
+/* ========== Loading State ========== */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: white;
+  gap: 20px;
+}
+
+.spinner {
+  font-size: 60px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ========== Error State ========== */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.error-state h2 {
+  color: #ff6b6b;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.error-state button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.error-state button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* ========== Back Button ========== */
 .story-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 30px;
 }
 
 .back-button {
-  background: none;
+  background: rgba(255, 255, 255, 0.95);
   border: none;
-  color: #6c63ff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
   font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
-  padding: 8px 0;
-  margin-bottom: 16px;
-  transition: color 0.2s ease;
+  color: #667eea;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-button:hover {
-  color: #5651d4;
+  background: white;
+  transform: translateX(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.story-title-section h1 {
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #0b1220;
-  margin-bottom: 12px;
+/* ========== Story Intro Section ========== */
+.story-intro-section {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.story-intro-content {
+  max-width: 800px;
+}
+
+.story-title {
+  font-size: 42px;
+  color: #667eea;
+  margin: 0 0 15px 0;
+  font-weight: 800;
   line-height: 1.2;
 }
 
 .story-description {
-  font-size: 1.1rem;
-  color: #666;
-  line-height: 1.6;
-  max-width: 800px;
+  font-size: 18px;
+  color: #555;
+  line-height: 1.8;
+  margin: 0 0 30px 0;
+  text-align: justify;
 }
 
-/* Progress section */
+/* ========== Progress Section ========== */
 .progress-section {
-  background: linear-gradient(135deg, #6c63ff 0%, #8b85ff 100%);
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 32px;
-  color: white;
+  margin-top: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 15px;
+  border-left: 5px solid #667eea;
 }
 
-.progress-label {
+.progress-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 12px;
+  font-size: 16px;
   font-weight: 600;
 }
 
+.progress-label {
+  color: #667eea;
+}
+
 .progress-text {
-  font-size: 14px;
-  opacity: 0.9;
+  color: #764ba2;
 }
 
 .progress-bar {
   width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
   height: 100%;
-  background: white;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 .completion-badge {
-  margin-top: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #ffd700;
+  margin-top: 15px;
+  display: inline-block;
+  background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 16px;
+  animation: bounce 0.6s ease;
 }
 
-/* Main content layout */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ========== Main Story Content Area ========== */
 .story-content {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 32px;
+  gap: 25px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-/* Chapters sidebar */
+/* ========== Chapters Sidebar ========== */
 .chapters-sidebar {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   height: fit-content;
   position: sticky;
   top: 100px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .chapters-sidebar h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #0b1220;
-  margin-bottom: 16px;
+  color: #667eea;
+  font-size: 18px;
+  margin: 0 0 20px 0;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .chapters-list {
@@ -125,268 +252,503 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 12px 15px;
   border: 2px solid #f0f0f0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s;
   text-align: left;
+  font-weight: 500;
 }
 
 .chapter-item:hover {
-  border-color: #ddd;
   background: #f9f9f9;
+  border-color: #667eea;
+  transform: translateX(5px);
 }
 
 .chapter-item.active {
-  border-color: #6c63ff;
-  background: rgba(108, 99, 255, 0.05);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 .chapter-item.completed {
-  background: #f0f9f0;
+  opacity: 0.6;
 }
 
 .chapter-number {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f0f0f0;
   font-weight: 700;
-  color: #666;
   font-size: 14px;
-}
-
-.chapter-item.active .chapter-number {
-  background: #6c63ff;
-  color: white;
-}
-
-.chapter-item.completed .chapter-number {
-  background: #4caf50;
-  color: white;
+  flex-shrink: 0;
 }
 
 .chapter-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.chapter-title {
-  font-weight: 600;
-  color: #0b1220;
-  font-size: 14px;
-  line-clamp: 2;
-}
-
-.chapter-status {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+  flex: 1;
+  gap: 8px;
+}
+
+.chapter-info .chapter-title {
+  color: #333;
+  font-size: 13px;
+  line-height: 1.3;
+  flex: 1;
 }
 
 .completed-badge {
-  font-size: 12px;
   color: #4caf50;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 16px;
 }
 
-/* Chapter content */
+/* ========== Chapter Content Area ========== */
 .chapter-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 15px;
   padding: 40px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.5s ease-out;
 }
 
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== Chapter Header ========== */
 .chapter-header {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
+  margin-bottom: 30px;
+  padding-bottom: 25px;
   border-bottom: 2px solid #f0f0f0;
 }
 
-.chapter-header h2 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #0b1220;
+.chapter-header-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
   margin-bottom: 12px;
 }
 
-.chapter-description {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
+.chapter-num {
+  font-weight: 700;
 }
 
+.chapter-header .chapter-title {
+  font-size: 36px;
+  color: #667eea;
+  margin: 10px 0 15px 0;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.chapter-description {
+  font-size: 16px;
+  color: #888;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ========== Chapter Body ========== */
 .chapter-body {
   display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  margin-bottom: 32px;
+  flex-direction: column;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.character-display {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
 }
 
 .character-icon {
-  font-size: 80px;
-  min-width: 100px;
-  text-align: center;
-  filter: drop-shadow(0 4px 12px rgba(108, 99, 255, 0.2));
+  font-size: 120px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.chapter-text-container {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  padding: 30px;
+  border-radius: 15px;
+  border-left: 4px solid #667eea;
 }
 
 .chapter-text {
-  font-size: 1.1rem;
-  line-height: 1.8;
+  font-size: 18px;
+  line-height: 1.9;
   color: #333;
-  flex: 1;
+  margin: 0;
+  text-align: justify;
+  font-weight: 500;
 }
 
-/* Chapter actions */
+/* ========== Chapter Actions ========== */
 .chapter-actions {
   display: flex;
-  gap: 12px;
-  padding-top: 24px;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding-top: 30px;
   border-top: 2px solid #f0f0f0;
 }
 
-.complete-button {
-  padding: 12px 32px;
-  background: linear-gradient(135deg, #6c63ff 0%, #8b85ff 100%);
-  color: white;
+.complete-button,
+.next-button {
+  flex: 1;
+  min-width: 180px;
+  padding: 15px 30px;
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.complete-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(108, 99, 255, 0.3);
+.complete-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.completed-button {
-  padding: 12px 32px;
-  background: #f0f0f0;
-  color: #666;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 700;
+.complete-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.complete-button:disabled,
+.complete-button.loading {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-/* Sign in prompt */
+.complete-button.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.completed-button {
+  background: #e8f5e9;
+  color: #4caf50;
+  border: 2px solid #4caf50;
+  cursor: not-allowed;
+  font-weight: 700;
+}
+
+.next-button {
+  background: #f3f3f3;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.next-button:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* ========== Sign-in Prompt ========== */
 .signin-prompt {
-  background: linear-gradient(135deg, #fef6f5 0%, #fff9f7 100%);
-  border: 2px solid #ffccb8;
-  border-radius: 8px;
-  padding: 24px;
+  background: linear-gradient(135deg, #fff9e6 0%, #ffe6e6 100%);
+  border: 2px solid #ffd666;
+  border-radius: 15px;
+  padding: 25px;
   text-align: center;
+  margin-top: 30px;
 }
 
 .signin-prompt p {
   font-size: 16px;
-  color: #666;
-  margin-bottom: 16px;
+  color: #f57c00;
+  margin: 0 0 15px 0;
+  font-weight: 600;
 }
 
 .signin-prompt button {
-  padding: 10px 24px;
-  background: #ff6b6b;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  padding: 12px 30px;
+  border-radius: 25px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 16px;
+  font-weight: 700;
+  transition: all 0.3s;
 }
 
 .signin-prompt button:hover {
-  background: #ff5252;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.3);
 }
 
-/* No chapter state */
+/* ========== Celebration Animation ========== */
+.celebration {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.confetti {
+  position: absolute;
+  font-size: 80px;
+  animation: confettiFall 2s ease-out forwards;
+  opacity: 1;
+}
+
+.confetti:nth-child(1) {
+  animation-delay: 0s;
+  left: -100px;
+  animation: confettiFall 2s ease-out forwards;
+}
+
+.confetti:nth-child(2) {
+  animation-delay: 0.1s;
+  left: 0px;
+  animation: confettiFall 2s ease-out forwards;
+}
+
+.confetti:nth-child(3) {
+  animation-delay: 0.2s;
+  left: 100px;
+  animation: confettiFall 2s ease-out forwards;
+}
+
+.confetti:nth-child(4) {
+  animation-delay: 0.3s;
+  left: -50px;
+  animation: confettiFall 2s ease-out forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(500px) scale(0.3) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.celebration-text {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 20px;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  animation: celebrationText 2s ease-out forwards;
+}
+
+@keyframes celebrationText {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-20px) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-120px) scale(1);
+  }
+}
+
+/* ========== No Chapter State ========== */
 .no-chapter {
   text-align: center;
-  padding: 80px 20px;
+  padding: 60px 20px;
   color: #999;
   font-size: 18px;
 }
 
-/* Loading and error states */
-.loading-state,
-.error-state {
-  text-align: center;
-  padding: 80px 20px;
-  font-size: 18px;
-  color: #666;
-}
-
-.error-state h2 {
-  font-size: 24px;
-  color: #d32f2f;
-  margin-bottom: 24px;
-}
-
-.error-state button {
-  padding: 12px 32px;
-  background: #6c63ff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.error-state button:hover {
-  background: #5651d4;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .story-detail-page {
-    padding: 20px 16px;
-  }
-
+/* ========== Responsive Design ========== */
+@media (max-width: 1024px) {
   .story-content {
     grid-template-columns: 1fr;
-    gap: 24px;
   }
 
   .chapters-sidebar {
-    position: static;
+    position: relative;
     top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .story-detail-page {
+    padding: 15px;
+  }
+
+  .story-intro-section {
+    padding: 25px;
+    margin-bottom: 20px;
+  }
+
+  .story-title {
+    font-size: 28px;
+  }
+
+  .story-description {
+    font-size: 16px;
   }
 
   .chapter-content {
-    padding: 24px;
+    padding: 25px;
   }
 
-  .chapter-header h2 {
-    font-size: 1.5rem;
+  .chapter-header .chapter-title {
+    font-size: 24px;
   }
 
-  .chapter-body {
+  .chapter-text {
+    font-size: 16px;
+  }
+
+  .character-icon {
+    font-size: 80px;
+  }
+
+  .chapter-actions {
     flex-direction: column;
-    gap: 16px;
+  }
+
+  .complete-button,
+  .next-button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .chapters-sidebar {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .chapters-list {
+    gap: 6px;
+  }
+
+  .chapter-item {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .chapter-number {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .chapter-info .chapter-title {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .story-detail-page {
+    padding: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .story-intro-section {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .story-title {
+    font-size: 22px;
+  }
+
+  .story-description {
+    font-size: 14px;
+  }
+
+  .chapter-content {
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .chapter-header .chapter-title {
+    font-size: 20px;
+  }
+
+  .chapter-text-container {
+    padding: 20px;
+  }
+
+  .chapter-text {
+    font-size: 15px;
+    line-height: 1.7;
   }
 
   .character-icon {
     font-size: 60px;
-    min-width: auto;
   }
 
-  .chapter-text {
-    font-size: 1rem;
+  .complete-button,
+  .completed-button,
+  .next-button {
+    padding: 12px 20px;
+    font-size: 14px;
   }
 
-  .story-title-section h1 {
-    font-size: 1.8rem;
+  .confetti {
+    font-size: 50px;
+  }
+
+  .celebration-text {
+    font-size: 16px;
+    padding: 10px 20px;
   }
 }
