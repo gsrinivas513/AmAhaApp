@@ -63,24 +63,15 @@ export async function getStory(storyId) {
  */
 export async function getAllStories(filters = {}) {
   try {
+    // First try to fetch with published filter
     let q = query(
       collection(db, 'stories'),
       where('published', '==', true),
       orderBy('createdAt', 'desc')
     );
 
-    // Apply filters if provided
-    if (filters.targetAudience) {
-      q = query(
-        collection(db, 'stories'),
-        where('published', '==', true),
-        where('targetAudience', '==', filters.targetAudience),
-        orderBy('createdAt', 'desc')
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    const stories = [];
+    let querySnapshot = await getDocs(q);
+    let stories = [];
 
     querySnapshot.forEach((doc) => {
       stories.push({
@@ -90,10 +81,46 @@ export async function getAllStories(filters = {}) {
     });
 
     console.log('[storyService] getAllStories() found', stories.length, 'published stories');
+
+    // If no published stories found, try fetching all stories (in case published field is missing)
+    if (stories.length === 0) {
+      console.log('[storyService] No published stories found, trying to fetch all stories...');
+      const allStoriesSnapshot = await getDocs(collection(db, 'stories'));
+      
+      allStoriesSnapshot.forEach((doc) => {
+        const data = doc.data();
+        // Include stories that don't have published field set to false
+        if (data.published !== false) {
+          stories.push({
+            id: doc.id,
+            ...data
+          });
+        }
+      });
+      
+      console.log('[storyService] Found', stories.length, 'stories (including unpublished/unset)');
+    }
+
     return stories;
   } catch (error) {
     console.error('Error fetching stories:', error);
-    return [];
+    // Fallback: try to fetch without where clause
+    try {
+      console.log('[storyService] Falling back to fetching all stories without filter');
+      const snapshot = await getDocs(collection(db, 'stories'));
+      const stories = [];
+      snapshot.forEach((doc) => {
+        stories.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      console.log('[storyService] Fallback: found', stories.length, 'stories');
+      return stories;
+    } catch (fallbackError) {
+      console.error('Fallback story fetch failed:', fallbackError);
+      return [];
+    }
   }
 }
 
