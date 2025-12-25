@@ -13,10 +13,48 @@ import {
 } from "../components/icons/Icons";
 // Modals removed - using route-based page components instead
 
+/* ================= ANIMATIONS ================= */
+const animationStyles = `
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+      max-height: 0;
+    }
+  }
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = animationStyles;
+  document.head.appendChild(styleSheet);
+}
+
 /* ================= COMPONENTS ================= */
 
 // Link-based item (navigates to page)
 function Item({ icon, label, path, active }) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <Link to={path} style={{ textDecoration: "none" }}>
       <div
@@ -29,22 +67,25 @@ function Item({ icon, label, path, active }) {
           fontSize: 13,
           color: active ? "#6C63FF" : "#0b1220",
           fontWeight: active ? 600 : 500,
-          background: active ? "rgba(108,99,255,0.1)" : "transparent",
+          background: active ? "rgba(108,99,255,0.1)" : isHovered ? "rgba(108,99,255,0.05)" : "transparent",
           borderLeft: active ? "3px solid #6C63FF" : "3px solid transparent",
           cursor: "pointer",
-          transition: "all 0.2s",
+          transition: "all 0.2s ease",
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div style={{
           width: 34,
           height: 34,
           borderRadius: "50%",
-          background: active ? "#6C63FF" : "#f0f0f0",
+          background: active ? "#6C63FF" : isHovered ? "#e8e5ff" : "#f0f0f0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: 16,
           color: active ? "white" : "#333",
+          transition: "all 0.2s ease",
         }}>{icon}</div>
         {label}
       </div>
@@ -102,7 +143,7 @@ function Section({ title, open, onToggle, children }) {
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "#666",
+          color: open ? "#6C63FF" : "#666",
           marginBottom: 10,
           textTransform: "uppercase",
           letterSpacing: 0.6,
@@ -110,16 +151,49 @@ function Section({ title, open, onToggle, children }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          padding: "8px 4px",
+          borderRadius: 6,
+          background: open ? "rgba(108,99,255,0.08)" : "transparent",
+          borderLeft: open ? "2px solid #6C63FF" : "2px solid transparent",
+          transition: "all 0.2s ease",
+          userSelect: "none",
+        }}
+        onMouseEnter={(e) => {
+          if (!open) {
+            e.currentTarget.style.background = "rgba(108,99,255,0.03)";
+            e.currentTarget.style.color = "#4a40c7";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!open) {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "#666";
+          }
         }}
       >
-        {title}
-        <span style={{ fontSize: 14 }}>
-          {open ? "▾" : "▸"}
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {title}
+        </span>
+        <span style={{ 
+          fontSize: 14,
+          transition: "transform 0.3s ease",
+          display: "inline-block",
+          color: open ? "#6C63FF" : "#999"
+        }}>
+          {open ? "▼" : "▶"}
         </span>
       </div>
 
       {open && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: 8,
+          animation: "slideDown 0.25s ease-out",
+          borderLeft: "2px solid rgba(108,99,255,0.2)",
+          paddingLeft: 8,
+          marginLeft: 4,
+        }}>
           {children}
         </div>
       )}
@@ -175,12 +249,27 @@ function Sidebar() {
 
   /* Auto-expand section if route belongs to it */
   useEffect(() => {
-    if (location.pathname.startsWith("/admin/quiz")) {
-      setOpen((o) => ({ ...o, quiz: true }));
+    const path = location.pathname;
+    
+    // Determine which section(s) should be open based on current route
+    const newOpen = { ...open };
+    
+    // Quiz section routes
+    if (path.includes("/admin/quiz") || path.includes("/admin/view-questions")) {
+      newOpen.quiz = true;
     }
-    if (location.pathname.startsWith("/admin/puzzles") || location.pathname.includes("visual-puzzle")) {
-      setOpen((o) => ({ ...o, puzzles: true }));
+    
+    // Puzzles section routes
+    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle")) {
+      newOpen.puzzles = true;
     }
+    
+    // Global section routes (everything else under /admin)
+    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle")) {
+      newOpen.global = true;
+    }
+    
+    setOpen(newOpen);
   }, [location.pathname]);
 
   const toggle = (key) =>
