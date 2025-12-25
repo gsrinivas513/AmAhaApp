@@ -7,7 +7,7 @@ import { getCloudinaryUrl, IMAGE_SIZES } from '../config/cloudinaryConfig';
  * 
  * Automatically serves optimized images using Cloudinary CDN
  * Falls back to direct URL if not a Cloudinary image
- * Supports responsive sizes and lazy loading
+ * Supports responsive sizes, lazy loading, and image cropping/zoom
  */
 export default function OptimizedImage({ 
   src, 
@@ -15,6 +15,9 @@ export default function OptimizedImage({
   alt, 
   size = 'CARD_DESKTOP',
   crop,
+  imageZoom = 1,
+  imageOffsetX = 0,
+  imageOffsetY = 0,
   className = '',
   style = {},
   loading = 'lazy',
@@ -86,9 +89,9 @@ export default function OptimizedImage({
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'contain', // Always show full image, no cropping
+          objectFit: crop === 'contain' ? 'contain' : 'cover',
+          transform: `scale(${imageZoom}) translate(${imageOffsetX}px, ${imageOffsetY}px)`,
           background: '#fff',
-            objectFit: 'cover', // Fill card, crop as needed
           opacity: loaded ? 1 : 0,
           transition: 'opacity 0.3s ease-in-out',
         }}

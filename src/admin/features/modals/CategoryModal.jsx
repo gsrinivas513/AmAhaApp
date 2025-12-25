@@ -1,10 +1,13 @@
 // src/admin/features/modals/CategoryModal.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Button, Input } from "../../../components/ui";
 import ImageUpload from "../../../components/ImageUpload";
+import ImageCropControl from "../../../components/ImageCropControl";
 import { UI_MODES } from "../constants";
 
 export default function CategoryModal({ show, editingId, form, setForm, onSave, onClose }) {
+  const [showImageControls, setShowImageControls] = useState(false);
+
   if (!show) return null;
 
   return (
@@ -49,6 +52,52 @@ export default function CategoryModal({ show, editingId, form, setForm, onSave, 
           }}
           folder="categories"
         />
+
+        {/* Image Crop & Zoom Controls */}
+        {form.imageUrl && (
+          <div>
+            <button
+              onClick={() => setShowImageControls(!showImageControls)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                background: showImageControls ? "#e6f2ff" : "#f5f5f5",
+                border: "1px solid #d0d0d0",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "13px",
+                color: showImageControls ? "#0066cc" : "#333",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {showImageControls ? "✖ Hide Image Adjustments" : "⚙️ Adjust Image (Crop/Zoom)"}
+            </button>
+
+            {showImageControls && (
+              <div style={{ marginTop: "12px", padding: "12px", background: "#fafafa", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                <ImageCropControl
+                  imageUrl={form.imageUrl}
+                  currentSettings={{
+                    crop: form.imageCrop || "cover",
+                    zoom: form.imageZoom || 1,
+                    offsetX: form.imageOffsetX || 0,
+                    offsetY: form.imageOffsetY || 0,
+                  }}
+                  onChange={(settings) => {
+                    setForm({
+                      ...form,
+                      imageCrop: settings.crop,
+                      imageZoom: settings.zoom,
+                      imageOffsetX: settings.offsetX,
+                      imageOffsetY: settings.offsetY,
+                    });
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
         
         <div>
           <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 14 }}>

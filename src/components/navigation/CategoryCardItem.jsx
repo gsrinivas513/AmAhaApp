@@ -33,6 +33,14 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
   const colorScheme = colorSchemes[index % colorSchemes.length];
   const hasImage = category.imageUrl || category.image;
 
+  // Image crop settings from category data
+  const imageCropSettings = {
+    crop: category.imageCrop || "cover",
+    zoom: category.imageZoom || 1,
+    offsetX: category.imageOffsetX || 0,
+    offsetY: category.imageOffsetY || 0,
+  };
+
   if (compact) {
     // Compact version for mega menu - shorter height
     return (
@@ -47,8 +55,11 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
               cloudinaryId={category.cloudinaryId}
               alt={category.title || category.name}
               fallbackIcon={category.icon}
-              className="w-full h-full object-cover"
-              crop="fit"
+              className="w-full h-full"
+              crop={imageCropSettings.crop}
+              imageZoom={imageCropSettings.zoom}
+              imageOffsetX={imageCropSettings.offsetX}
+              imageOffsetY={imageCropSettings.offsetY}
             />
           ) : (
             <div
@@ -86,8 +97,11 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
             cloudinaryId={category.cloudinaryId}
             alt={category.title || category.name}
             fallbackIcon={category.icon}
-            className="w-full h-full object-cover"
-            crop="fit"
+            className="w-full h-full"
+            crop={imageCropSettings.crop}
+            imageZoom={imageCropSettings.zoom}
+            imageOffsetX={imageCropSettings.offsetX}
+            imageOffsetY={imageCropSettings.offsetY}
           />
         ) : (
           <div
