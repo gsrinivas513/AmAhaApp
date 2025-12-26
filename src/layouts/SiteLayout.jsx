@@ -18,8 +18,7 @@ export default function SiteLayout({ children }) {
         style={{
           flex: 1,
           width: "100%",
-          maxWidth: 1000,
-          margin: "40px auto",
+          margin: "0 auto",
           padding: "0 16px",
           boxSizing: "border-box",
         }}

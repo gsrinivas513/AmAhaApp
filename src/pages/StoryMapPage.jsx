@@ -19,10 +19,11 @@ export default function StoryMapPage() {
     const loadStories = async () => {
       try {
         setLoading(true);
+        setError(null);
         const storiesList = await getAllStories();
         console.log('Fetched stories from Firestore:', storiesList);
         setStories(storiesList || []);
-        applyFilter(storiesList, filterType);
+        applyFilter(storiesList || [], filterType);
       } catch (err) {
         console.error("Failed to load stories:", err);
         setError("Failed to load stories");

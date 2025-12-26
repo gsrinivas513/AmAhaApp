@@ -50,7 +50,10 @@ export default function StoryMapCard({ story, onSelectStory }) {
           <img src={story.coverImage} alt={story.title} className="story-image" />
         )}
         {!story.coverImage && (
-          <div className="story-image-placeholder">
+          <div 
+            className="story-image-placeholder"
+            style={{ background: story.coverColor || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+          >
             📖
           </div>
         )}

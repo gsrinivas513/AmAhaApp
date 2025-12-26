@@ -209,7 +209,7 @@ export async function getChapter(storyId, chapterId) {
  */
 export async function getStoryProgress(userId, storyId) {
   try {
-    const progressRef = doc(db, `story_progress/${userId}`, storyId);
+    const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
     const progressSnap = await getDoc(progressRef);
 
     if (!progressSnap.exists()) {
@@ -240,7 +240,7 @@ export async function getStoryProgress(userId, storyId) {
  */
 export async function getUserStories(userId) {
   try {
-    const storiesRef = collection(db, `story_progress/${userId}`);
+    const storiesRef = collection(db, 'users', userId, 'storyProgress');
     const querySnapshot = await getDocs(storiesRef);
 
     const userStories = [];
@@ -264,7 +264,7 @@ export async function getUserStories(userId) {
  */
 export async function completeChapter(userId, storyId, chapterId, score, xpEarned = 100) {
   try {
-    const progressRef = doc(db, `story_progress/${userId}`, storyId);
+    const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
     const progressSnap = await getDoc(progressRef);
 
     let currentProgress = progressSnap.exists() ? progressSnap.data() : {
@@ -618,7 +618,7 @@ export async function mergeGuestStoryProgressToUser(userId, guestId, storyIds = 
 
       if (guestProgress.completedChapters.length > 0) {
         // Migrate to user
-        const progressRef = doc(db, `story_progress/${userId}`, storyId);
+        const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
         const userProgress = await getStoryProgress(userId, storyId);
 
         const mergedCompletions = [

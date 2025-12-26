@@ -23,6 +23,9 @@ import DailyChallengePage from "./pages/DailyChallengePage";
 import LeaderboardsPage from "./pages/LeaderboardsPage";
 import StoryMapPage from "./pages/StoryMapPage";
 import StoryDetailPage from "./pages/StoryDetailPage";
+import StoriesCategoryPage from "./story/pages/StoriesCategoryPage";
+import StoriesTopicPage from "./story/pages/StoriesTopicPage";
+import StoriesSubtopicPage from "./story/pages/StoriesSubtopicPage";
 import CategoryPage from "./pages/CategoryPage";
 import FeaturePage from "./pages/FeaturePage";
 
@@ -68,6 +71,7 @@ import SocialMediaManagerPage from "./admin/SocialMediaManagerPage";
 import DailyChallengeAdmin from "./admin/DailyChallengeAdmin";
 import StoryEditor from "./admin/StoryEditor";
 import AnalyticsPage from "./admin/AnalyticsPage";
+import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
 import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
@@ -110,7 +114,12 @@ function App() {
         
         {/* STORIES */}
         <Route path="/stories" element={<StoryMapPage />} />
+        <Route path="/stories/initialize" element={<InitializeStoriesPage />} />
+        <Route path="/stories/category/:categoryName" element={<StoriesCategoryPage />} />
+        <Route path="/stories/category/:categoryName/topic/:topicName" element={<StoriesTopicPage />} />
+        <Route path="/stories/category/:categoryName/topic/:topicName/subtopic/:subtopicName" element={<StoriesSubtopicPage />} />
         <Route path="/story/:storyId" element={<StoryDetailPage />} />
+        <Route path="/stories/:storyId" element={<StoryDetailPage />} />
 
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />

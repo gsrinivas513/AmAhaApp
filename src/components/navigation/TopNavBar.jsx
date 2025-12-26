@@ -11,7 +11,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useNavigationData } from "../../hooks/useNavigationData";
 import { useAuth } from "../AuthProvider";
-import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import AmAhaLogo from "../AmAhaLogo";
 import CategoriesPanel from "./CategoriesPanel";
@@ -31,6 +31,8 @@ function TopNavBar() {
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredFeatureCategories, setHoveredFeatureCategories] = useState([]);
+  const [storiesCategories, setStoriesCategories] = useState([]);
+  const [storiesCategoriesLoaded, setStoriesCategoriesLoaded] = useState(false);
   const menuTimeoutRef = useRef(null);
 
   // Fetch user coins
@@ -86,6 +88,83 @@ function TopNavBar() {
     } catch (err) {
       console.error("Error loading categories:", err);
       setHoveredFeatureCategories([]);
+    }
+  };
+
+  // Load stories categories from the stories categories collection
+  const loadStoriesCategories = async () => {
+    if (storiesCategoriesLoaded) {
+      // Already loaded, just update the panel
+      setHoveredFeatureCategories(storiesCategories);
+      return;
+    }
+
+    try {
+      // Load from storyCategories collection instead of inferring from stories
+      const categoriesSnapshot = await getDocs(
+        collection(db, "storyCategories")
+      );
+
+      if (categoriesSnapshot.empty) {
+        console.log("📖 No story categories found. Fallback to inferring from stories collection...");
+        // Fallback: Infer categories from stories collection
+        const storiesSnapshot = await getDocs(
+          query(collection(db, "stories"), where("published", "==", true))
+        );
+
+        const categories = {};
+        storiesSnapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          const category = data.category || "Stories";
+          if (!categories[category]) {
+            categories[category] = {
+              id: category.toLowerCase().replace(/\s+/g, "-"),
+              name: category,
+              label: category,
+              icon: "📖",
+              description: `Stories in ${category}`,
+              isPublished: true,
+            };
+          }
+        });
+
+        const categoriesArray = Object.values(categories).sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+        setStoriesCategories(categoriesArray);
+        setStoriesCategoriesLoaded(true);
+        setHoveredFeatureCategories(categoriesArray);
+        console.log("📖 Stories categories inferred from stories:", categoriesArray);
+        return;
+      }
+
+      const categoriesArray = categoriesSnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: data.id || doc.id,
+            key: data.id || doc.id,
+            title: data.label || data.name,
+            name: data.name,
+            label: data.label || data.name,
+            icon: data.icon,
+            description: data.description,
+            featureType: data.featureType,
+            isPublished: data.isPublished,
+          };
+        })
+        .filter((cat) => cat.isPublished !== false)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+      setStoriesCategories(categoriesArray);
+      setStoriesCategoriesLoaded(true);
+      setHoveredFeatureCategories(categoriesArray); // Update the panel immediately
+      console.log("📖 Stories categories loaded:", categoriesArray);
+    } catch (err) {
+      console.error("Error loading stories categories:", err);
+      setStoriesCategories([]);
+      setStoriesCategoriesLoaded(true);
     }
   };
 
@@ -242,6 +321,60 @@ function TopNavBar() {
                 </button>
               ))
             )}
+
+            {/* Stories Button (Always visible - shows categories on hover) */}
+            <button
+              onClick={() => {
+                // Don't navigate directly - let categories panel handle it
+              }}
+              onMouseEnter={async () => {
+                if (menuTimeoutRef.current) {
+                  clearTimeout(menuTimeoutRef.current);
+                }
+                
+                // First set the hovered feature
+                setHoveredFeature({ 
+                  id: "stories", 
+                  name: "Stories", 
+                  icon: "📖",
+                  color: "#6C63FF",
+                  description: "Interactive stories for learning and adventure"
+                });
+                
+                // Then load and display categories
+                if (!storiesCategoriesLoaded) {
+                  await loadStoriesCategories();
+                } else {
+                  setHoveredFeatureCategories(storiesCategories);
+                }
+              }}
+              onMouseLeave={() => {
+                menuTimeoutRef.current = setTimeout(() => {
+                  setHoveredFeature(null);
+                  setHoveredFeatureCategories([]);
+                }, 200);
+              }}
+              style={{
+                padding: "8px 16px",
+                border: "none",
+                background: hoveredFeature?.id === "stories" ? "#6C63FF" : "transparent",
+                color: hoveredFeature?.id === "stories" ? "white" : "#0b1220",
+                cursor: "pointer",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "600",
+                transition: "all 150ms ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                whiteSpace: "nowrap",
+                boxShadow: hoveredFeature?.id === "stories" ? "0 4px 8px rgba(108, 99, 255, 0.2)" : "none",
+              }}
+              title="📖 Stories - Interactive stories for learning"
+            >
+              <span style={{ fontSize: "18px" }}>📖</span>
+              Stories
+            </button>
 
             {/* Admin Link */}
             <Link
@@ -462,6 +595,10 @@ function TopNavBar() {
               categories={hoveredFeatureCategories}
               config={config}
               isAbsolute={false}
+              onClose={() => {
+                setHoveredFeature(null);
+                setHoveredFeatureCategories([]);
+              }}
             />
           </div>
         </div>
