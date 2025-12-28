@@ -1,6 +1,6 @@
 // src/admin/features/hooks/useSubtopicData.js
 import { useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
 import { FEATURES } from "../../../constants/FEATURES";
 
@@ -130,20 +130,50 @@ export function useSubtopicData() {
 
   const toggleSubtopicPublish = async (subtopicId, currentStatus) => {
     try {
+      const newStatus = !currentStatus;
+      
       // Find the subtopic to determine its collection
       const subtopic = subtopics.find(s => s.id === subtopicId);
       const collectionName = subtopic?._collectionName || "subtopics";
       
+      // If trying to publish, check if parent topic and category are published
+      if (newStatus) {
+        // Check if parent topic is published
+        if (subtopic?.topicId) {
+          const topicDoc = await getDoc(doc(db, "topics", subtopic.topicId));
+          if (topicDoc.exists()) {
+            const topicData = topicDoc.data();
+            if (topicData.isPublished === false) {
+              throw new Error("Cannot publish subtopic: Parent topic is unpublished");
+            }
+            
+            // Also check if parent category is published
+            if (topicData.categoryId) {
+              const categoryDoc = await getDoc(doc(db, "categories", topicData.categoryId));
+              if (categoryDoc.exists()) {
+                const categoryData = categoryDoc.data();
+                if (categoryData.isPublished === false) {
+                  throw new Error("Cannot publish subtopic: Parent category is unpublished");
+                }
+              }
+            }
+          }
+        }
+      }
+      
       await updateDoc(doc(db, collectionName, subtopicId), {
-        isPublished: !currentStatus,
+        isPublished: newStatus,
         updatedAt: new Date(),
       });
       
       setSubtopics(prev => prev.map(s => 
-        s.id === subtopicId ? { ...s, isPublished: !currentStatus } : s
+        s.id === subtopicId ? { ...s, isPublished: newStatus } : s
       ));
+      
+      setStatus(newStatus ? "✅ Subtopic published" : "✅ Subtopic unpublished");
     } catch (err) {
       console.error("Toggle subtopic publish error:", err);
+      setStatus("❌ " + err.message);
       throw err;
     }
   };

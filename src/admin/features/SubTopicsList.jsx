@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, Button } from "../../components/ui";
-import { collection, getDocs, query, where, addDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, addDoc, updateDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import PuzzleEditorModal from "./PuzzleEditorModal";
 
@@ -25,11 +25,45 @@ function SubTopicsList({
   const [puzzlePreview, setPuzzlePreview] = useState({});
   const [questionCounts, setQuestionCounts] = useState({});
   const [storyCount, setStoryCount] = useState({});
+  const [topicCache, setTopicCache] = useState({}); // Cache for looked-up topics
 
   const getTopicName = (topicId) => {
     if (!topicId) return "No Topic";
+    
+    // First check the pre-filtered topics array
     const topic = topics.find((t) => t.id === topicId);
-    return topic ? (topic.label || topic.name) : "Unknown Topic";
+    if (topic) {
+      return topic.label || topic.name;
+    }
+    
+    // Then check the cache
+    if (topicCache[topicId]) {
+      return topicCache[topicId];
+    }
+    
+    // If not found in filtered array or cache, try to fetch it directly
+    // This handles topics that might exist but aren't in the current filter
+    const fetchTopicName = async () => {
+      try {
+        const topicDoc = await getDoc(doc(db, "topics", topicId));
+        if (topicDoc.exists()) {
+          const topicData = topicDoc.data();
+          const name = topicData.label || topicData.name;
+          setTopicCache(prev => ({ ...prev, [topicId]: name }));
+          return name;
+        }
+      } catch (e) {
+        // Silently fail if fetch doesn't work
+      }
+    };
+    
+    // Try async fetch but don't block
+    if (!topicCache[topicId] && topicId) {
+      fetchTopicName();
+    }
+    
+    // Fallback display
+    return `Unknown (${topicId})`;
   };
 
   const isStorySubtopic = (subtopic) => {
@@ -37,7 +71,22 @@ function SubTopicsList({
   };
 
   const isPuzzleSubtopic = (subtopic) => {
-    return subtopic?.featureId === "puzzles";
+    // Check if featureId is explicitly set to puzzles
+    if (subtopic?.featureId === "puzzles") {
+      return true;
+    }
+    
+    // Fallback: Check if it has a topicId that matches a puzzle topic (find-pairs)
+    if (subtopic?.topicId === "find-pairs" || subtopic?.type === "find-pairs") {
+      return true;
+    }
+    
+    // Check if it looks like a puzzle subtopic by examining data structure
+    if (subtopic?.cards !== undefined || (subtopic?.data && typeof subtopic.data === 'object')) {
+      return true;
+    }
+    
+    return false;
   };
 
   useEffect(() => {
@@ -56,10 +105,10 @@ function SubTopicsList({
           const storiesSnap = await getDocs(query(collection(db, "stories"), where("subtopicId", "==", sub.id)));
           stories[sub.id] = storiesSnap.docs.length;
         } else if (isPuzzleSubtopic(sub)) {
-          // For puzzles: Each subtopic represents one puzzle
-          // The actual puzzle content is stored as puzzle data in the subtopic itself
+          // For puzzles: count actual puzzles in the puzzles collection that reference this subtopic
+          const puzzlesSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", sub.id)));
           previews[sub.id] = [{ title: sub.name || sub.label, type: 'puzzle' }];
-          counts[sub.id] = 1;
+          counts[sub.id] = puzzlesSnap.docs.length;
         } else {
           // Fetch questions for quiz subtopics
           const questionsSnap = await getDocs(query(collection(db, "questions"), where("subtopicId", "==", sub.id)));
@@ -75,9 +124,14 @@ function SubTopicsList({
   }, [subtopics]);
 
   const handleOpenPuzzleCreator = (subtopic) => {
-    setSelectedSubtopic(subtopic);
-    setEditingPuzzle(null);
-    setShowPuzzleModal(true);
+    // Navigate to puzzle creation page with prepopulated subtopic info
+    const searchParams = new URLSearchParams({
+      subtopicId: subtopic.id,
+      subtopicName: subtopic.name || subtopic.label,
+      topicId: subtopic.topicId,
+      categoryId: selectedCategoryId
+    });
+    navigate(`/admin/create-visual-puzzle?${searchParams.toString()}`);
   };
 
   const handleOpenPuzzleEditor = (subtopic, puzzle) => {

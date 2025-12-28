@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "../../components/ui";
+import ImageUpload from "../../components/ImageUpload";
+import ImageCropControl from "../../components/ImageCropControl";
 
 /**
  * PuzzleEditorModal - Simple puzzle editor for admin panel
@@ -16,9 +18,17 @@ function PuzzleEditorModal({
     type: "matching",
     description: "",
     imageUrl: "",
+    cloudinaryId: "",
+    imageCrop: "cover",
+    imageZoom: 1,
+    imageOffsetX: 0,
+    imageOffsetY: 0,
     difficulty: "easy",
-    ageGroup: "5-7"
+    ageGroup: "5-7",
+    color: "#0284c7"
   });
+
+  const [showImageControls, setShowImageControls] = useState(!!formData.imageUrl);
 
   const puzzleTypes = [
     "matching",
@@ -144,40 +154,105 @@ function PuzzleEditorModal({
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label style={{ display: "block", marginBottom: "4px", fontWeight: 600, fontSize: "14px" }}>
-              Image URL
-            </label>
-            <input
-              type="text"
-              value={formData.imageUrl || ""}
-              onChange={(e) => handleChange("imageUrl", e.target.value)}
-              placeholder="https://..."
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "4px",
-                border: "1px solid #e2e8f0",
-                fontSize: "14px",
-                boxSizing: "border-box"
+            <ImageUpload
+              label="Puzzle Image (Upload or paste URL)"
+              value={formData.imageUrl || ''}
+              onChange={(imageData) => {
+                if (typeof imageData === 'string') {
+                  setFormData(prev => ({ ...prev, imageUrl: imageData }));
+                } else if (imageData?.url) {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    imageUrl: imageData.url,
+                    cloudinaryId: imageData.cloudinaryId 
+                  }));
+                }
               }}
+              folder="puzzles"
             />
-            {formData.imageUrl && (
-              <img
-                src={formData.imageUrl}
-                alt="preview"
+          </div>
+
+          {/* Image Crop & Zoom Controls */}
+          {formData.imageUrl && (
+            <div>
+              <button
+                onClick={() => setShowImageControls(!showImageControls)}
                 style={{
-                  marginTop: "8px",
-                  maxWidth: "100%",
-                  maxHeight: "200px",
-                  borderRadius: "4px"
+                  width: "100%",
+                  padding: "10px",
+                  background: showImageControls ? "#e6f2ff" : "#f5f5f5",
+                  border: "1px solid #d0d0d0",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "13px",
+                  color: showImageControls ? "#0066cc" : "#333",
+                  transition: "all 0.2s ease",
                 }}
-                onError={(e) => {
-                  e.target.style.display = "none";
+              >
+                {showImageControls ? "✖ Hide Image Adjustments" : "⚙️ Adjust Image (Crop/Zoom)"}
+              </button>
+
+              {showImageControls && (
+                <div style={{ marginTop: "12px", padding: "12px", background: "#fafafa", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                  <ImageCropControl
+                    imageUrl={formData.imageUrl}
+                    currentSettings={{
+                      crop: formData.imageCrop || "cover",
+                      zoom: formData.imageZoom || 1,
+                      offsetX: formData.imageOffsetX || 0,
+                      offsetY: formData.imageOffsetY || 0,
+                    }}
+                    onChange={(settings) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        imageCrop: settings.crop,
+                        imageZoom: settings.zoom,
+                        imageOffsetX: settings.offsetX,
+                        imageOffsetY: settings.offsetY,
+                      }));
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Color Fallback */}
+          <div>
+            <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>
+              Color (fallback if no image)
+            </label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <input
+                type="color"
+                value={formData.color || "#0284c7"}
+                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                style={{
+                  width: "60px",
+                  height: "40px",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
                 }}
               />
-            )}
+              <input
+                type="text"
+                value={formData.color || "#0284c7"}
+                onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                placeholder="#0284c7"
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "14px",
+                  boxSizing: "border-box"
+                }}
+              />
+            </div>
           </div>
 
           {/* Difficulty */}

@@ -60,4 +60,6 @@ export const INITIAL_SUBTOPIC_FORM = {
   description: "",
   categoryId: "",
   topicId: "",
+  featureId: "",
+  color: "#0284c7",
 };

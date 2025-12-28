@@ -345,6 +345,7 @@ export default function FeatureCategoryManagement() {
       ...INITIAL_SUBTOPIC_FORM, 
       categoryId: selectedCategoryId,
       topicId: selectedTopicId || "",
+      featureId: selectedFeatureId || "",
     });
     setEditingSubtopicId(null);
     setShowSubtopicModal(true);
@@ -358,11 +359,14 @@ export default function FeatureCategoryManagement() {
       description: subtopic.description || "",
       categoryId: subtopic.categoryId || "",
       topicId: subtopic.topicId || "",
+      featureId: subtopic.featureId || "",
       imageUrl: subtopic.imageUrl || "",
+      cloudinaryId: subtopic.cloudinaryId || "",
       imageCrop: subtopic.imageCrop || "cover",
       imageZoom: subtopic.imageZoom || 1,
       imageOffsetX: subtopic.imageOffsetX || 0,
       imageOffsetY: subtopic.imageOffsetY || 0,
+      color: subtopic.color || "#0284c7",
     });
     setEditingSubtopicId(subtopic.id);
     setShowSubtopicModal(true);

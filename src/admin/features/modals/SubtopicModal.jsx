@@ -96,6 +96,33 @@ export default function SubtopicModal({ show, editingId, form, setForm, topics, 
             )}
           </div>
         )}
+
+        {/* Color Fallback */}
+        <div>
+          <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>
+            Color (fallback if no image)
+          </label>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <input
+              type="color"
+              value={form.color || "#0284c7"}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              style={{
+                width: "60px",
+                height: "40px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            />
+            <Input
+              value={form.color || "#0284c7"}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              placeholder="#0284c7"
+              style={{ flex: 1 }}
+            />
+          </div>
+        </div>
         
         <div>
           <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>

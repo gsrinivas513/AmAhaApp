@@ -1,6 +1,6 @@
 // src/admin/features/hooks/useTopicData.js
 import { useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
 import { FEATURES } from "../../../constants/FEATURES";
 
@@ -125,13 +125,30 @@ export function useTopicData() {
 
   const deleteTopic = async (topicId) => {
     try {
-      // Find the topic to determine its collection
+      // Cascading delete: Delete all subtopics for this topic
+      console.log(`🗑️  Starting cascading delete for topic: ${topicId}`);
+      
+      // 1. Find all subtopics for this topic
+      const subtopicsQuery = query(
+        collection(db, "subtopics"),
+        where("topicId", "==", topicId)
+      );
+      const subtopicsSnap = await getDocs(subtopicsQuery);
+      
+      // 2. Delete each subtopic
+      for (const subDoc of subtopicsSnap.docs) {
+        console.log(`  Deleting subtopic: ${subDoc.id}`);
+        await deleteDoc(doc(db, "subtopics", subDoc.id));
+      }
+      
+      // 3. Finally, delete the topic
       const topic = topics.find(t => t.id === topicId);
       const collectionName = topic?._collectionName || "topics";
       
       await deleteDoc(doc(db, collectionName, topicId));
       setTopics(prev => prev.filter(t => t.id !== topicId));
-      setStatus("✅ Topic deleted successfully");
+      setStatus(`✅ Topic and all ${subtopicsSnap.size} subtopics deleted successfully`);
+      console.log(`✅ Cascading delete complete`);
     } catch (err) {
       console.error("Delete topic error:", err);
       setStatus("❌ Failed to delete topic");
@@ -141,18 +158,41 @@ export function useTopicData() {
 
   const toggleTopicPublish = async (topicId, currentStatus) => {
     try {
+      const newStatus = !currentStatus;
+      
       // Find the topic to determine its collection
       const topic = topics.find(t => t.id === topicId);
       const collectionName = topic?._collectionName || "topics";
       
+      // Update topic
       await updateDoc(doc(db, collectionName, topicId), {
-        isPublished: !currentStatus,
+        isPublished: newStatus,
         updatedAt: new Date(),
       });
       
+      // If unpublishing, cascade unpublish to all subtopics in this topic
+      if (!newStatus) {
+        console.log(`📖 Cascading unpublish to subtopics for topic: ${topicId}`);
+        const subtopicsQuery = query(
+          collection(db, "subtopics"),
+          where("topicId", "==", topicId)
+        );
+        const subtopicsSnap = await getDocs(subtopicsQuery);
+        
+        for (const subDoc of subtopicsSnap.docs) {
+          console.log(`  Unpublishing subtopic: ${subDoc.id}`);
+          await updateDoc(doc(db, "subtopics", subDoc.id), {
+            isPublished: false,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+      
       setTopics(prev => prev.map(t => 
-        t.id === topicId ? { ...t, isPublished: !currentStatus } : t
+        t.id === topicId ? { ...t, isPublished: newStatus } : t
       ));
+      
+      setStatus(newStatus ? "✅ Topic published" : "✅ Topic and children unpublished");
     } catch (err) {
       console.error("Toggle topic publish error:", err);
       throw err;

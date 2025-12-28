@@ -43,26 +43,30 @@ import UserSettingsPage from "./pages/UserSettingsPage";
 /* ADMIN — GENERAL */
 import AdminDashboard from "./admin/AdminDashboard";
 import CategoriesPage from "./admin/CategoriesPage";
-import AdminScoresPage from "./admin/AdminScoresPage";
 import ImportQuestionsPage from "./admin/ImportQuestionsPage";
 import UiModeSettingsPage from "./admin/UiModeSettingsPage";
 import AutomationTestPage from "./admin/AutomationTestPage";
 import FeatureCategoryManagement from "./admin/FeatureCategoryManagement";
 import NavigationConfigPage from "./admin/NavigationConfigPage";
-import NormalizeFeatures from "./admin/NormalizeFeatures";
 import DebugAllCategories from "./admin/DebugAllCategories";
+import InspectCollectionsPage from "./admin/InspectCollectionsPage";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
-import ViewQuestionsPage from "./admin/ViewQuestionsPage";
 import EditQuestionPage from "./admin/EditQuestionPage";
 import QuizUIConfigPage from "./admin/quiz-ui/QuizUIConfigPage";
 import QuizAnalyticsPage from "./admin/quiz/QuizAnalyticsPage";
 import UpdateSubcategoryTopics from "./admin/UpdateSubcategoryTopics";
 import UpdateQuestionsSubtopicPage from "./admin/UpdateQuestionsSubtopicPage";
 import InitializeFirebaseStructure from "./admin/InitializeFirebaseStructure";
+import DocumentDeletePage from "./admin/DocumentDeletePage";
 import FixFirebaseStructure from "./admin/FixFirebaseStructure";
 import SystemToolsPage from "./admin/SystemToolsPage";
+import FixQuizzesMissingFeatureIds from "./admin/FixQuizzesMissingFeatureIds";
+import FixQuizzesFeatureIdMismatch from "./admin/FixQuizzesFeatureIdMismatch";
+import StandardizeFeaturesCollection from "./admin/StandardizeFeaturesCollection";
+import DatabaseArchitectureAudit from "./admin/DatabaseArchitectureAudit";
+import FixOrphanedPuzzles from "./admin/FixOrphanedPuzzles";
 
 /* ADMIN — PUZZLES */
 import AddPuzzlePage from "./admin/AddPuzzlePage";
@@ -133,26 +137,30 @@ function App() {
         {/* ADMIN — GENERAL */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/categories" element={<CategoriesPage />} />
-        <Route path="/admin/scores" element={<AdminScoresPage />} />
         <Route path="/admin/import" element={<ImportQuestionsPage />} />
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
         <Route path="/admin/automation-tests" element={<AutomationTestPage />} />
         <Route path="/admin/features" element={<FeatureCategoryManagement />} />
-        <Route path="/admin/normalize-features" element={<NormalizeFeatures />} />
         <Route path="/admin/debug-categories" element={<DebugAllCategories />} />
         <Route path="/admin/navigation" element={<NavigationConfigPage />} />
+        <Route path="/admin/inspect-collections" element={<InspectCollectionsPage />} />
 
         {/* ADMIN — QUIZ */}
         <Route path="/admin/add-quiz-content" element={<AddQuestionPage />} />
-        <Route path="/admin/view-questions" element={<ViewQuestionsPage />} />
         <Route path="/admin/edit-question/:id" element={<EditQuestionPage />} />
         <Route path="/admin/quiz-ui" element={<QuizUIConfigPage />} />
         <Route path="/admin/quiz/analytics" element={<QuizAnalyticsPage />} />
         <Route path="/admin/update-topics" element={<UpdateSubcategoryTopics />} />
         <Route path="/admin/update-subtopics" element={<UpdateQuestionsSubtopicPage />} />
         <Route path="/admin/initialize" element={<InitializeFirebaseStructure />} />
+        <Route path="/admin/delete-documents" element={<DocumentDeletePage />} />
         <Route path="/admin/fix-structure" element={<FixFirebaseStructure />} />
         <Route path="/admin/system-tools" element={<SystemToolsPage />} />
+        <Route path="/admin/fix-quizzes" element={<FixQuizzesMissingFeatureIds />} />
+        <Route path="/admin/fix-feature-mismatch" element={<FixQuizzesFeatureIdMismatch />} />
+        <Route path="/admin/standardize-features" element={<StandardizeFeaturesCollection />} />
+        <Route path="/admin/database-audit" element={<DatabaseArchitectureAudit />} />
+        <Route path="/admin/fix-orphaned-puzzles" element={<FixOrphanedPuzzles />} />
 
         {/* ADMIN — PUZZLES */}
         <Route path="/admin/puzzles" element={<PuzzleListPage />} />

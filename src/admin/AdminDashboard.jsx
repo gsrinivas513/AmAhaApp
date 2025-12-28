@@ -4,9 +4,9 @@ import AdminLayout from "./AdminLayout";
 import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Card, Button } from "../components/ui";
-import InitializePuzzleFeature from "./InitializePuzzleFeature";
 import DailyChallengeModal from "./modals/DailyChallengeModal";
 import StoryModal from "./modals/StoryModal";
+import { useNavigate } from "react-router-dom";
 
 /**
  * AdminDashboard
@@ -18,9 +18,11 @@ import StoryModal from "./modals/StoryModal";
  */
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dbStats, setDbStats] = useState(null);
 
   const [filterCategory, setFilterCategory] = useState("all");
   const [limitRows, setLimitRows] = useState(30);
@@ -39,6 +41,55 @@ function AdminDashboard() {
         const sSnap = await getDocs(collection(db, "scores"));
         const sc = sSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setScores(sc);
+
+        // Load database stats
+        const [features, topics, subtopics, puzzles, questions, storyCategories] = await Promise.all([
+          getDocs(collection(db, "features")),
+          getDocs(collection(db, "topics")),
+          getDocs(collection(db, "subtopics")),
+          getDocs(collection(db, "puzzles")),
+          getDocs(collection(db, "questions")),
+          getDocs(collection(db, "storyCategories"))
+        ]);
+
+        let puzzlesByType = {
+          "find-pair": 0,
+          "picture-word": 0,
+          "spot-difference": 0,
+          "picture-shadow": 0,
+          "ordering": 0,
+          "invalid": 0
+        };
+
+        for (const doc of puzzles.docs) {
+          const type = doc.data().type;
+          if (type && puzzlesByType.hasOwnProperty(type)) {
+            puzzlesByType[type]++;
+          } else {
+            puzzlesByType["invalid"]++;
+          }
+        }
+
+        setDbStats({
+          collections: {
+            features: features.size,
+            categories: cSnap.size,
+            topics: topics.size,
+            subtopics: subtopics.size,
+            puzzles: puzzles.size,
+            questions: questions.size,
+            storyCategories: storyCategories.size
+          },
+          puzzles: {
+            total: puzzles.size,
+            byType: puzzlesByType,
+            valid: puzzles.size - puzzlesByType["invalid"]
+          },
+          questions: {
+            total: questions.size
+          },
+          totalDocuments: features.size + cSnap.size + topics.size + subtopics.size + puzzles.size + questions.size + storyCategories.size
+        });
       } catch (err) {
         console.error("AdminDashboard load error:", err);
         setCategories([]);
@@ -131,8 +182,62 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Puzzle Feature Initialization */}
-      <InitializePuzzleFeature />
+      {/* DATABASE DASHBOARD - FIRST SECTION */}
+      {dbStats && (
+        <div style={{ marginTop: 18 }}>
+          <h3 style={{ marginBottom: 12, marginTop: 0 }}>📊 Database Overview</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>📄</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#0284c7" }}>{dbStats.totalDocuments}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Total Documents</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>✨</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#0284c7" }}>{dbStats.collections.features}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Features</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>📂</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#059669" }}>{dbStats.collections.categories}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Categories</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>📚</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#7c3aed" }}>{dbStats.collections.topics}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Topics</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>🏷️</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#d97706" }}>{dbStats.collections.subtopics}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Subtopics</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>🧩</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#0284c7" }}>{dbStats.puzzles.valid}/{dbStats.puzzles.total}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Valid Puzzles</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>❓</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#059669" }}>{dbStats.questions.total}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Questions</div>
+            </Card>
+            <Card style={{ padding: "12px" }}>
+              <div style={{ fontSize: "20px", marginBottom: "4px" }}>📖</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#7c3aed" }}>{dbStats.collections.storyCategories}</div>
+              <div style={{ fontSize: "11px", color: "#666" }}>Story Categories</div>
+            </Card>
+          </div>
+
+          {/* Database Tools */}
+          <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => navigate("/admin/database-audit")} style={{ ...toolBtn, borderColor: "#0284c7", color: "#0284c7" }}>🔍 Run Audit</button>
+            <button onClick={() => navigate("/admin/standardize-features")} style={{ ...toolBtn, borderColor: "#059669", color: "#059669" }}>⚡ Standardize Features</button>
+            <button onClick={() => navigate("/admin/fix-feature-mismatch")} style={{ ...toolBtn, borderColor: "#d97706", color: "#d97706" }}>🔗 Fix Feature Mismatch</button>
+            <button onClick={() => navigate("/admin/fix-orphaned-puzzles")} style={{ ...toolBtn, borderColor: "#dc2626", color: "#dc2626" }}>🗑️ Delete Broken Puzzles</button>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18, marginTop: 18 }}>
         <Card>
@@ -266,5 +371,6 @@ const selectStyle = { padding: 10, borderRadius: 8, border: "1px solid #ddd" };
 const th = { padding: 12, textAlign: "left" };
 const td = { padding: 12 };
 const pageBtn = { padding: "6px 10px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer" };
+const toolBtn = { padding: "8px 12px", borderRadius: 6, border: "2px solid", background: "#fff", cursor: "pointer", fontWeight: "500", fontSize: "13px", transition: "all 0.2s" };
 
 export default AdminDashboard;

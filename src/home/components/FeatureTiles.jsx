@@ -408,7 +408,7 @@ function FeatureCarouselSection({ feature, categories }) {
                     </h3>
                     
                     <p className="text-xs text-gray-600 mb-2 font-medium">
-                      {feature.featureType === "puzzle" ? (category.puzzleCount !== undefined ? category.puzzleCount : (category.quizCount || 0)) : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
+                      {category.subtopicCount !== undefined ? category.subtopicCount : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
                     </p>
                     
                     {/* Rating display */}
@@ -900,26 +900,26 @@ export default function FeatureTiles() {
               path = `/stories/category/${encodeURIComponent(categoryName)}`;
             }
             
-            return {
-              id: doc.id,
-              title: categoryName,
-              icon: data.icon || "📚",
-              quizzes: data.quizCount || 0,
-              featureName: featureName,
-              featureType: featureType,
-              difficulty: "Medium",
-              path: path,
-              color: colorScheme.color,
-              borderColor: colorScheme.borderColor,
-              isPublished: data.isPublished || false,
-              createdAt: data.createdAt || new Date().toISOString(),
-              rating: generateRealisticRating(data.quizCount || 0, doc.id),
-              imageUrl: data.imageUrl || "",
-              image: data.image || "",
-              cloudinaryId: data.cloudinaryId || "",
-              subtopics: [],
-              subtopicCount,
-            };
+              return {
+                id: doc.id,
+                title: categoryName,
+                icon: data.icon || "📚",
+                quizzes: subtopicCount,
+                featureName: featureName,
+                featureType: featureType,
+                difficulty: "Medium",
+                path: path,
+                color: colorScheme.color,
+                borderColor: colorScheme.borderColor,
+                isPublished: data.isPublished || false,
+                createdAt: data.createdAt || new Date().toISOString(),
+                rating: generateRealisticRating(subtopicCount || 0, doc.id),
+                imageUrl: data.imageUrl || "",
+                image: data.image || "",
+                cloudinaryId: data.cloudinaryId || "",
+                subtopics: [],
+                subtopicCount,
+              };
           })
           .filter((cat) => cat.isPublished === true)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -938,19 +938,21 @@ export default function FeatureTiles() {
               .map(doc => {
                 const data = doc.data();
                 const categoryName = data.label || data.name;
+                const categorySubtopicCount = subtopicCountMap[doc.id] || 0;
                 return {
                   id: doc.id,
                   name: categoryName,
                   label: categoryName,
                   title: categoryName,
                   icon: data.icon || "📚",
-                  quizCount: data.quizCount || 0,
-                  puzzleCount: data.puzzleCount || data.quizCount || 0,
+                  quizCount: categorySubtopicCount,
+                  puzzleCount: categorySubtopicCount,
+                  subtopicCount: categorySubtopicCount,
                   featureId: data.featureId,
                   uiMode: data.uiMode,
                   isPublished: data.isPublished,
                   createdAt: data.createdAt,
-                  rating: generateRealisticRating(data.quizCount || 0, doc.id),
+                  rating: generateRealisticRating(categorySubtopicCount || 0, doc.id),
                   imageUrl: data.imageUrl || "",
                   image: data.image || "",
                   cloudinaryId: data.cloudinaryId || "",

@@ -2,6 +2,7 @@
 // Admin page for creating and managing visual puzzles
 import React, { useState, useRef } from "react";
 import AdminLayout from "./AdminLayout";
+import { useSearchParams } from "react-router-dom";
 import {
   createVisualPuzzle,
   updateVisualPuzzle,
@@ -9,7 +10,7 @@ import {
   DIFFICULTY_LEVELS,
   AGE_GROUPS,
 } from "../quiz/services/visualPuzzleService";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import PictureWordEditor from "./puzzle-editors/PictureWordEditor";
 import SpotDifferenceEditor from "./puzzle-editors/SpotDifferenceEditor";
@@ -35,7 +36,9 @@ const defaultPuzzle = {
   data: {},
 };
 
-function VisualPuzzleAdminPage({ puzzleId }) {
+function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
+  const [searchParams] = useSearchParams();
+  const puzzleId = propPuzzleId || searchParams.get("id");
   const [puzzle, setPuzzle] = useState(defaultPuzzle);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -51,6 +54,30 @@ function VisualPuzzleAdminPage({ puzzleId }) {
     loadCategoriesAndFeatures();
   }, []);
 
+  // Handle prepopulation from query params (when coming from SubTopicsList)
+  React.useEffect(() => {
+    const subtopicId = searchParams.get("subtopicId");
+    const subtopicName = searchParams.get("subtopicName");
+    const topicId = searchParams.get("topicId");
+    const categoryId = searchParams.get("categoryId");
+
+    if (subtopicId && categories.length > 0) {
+      setPuzzle(prev => ({
+        ...prev,
+        subtopicId,
+        subtopicName,
+        topicId,
+        categoryId
+      }));
+    }
+  }, [categories, searchParams]);
+
+  React.useEffect(() => {
+    if (categories.length > 0 && puzzleId) {
+      loadExistingPuzzle(puzzleId);
+    }
+  }, [puzzleId, categories]);
+
   React.useEffect(() => {
     if (puzzle.categoryId) {
       loadTopics(puzzle.categoryId);
@@ -65,46 +92,83 @@ function VisualPuzzleAdminPage({ puzzleId }) {
 
   const loadCategoriesAndFeatures = async () => {
     try {
-      // Load all features first to identify puzzle feature
+      console.log("Loading categories...");
+      
+      // Load all categories (simpler approach)
+      const snapshot = await getDocs(collection(db, "categories"));
+      const catsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      console.log("Categories loaded:", catsData.length, catsData);
+      setCategories(catsData);
+      
+      // Also load features for reference
       const featuresSnap = await getDocs(collection(db, "features"));
       const featuresData = featuresSnap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setFeatures(featuresData);
-      
-      // Find the puzzle feature
-      const puzzleFeature = featuresData.find(f => 
-        (f.featureType && f.featureType.toLowerCase() === "puzzle") ||
-        (f.label && f.label.toLowerCase().includes("puzzle")) ||
-        (f.name && f.name.toLowerCase().includes("puzzle"))
-      );
-      
-      if (puzzleFeature) {
-        // Load only categories for puzzle feature
-        const q = query(
-          collection(db, "categories"),
-          where("featureId", "==", puzzleFeature.id)
-        );
-        const snapshot = await getDocs(q);
-        setCategories(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-      } else {
-        // Fallback: load all categories if no puzzle feature exists
-        const snapshot = await getDocs(collection(db, "categories"));
-        setCategories(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-      }
     } catch (err) {
       console.error("Error loading categories and features:", err);
+      setError("Failed to load categories: " + err.message);
+    }
+  };
+
+  const loadExistingPuzzle = async (pId) => {
+    try {
+      setLoading(true);
+      console.log("Loading puzzle with ID:", pId);
+      
+      // First, try to load by document ID
+      let docSnap = await getDoc(doc(db, "puzzles", pId));
+      
+      // If not found by ID, try to find by subtopicId
+      if (!docSnap.exists()) {
+        console.log("Not found by ID, searching by subtopicId...");
+        const q = query(
+          collection(db, "puzzles"),
+          where("subtopicId", "==", pId)
+        );
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.docs.length > 0) {
+          docSnap = snapshot.docs[0];
+        }
+      }
+      
+      if (docSnap && docSnap.exists()) {
+        const data = docSnap.data();
+        console.log("✅ Puzzle loaded:", data);
+        
+        const puzzleData = {
+          ...defaultPuzzle,
+          ...data,
+          id: docSnap.id
+        };
+        
+        setPuzzle(puzzleData);
+        
+        // Load topics for this category
+        if (data.categoryId) {
+          await loadTopics(data.categoryId);
+          
+          // Load subtopics for this topic
+          if (data.topicId) {
+            await loadSubtopics(data.topicId);
+          }
+        }
+      } else {
+        console.log("❌ Puzzle not found with ID:", pId);
+        setError("Puzzle not found. Make sure the ID is correct.");
+      }
+    } catch (err) {
+      console.error("Error loading puzzle:", err);
+      setError("Failed to load puzzle: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -146,9 +210,18 @@ function VisualPuzzleAdminPage({ puzzleId }) {
 
   const handleBasicChange = (e) => {
     const { name, value, type, checked } = e.target;
+    console.log(`🔄 Form change: ${name} = ${value}`);
     setPuzzle((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handlePuzzleTypeChange = (typeValue) => {
+    console.log(`🎯 Setting puzzle type to: ${typeValue}`);
+    setPuzzle((prev) => ({
+      ...prev,
+      type: typeValue,
     }));
   };
 
@@ -272,9 +345,17 @@ function VisualPuzzleAdminPage({ puzzleId }) {
     setSuccess(false);
 
     try {
-      if (puzzleId) {
-        await updateVisualPuzzle(puzzleId, puzzle);
+      console.log("💾 Saving puzzle:", puzzle);
+      if (puzzle.id) {
+        // Use puzzle.id from state (set when loading existing puzzle)
+        console.log("Updating existing puzzle with ID:", puzzle.id);
+        console.log("  - Type:", puzzle.type);
+        console.log("  - Title:", puzzle.title);
+        await updateVisualPuzzle(puzzle.id, puzzle);
       } else {
+        // Create new puzzle
+        console.log("Creating new puzzle");
+        console.log("  - Type:", puzzle.type);
         await createVisualPuzzle(puzzle);
       }
       setSuccess(true);
@@ -282,6 +363,7 @@ function VisualPuzzleAdminPage({ puzzleId }) {
       setPuzzle(defaultPuzzle);
     } catch (err) {
       setError(err.message || "Error saving puzzle");
+      console.error("Save error:", err);
     } finally {
       setSaving(false);
     }
@@ -297,7 +379,11 @@ function VisualPuzzleAdminPage({ puzzleId }) {
 
       <form onSubmit={handleSave} className="puzzle-admin-form">
         {/* Alerts */}
-        {error && <div className="alert alert-error">{error}</div>}
+        {error && (
+          <div className="alert alert-error" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+            <strong>❌ Error:</strong> {error}
+          </div>
+        )}
         {success && <div className="alert alert-success">Puzzle saved! ✨</div>}
 
         {/* Basic Information */}
@@ -337,7 +423,12 @@ function VisualPuzzleAdminPage({ puzzleId }) {
           <h2>Puzzle Type</h2>
           <div className="puzzle-type-grid">
             {VISUAL_PUZZLE_TYPES.map((type) => (
-              <label key={type.value} className="puzzle-type-option">
+              <label 
+                key={type.value} 
+                className="puzzle-type-option"
+                onClick={() => handlePuzzleTypeChange(type.value)}
+                style={{ cursor: 'pointer' }}
+              >
                 <input
                   type="radio"
                   name="type"
@@ -367,14 +458,22 @@ function VisualPuzzleAdminPage({ puzzleId }) {
                 value={puzzle.categoryId}
                 onChange={handleHierarchyChange}
                 className="form-input"
+                disabled={categories.length === 0}
               >
-                <option value="">Select Category</option>
+                <option value="">
+                  {categories.length === 0 ? "Loading categories..." : "Select Category"}
+                </option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                    {cat.name || cat.label}
                   </option>
                 ))}
               </select>
+              {categories.length === 0 && (
+                <small style={{ color: '#f97316', marginTop: '4px', display: 'block' }}>
+                  Loading categories... if this takes too long, please refresh the page.
+                </small>
+              )}
             </div>
 
             <div className="form-group">

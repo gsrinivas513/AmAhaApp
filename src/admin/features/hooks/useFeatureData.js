@@ -179,20 +179,59 @@ export function useFeatureData() {
 
   const deleteFeature = async (featureId) => {
     try {
-      // Check if any categories use this feature
+      // Cascading delete: Delete all categories, topics, and subtopics for this feature
+      console.log(`🗑️  Starting cascading delete for feature: ${featureId}`);
+      
+      // 1. Find all categories for this feature
       const categoriesQuery = query(
         collection(db, "categories"),
         where("featureId", "==", featureId)
       );
       const categoriesSnap = await getDocs(categoriesQuery);
       
-      if (categoriesSnap.size > 0) {
-        throw new Error(`Cannot delete feature - ${categoriesSnap.size} categories are using it`);
+      // 2. For each category, delete its topics and subtopics
+      for (const catDoc of categoriesSnap.docs) {
+        const categoryId = catDoc.id;
+        console.log(`  Deleting category: ${categoryId}`);
+        
+        // Find all topics for this category
+        const topicsQuery = query(
+          collection(db, "topics"),
+          where("categoryId", "==", categoryId)
+        );
+        const topicsSnap = await getDocs(topicsQuery);
+        
+        // Delete all subtopics for each topic
+        for (const topicDoc of topicsSnap.docs) {
+          const topicId = topicDoc.id;
+          console.log(`    Deleting topic: ${topicId}`);
+          
+          // Find all subtopics for this topic
+          const subtopicsQuery = query(
+            collection(db, "subtopics"),
+            where("topicId", "==", topicId)
+          );
+          const subtopicsSnap = await getDocs(subtopicsQuery);
+          
+          // Delete each subtopic
+          for (const subDoc of subtopicsSnap.docs) {
+            console.log(`      Deleting subtopic: ${subDoc.id}`);
+            await deleteDoc(doc(db, "subtopics", subDoc.id));
+          }
+          
+          // Delete the topic
+          await deleteDoc(doc(db, "topics", topicId));
+        }
+        
+        // Delete the category
+        await deleteDoc(doc(db, "categories", categoryId));
       }
       
+      // 3. Finally, delete the feature
       await deleteDoc(doc(db, "features", featureId));
       setFeatures(prev => prev.filter(f => f.id !== featureId));
-      setStatus("✅ Feature deleted successfully");
+      setStatus(`✅ Feature and all ${categoriesSnap.size} categories deleted successfully`);
+      console.log(`✅ Cascading delete complete`);
     } catch (err) {
       console.error("Delete feature error:", err);
       setStatus("❌ " + err.message);

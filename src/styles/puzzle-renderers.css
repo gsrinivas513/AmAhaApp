@@ -311,6 +311,16 @@
 }
 
 /* Grid size variations */
+.memory-grid.grid-2x4 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 600px;
+}
+
+.memory-grid.grid-3x4 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 600px;
+}
+
 .memory-grid.grid-4x4 {
   grid-template-columns: repeat(4, 1fr);
   max-width: 600px;
@@ -703,13 +713,13 @@
   width: 100%;
   height: calc(100vh - 80px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   background: linear-gradient(135deg, #fff9e6 0%, #ffe4cc 100%);
   overflow: auto;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
-  padding: 2rem 1rem;
+  padding: 1rem 0.5rem;
 }
 
 /* === UNIFIED WHITE BOARD - ALL CONTENT IN ONE CONTAINER === */
@@ -718,32 +728,34 @@
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
   width: 100%;
-  max-width: 620px;
-  padding: 1.8rem;
+  max-width: min(80vw, 650px);
+  padding: 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  margin-top: 2rem;
+  gap: 0.8rem;
+  margin-top: 3.5rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Control bar at top */
 .fp-control-bar {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.5rem;
   border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 1rem;
+  padding-bottom: 0.8rem;
 }
 
 .fp-control-bar-row {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .fp-title {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #333;
   margin: 0;
@@ -753,7 +765,7 @@
 /* Difficulty buttons */
 .fp-difficulty-buttons {
   display: flex;
-  gap: 0.8rem;
+  gap: 0.6rem;
   justify-content: flex-start;
 }
 
@@ -761,10 +773,10 @@
   background: #f0f0f0;
   border: 2px solid #ddd;
   color: #333;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -772,6 +784,7 @@
 .fp-difficulty-btn:hover {
   background: #e0e0e0;
   border-color: #999;
+  transform: translateY(-2px);
 }
 
 .fp-difficulty-btn.active {
@@ -781,14 +794,64 @@
   box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
 }
 
+/* Action buttons - colorful */
+.fp-action-buttons {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.fp-high-scores-btn,
+.fp-restart-btn,
+.fp-rules-btn {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fp-high-scores-btn {
+  background: linear-gradient(135deg, #20c997 0%, #12b886 100%);
+}
+
+.fp-high-scores-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(32, 201, 151, 0.3);
+}
+
+.fp-restart-btn {
+  background: linear-gradient(135deg, #ff9500 0%, #ff7e0a 100%);
+}
+
+.fp-restart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 149, 0, 0.3);
+}
+
+.fp-rules-btn {
+  background: linear-gradient(135deg, #4dabf7 0%, #1971c2 100%);
+}
+
+.fp-rules-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(77, 171, 247, 0.3);
+}
+
 /* Stats inline */
 .fp-stats-inline {
   display: flex;
-  gap: 1.5rem;
-  font-size: 0.8rem;
+  gap: 1rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #555;
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 /* Game area - main puzzle board */
@@ -806,26 +869,43 @@
   display: grid;
   gap: 0.7rem;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.fp-grid-2x4 {
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.8rem !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+}
+
+.fp-grid-3x4 {
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.7rem !important;
+  max-width: 700px !important;
+  margin: 0 auto !important;
 }
 
 .fp-grid-4x4 {
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.6rem;
-  width: 100%;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.6rem !important;
+  max-width: 700px !important;
+  margin: 0 auto !important;
 }
 
 .fp-grid-5x5 {
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
-  width: 100%;
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 0.5rem !important;
+  max-width: 800px !important;
+  margin: 0 auto !important;
 }
 
 .fp-grid-6x6 {
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.4rem;
-  width: 100%;
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 0.4rem !important;
+  max-width: 900px !important;
+  margin: 0 auto !important;
 }
 
 /* Large memory card */
@@ -864,8 +944,10 @@
 }
 
 .fp-card-back-large {
-  background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+  background: white;
   color: #ff9500;
+  font-size: 2rem;
+  letter-spacing: 2px;
 }
 
 .fp-card-front-large {
@@ -883,10 +965,49 @@
   display: block !important;
 }
 
-.fp-memory-card-large.matched .fp-card-back-large,
+.fp-memory-card-large.matched {
+  cursor: not-allowed;
+  pointer-events: none;
+  position: relative;
+}
+
+.fp-memory-card-large.matched .fp-card-inner-large {
+  transform: rotateY(180deg);
+}
+
+.fp-memory-card-large.matched .fp-card-back-large {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .fp-memory-card-large.matched .fp-card-front-large {
+  opacity: 1 !important;
+  background: white;
+  border: 3px solid #48bb78;
+  box-shadow: 0 0 15px rgba(72, 187, 120, 0.4), inset 0 0 10px rgba(72, 187, 120, 0.2);
+}
+
+.fp-memory-card-large.matched .fp-card-front-large::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
   background: #48bb78;
-  border-color: #38a169;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.fp-memory-card-large.matched img {
+  opacity: 1;
 }
 
 .fp-memory-card-large:not(.matched):hover .fp-card-back-large {

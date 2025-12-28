@@ -20,7 +20,8 @@ function PuzzleLevelPath({
   const [puzzles, setPuzzles] = useState([]);
   const [progress, setProgress] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedPuzzleIndex, setSelectedPuzzleIndex] = useState(0);
+  const [selectedPuzzleIndex, setSelectedPuzzleIndex] = useState(null);
+  const [userExplicitlyWentBack, setUserExplicitlyWentBack] = useState(false);
 
   useEffect(() => {
     const loadPuzzles = async () => {
@@ -83,16 +84,23 @@ function PuzzleLevelPath({
     );
   }
 
+  // If there's only one puzzle, open it directly (no level selection screen needed)
+  if (puzzles.length === 1 && selectedPuzzleIndex === null && !userExplicitlyWentBack) {
+    setSelectedPuzzleIndex(0);
+  }
+
   const currentPuzzle = puzzles[selectedPuzzleIndex];
 
   // If a puzzle is selected, show it fullscreen
-  if (currentPuzzle) {
+  if (currentPuzzle !== undefined && currentPuzzle !== null) {
+    console.log("🎮 Rendering puzzle:", currentPuzzle.type, currentPuzzle);
+    
     return (
       <div className="puzzle-fullscreen-wrapper">
         {/* Back button overlay */}
         <button
           className="puzzle-back-overlay-btn"
-          onClick={() => setSelectedPuzzleIndex(null)}
+          onClick={() => navigate(`/puzzle/${categoryName}/${topicName}`)}
         >
           ← Back to Puzzles
         </button>
@@ -138,8 +146,37 @@ function PuzzleLevelPath({
             }}
           />
         )}
+        
+        {/* Fallback: If no puzzle type matched, show error */}
+        {currentPuzzle.type !== "find-pair" && 
+         currentPuzzle.type !== "picture-word" && 
+         currentPuzzle.type !== "spot-difference" && 
+         currentPuzzle.type !== "picture-shadow" && 
+         currentPuzzle.type !== "ordering" && (
+          <div className="puzzle-error" style={{ padding: "20px", textAlign: "center" }}>
+            <h2>❌ Puzzle Type Not Supported</h2>
+            <p>Type: {currentPuzzle.type}</p>
+            <p>Supported types: find-pair, picture-word, spot-difference, picture-shadow, ordering</p>
+            <button
+              className="btn-back-path"
+              onClick={() => navigate(`/puzzle/${categoryName}/${topicName}`)}
+            >
+              ← Go Back
+            </button>
+          </div>
+        )}
       </div>
     );
+  }
+
+  // Show level selection UI if:
+  // 1. There are multiple puzzles, OR
+  // 2. Single puzzle but user explicitly went back
+  const shouldShowLevelSelection = puzzles.length > 1 || userExplicitlyWentBack;
+
+  if (!shouldShowLevelSelection) {
+    // Single puzzle and user hasn't gone back - show puzzle directly (already handled above)
+    return null;
   }
 
   return (
