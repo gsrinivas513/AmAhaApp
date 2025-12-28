@@ -1,8 +1,10 @@
 // src/admin/features/SubTopicsList.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Button } from "../../components/ui";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, addDoc, updateDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import PuzzleEditorModal from "./PuzzleEditorModal";
 
 function SubTopicsList({
   subtopics,
@@ -13,15 +15,29 @@ function SubTopicsList({
   onDeleteSubtopic,
   onToggleSubtopicPublish,
   onAddSubtopic,
-  onAddQuestion
+  onAddQuestion,
+  onManageStories
 }) {
+  const navigate = useNavigate();
+  const [showPuzzleModal, setShowPuzzleModal] = useState(false);
+  const [editingPuzzle, setEditingPuzzle] = useState(null);
+  const [selectedSubtopic, setSelectedSubtopic] = useState(null);
   const [puzzlePreview, setPuzzlePreview] = useState({});
   const [questionCounts, setQuestionCounts] = useState({});
+  const [storyCount, setStoryCount] = useState({});
 
   const getTopicName = (topicId) => {
     if (!topicId) return "No Topic";
     const topic = topics.find((t) => t.id === topicId);
-    return topic ? topic.label : "Unknown Topic";
+    return topic ? (topic.label || topic.name) : "Unknown Topic";
+  };
+
+  const isStorySubtopic = (subtopic) => {
+    return subtopic?._collectionName === "storySubtopics";
+  };
+
+  const isPuzzleSubtopic = (subtopic) => {
+    return subtopic?.featureId === "puzzles";
   };
 
   useEffect(() => {
@@ -29,24 +45,71 @@ function SubTopicsList({
       if (!subtopics) return;
       const previews = {};
       const counts = {};
+      const stories = {};
       
       for (const sub of subtopics) {
         if (!sub.id) continue;
         
-        // Fetch visual puzzles
-        const puzzlesSnap = await getDocs(query(collection(db, "puzzles"), where("subtopicId", "==", sub.id)));
-        previews[sub.id] = puzzlesSnap.docs.map(d => d.data());
-        
-        // Fetch questions and count them
-        const questionsSnap = await getDocs(query(collection(db, "questions"), where("subtopicId", "==", sub.id)));
-        counts[sub.id] = questionsSnap.docs.length;
+        // Check if this is a story subtopic
+        if (isStorySubtopic(sub)) {
+          // Fetch stories for story subtopics - filtered by subtopicId
+          const storiesSnap = await getDocs(query(collection(db, "stories"), where("subtopicId", "==", sub.id)));
+          stories[sub.id] = storiesSnap.docs.length;
+        } else if (isPuzzleSubtopic(sub)) {
+          // For puzzles: Each subtopic represents one puzzle
+          // The actual puzzle content is stored as puzzle data in the subtopic itself
+          previews[sub.id] = [{ title: sub.name || sub.label, type: 'puzzle' }];
+          counts[sub.id] = 1;
+        } else {
+          // Fetch questions for quiz subtopics
+          const questionsSnap = await getDocs(query(collection(db, "questions"), where("subtopicId", "==", sub.id)));
+          counts[sub.id] = questionsSnap.docs.length;
+        }
       }
       
       setPuzzlePreview(previews);
       setQuestionCounts(counts);
+      setStoryCount(stories);
     }
     fetchData();
   }, [subtopics]);
+
+  const handleOpenPuzzleCreator = (subtopic) => {
+    setSelectedSubtopic(subtopic);
+    setEditingPuzzle(null);
+    setShowPuzzleModal(true);
+  };
+
+  const handleOpenPuzzleEditor = (subtopic, puzzle) => {
+    setSelectedSubtopic(subtopic);
+    setEditingPuzzle(puzzle);
+    setShowPuzzleModal(true);
+  };
+
+  const handleSavePuzzle = async (puzzleData) => {
+    try {
+      if (editingPuzzle?.id) {
+        // Update existing puzzle
+        await updateDoc(doc(db, "puzzles", editingPuzzle.id), puzzleData);
+        console.log("✅ Puzzle updated:", puzzleData.title);
+      } else {
+        // Create new puzzle
+        const docRef = await addDoc(collection(db, "puzzles"), {
+          ...puzzleData,
+          createdAt: new Date().toISOString(),
+          isPublished: true
+        });
+        console.log("✅ Puzzle created:", docRef.id);
+      }
+      setShowPuzzleModal(false);
+      // Trigger refresh of puzzle preview
+      setEditingPuzzle(null);
+      setSelectedSubtopic(null);
+    } catch (error) {
+      console.error("Error saving puzzle:", error);
+      alert("Failed to save puzzle");
+    }
+  };
 
   if (!selectedCategoryId) {
     return (
@@ -58,10 +121,10 @@ function SubTopicsList({
     );
   }
 
-  // Filter by category first, then by topic if selected
+  // Filter by topic if selected (already filtered by FeatureCategoryManagement by topic)
   const filteredSubtopicies = selectedTopicId
-    ? subtopics.filter((sub) => sub.categoryId === selectedCategoryId && sub.topicId === selectedTopicId)
-    : subtopics.filter((sub) => sub.categoryId === selectedCategoryId);
+    ? subtopics.filter((sub) => sub.topicId === selectedTopicId)
+    : subtopics;
 
   return (
     <div className="fcm-subtopics-section">
@@ -119,10 +182,14 @@ function SubTopicsList({
                 <span style={{ fontSize: 14 }}>{sub.icon || "📄"}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, color: "#0b1220", fontSize: 12 }}>
-                    {sub.label}
+                    {sub.label || sub.name}
                   </div>
                   <div style={{ fontSize: 9, color: "#10b981", fontWeight: 600 }}>
-                    {questionCounts[sub.id] || 0} questions
+                    {isStorySubtopic(sub)
+                      ? `${storyCount[sub.id] || 0} stories`
+                      : isPuzzleSubtopic(sub)
+                      ? `${puzzlePreview[sub.id]?.length || 0} puzzles`
+                      : `${questionCounts[sub.id] || 0} questions`}
                   </div>
                   {puzzlePreview[sub.id] && puzzlePreview[sub.id].length > 0 && (
                     <div style={{ marginTop: 6, fontSize: 11, color: '#444' }}>
@@ -151,31 +218,103 @@ function SubTopicsList({
                   flexWrap: "wrap",
                 }}
               >
+                {isStorySubtopic(sub) ? (
+                  // For Stories: Show "Add Story" button that navigates to stories editor
+                  <Button
+                    title="Add Story"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/admin/stories", { 
+                        state: { 
+                          mode: "create",
+                          subtopicId: sub.id,
+                          topicId: selectedTopicId,
+                          categoryId: selectedCategoryId
+                        } 
+                      });
+                    }}
+                    style={{
+                      padding: "4px",
+                      fontSize: 12,
+                      background: "#fce7f3",
+                      color: "#be185d",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    ➕
+                  </Button>
+                ) : isPuzzleSubtopic(sub) ? (
+                  // For Puzzles: Show "Add Puzzle" button
+                  <Button
+                    title="Add Puzzle"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenPuzzleCreator(sub);
+                    }}
+                    style={{
+                      padding: "4px",
+                      fontSize: 12,
+                      background: "#fef3c7",
+                      color: "#92400e",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    ➕
+                  </Button>
+                ) : (
+                  // For Quizzes: Show "Add Question" button
+                  <Button
+                    title="Add Quiz Question"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onAddQuestion) onAddQuestion(sub);
+                    }}
+                    style={{
+                      padding: "4px",
+                      fontSize: 12,
+                      background: "#d1fae5",
+                      color: "#065f46",
+                      width: 28,
+                      height: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    ➕
+                  </Button>
+                )}
                 <Button
-                  title="Add Quiz Question"
+                  title={isStorySubtopic(sub) ? "Manage Stories" : "Edit Subtopic"}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (onAddQuestion) onAddQuestion(sub);
-                  }}
-                  style={{
-                    padding: "4px",
-                    fontSize: 12,
-                    background: "#d1fae5",
-                    color: "#065f46",
-                    width: 28,
-                    height: 28,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  ➕
-                </Button>
-                <Button
-                  title="Edit"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditSubtopic(sub);
+                    if (isStorySubtopic(sub)) {
+                      // For Stories: Open modal to manage stories for this subtopic
+                      if (onManageStories) {
+                        onManageStories({
+                          subtopic: sub,
+                          subtopicId: sub.id,
+                          topicId: selectedTopicId,
+                          categoryId: selectedCategoryId
+                        });
+                      }
+                    } else if (isPuzzleSubtopic(sub)) {
+                      // For Puzzles: Open puzzle editor with the first puzzle if it exists
+                      const puzzle = puzzlePreview[sub.id]?.[0];
+                      handleOpenPuzzleEditor(sub, puzzle);
+                    } else {
+                      // For Quizzes: Use generic edit handler
+                      onEditSubtopic(sub);
+                    }
                   }}
                   style={{
                     padding: "4px",
@@ -238,6 +377,15 @@ function SubTopicsList({
           </Card>
         ))}
       </div>
+
+      {showPuzzleModal && (
+        <PuzzleEditorModal
+          puzzle={editingPuzzle}
+          subtopic={selectedSubtopic}
+          onClose={() => setShowPuzzleModal(false)}
+          onSave={handleSavePuzzle}
+        />
+      )}
     </div>
   );
 }

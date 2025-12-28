@@ -245,6 +245,7 @@ function Sidebar() {
     global: false,
     quiz: false,
     puzzles: false,
+    stories: false,
   });
 
   /* Auto-expand section if route belongs to it */
@@ -255,17 +256,22 @@ function Sidebar() {
     const newOpen = { ...open };
     
     // Quiz section routes
-    if (path.includes("/admin/quiz") || path.includes("/admin/view-questions")) {
+    if (path.includes("/admin/quiz") || path.includes("/admin/view-questions") || path.includes("/admin/add-quiz-content")) {
       newOpen.quiz = true;
     }
     
     // Puzzles section routes
-    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle")) {
+    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle")) {
       newOpen.puzzles = true;
     }
     
+    // Stories section routes
+    if (path.includes("/admin/stories")) {
+      newOpen.stories = true;
+    }
+    
     // Global section routes (everything else under /admin)
-    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle")) {
+    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content") && !path.includes("/admin/view-questions")) {
       newOpen.global = true;
     }
     
@@ -318,13 +324,12 @@ function Sidebar() {
         {/* ================= GLOBAL ================= */}
         <Section title="Global" open={open.global} onToggle={() => toggle("global")}>
           <Item icon={<DashboardIcon />} label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
-          <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
+          <Item icon={<PlusIcon />} label="Features" path="/admin/features" active={isActive("/admin/features")} />
+          <Item icon={<GearIcon />} label="Normalize Features" path="/admin/normalize-features" active={isActive("/admin/normalize-features")} />
           <Item icon={<GearIcon />} label="Navigation Menu" path="/admin/navigation" active={isActive("/admin/navigation")} />
-          <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
           <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
           <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
           <Item icon={<TrophyIcon />} label="Daily Challenge" path="/admin/daily-challenge" active={isActive("/admin/daily-challenge")} />
-          <Item icon={<DocumentIcon />} label="Stories" path="/admin/stories" active={isActive("/admin/stories")} />
           <Item icon={<ChartIcon />} label="Analytics" path="/admin/analytics" active={isActive("/admin/analytics")} />
           <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
           <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
@@ -336,6 +341,7 @@ function Sidebar() {
           open={open.quiz}
           onToggle={() => toggle("quiz")}
         >
+          <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-quiz-content" active={isActive("/admin/add-quiz-content")} />
           <Item icon={<DocumentIcon />} label="View Questions" path="/admin/view-questions" active={isActive("/admin/view-questions")} />
           <Item icon={<ChartIcon />} label="Quiz Analytics" path="/admin/quiz/analytics" active={isActive("/admin/quiz-analytics")} />
           <Item icon={<FilmIcon />} label="Quiz UI Animations" path="/admin/quiz-ui" active={isActive("/admin/quiz-ui")} />
@@ -347,9 +353,21 @@ function Sidebar() {
           open={open.puzzles}
           onToggle={() => toggle("puzzles")}
         >
-          <Item icon={<PuzzleIcon />} label="Traditional Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
-          <Item icon={<PuzzleIcon />} label="Visual Puzzles" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
-          <DisabledItem icon={<GearIcon />} label="Dashboard (Coming soon)" />
+          <Item icon={<PuzzleIcon />} label="Create Traditional" path="/admin/create-traditional-puzzle" active={isActive("/admin/create-traditional-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="Create Logical" path="/admin/create-logical-puzzle" active={isActive("/admin/create-logical-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="Create Visual" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="Create Test Puzzles" path="/admin/create-test-puzzles" active={isActive("/admin/create-test-puzzles")} />
+          <Item icon={<PuzzleIcon />} label="View Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
+        </Section>
+
+      {/* ================= Stories ================= */}
+        <Section
+          title="Stories"
+          open={open.stories}
+          onToggle={() => toggle("stories")}
+        >
+          <Item icon={<DocumentIcon />} label="Stories" path="/admin/stories" active={isActive("/admin/stories")} />
+          <DisabledItem icon={<GearIcon />} label="More (Coming soon)" />
         </Section>
       </div>
 

@@ -8,14 +8,70 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCardItem from "./CategoryCardItem";
+import { FEATURES } from "../../constants/FEATURES";
+import { getFeatureById } from "../../constants/FEATURES";
 
-function CategoriesPanel({ feature, categories, config, isAbsolute = false, onClose }) {
+function CategoriesPanel({ feature, categories, config, isLoading = false, isAbsolute = false, onClose }) {
   const navigate = useNavigate();
   const [scrollPosition, setScrollPosition] = useState(0);
   const containerRef = useRef(null);
 
   if (!feature) {
     return null;
+  }
+
+  // Show loading state while fetching
+  if (isLoading && (!categories || categories.length === 0)) {
+    return (
+      <div
+        className="bg-gradient-to-b from-blue-50 via-purple-50 to-pink-50 shadow-2xl rounded-2xl overflow-hidden"
+        style={{
+          maxWidth: "100%",
+          borderTop: `6px solid ${feature.color || "#6C63FF"}`,
+          padding: "24px",
+          minHeight: "200px",
+        }}
+      >
+        <div
+          className="px-8 py-5 border-b-2"
+          style={{
+            background: `linear-gradient(135deg, ${feature.color || "#6C63FF"}1a 0%, ${feature.color || "#6C63FF"}08 100%)`,
+            borderBottomColor: `${feature.color || "#6C63FF"}30`,
+            borderBottomWidth: "2px",
+            marginLeft: "-24px",
+            marginRight: "-24px",
+            marginTop: "-24px",
+            marginBottom: "16px",
+            paddingLeft: "32px",
+          }}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            {feature.icon && (
+              <span className="text-4xl drop-shadow-lg">{feature.icon}</span>
+            )}
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {feature.name || feature.title}
+              </h3>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="inline-block animate-spin">
+              <div style={{
+                width: "24px",
+                height: "24px",
+                border: `3px solid ${feature.color || "#6C63FF"}30`,
+                borderTop: `3px solid ${feature.color || "#6C63FF"}`,
+                borderRadius: "50%"
+              }}></div>
+            </div>
+            <p className="text-gray-600 mt-3 text-sm">Loading {feature.name || "categories"}...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Show message if no categories
@@ -54,7 +110,7 @@ function CategoriesPanel({ feature, categories, config, isAbsolute = false, onCl
           </div>
         </div>
         <p className="text-center text-gray-600 py-8">
-          📖 No categories available yet. {feature.id === "stories" ? "Initialize with initializeStoriesHierarchy()" : "Please check back later."}
+          {feature.icon} No categories available yet. Please check back later.
         </p>
       </div>
     );
@@ -84,22 +140,31 @@ function CategoriesPanel({ feature, categories, config, isAbsolute = false, onCl
     const categoryName = category.title || category.label || category.name;
     const categoryId = category.key || category.id;
     const featureId = (feature.id || "").toLowerCase();
-
-    if (featureId === "quizzes" || feature.id === "UpNde0cmlHFDQXgTcQOJ") {
+    
+    // Get feature configuration from FEATURES constant
+    const featureConfig = getFeatureById(featureId);
+    
+    // Navigate using feature-specific routes
+    if (featureId === FEATURES.QUIZZES.id) {
       navigate(`/quiz/${encodeURIComponent(categoryName)}`, {
         state: { categoryName },
       });
-    } else if (featureId.includes("puzzle")) {
-      // Match "puzzles", "Puzzles", and any variant
+    } else if (featureId === FEATURES.PUZZLES.id) {
       navigate(`/puzzle/${encodeURIComponent(categoryName)}`, {
         state: { categoryName },
       });
-    } else if (featureId === "stories") {
+    } else if (featureId === FEATURES.STORIES.id) {
       // Stories feature - navigate to stories category page
       navigate(`/stories/category/${encodeURIComponent(categoryName)}`, {
         state: { categoryName, categoryId },
       });
+    } else if (featureConfig) {
+      // Generic fallback using feature's base route
+      navigate(`${featureConfig.baseRoute}/${encodeURIComponent(categoryName)}`, {
+        state: { categoryName },
+      });
     } else {
+      // Last resort fallback
       navigate(`/category/${categoryId}`, {
         state: { categoryName },
       });

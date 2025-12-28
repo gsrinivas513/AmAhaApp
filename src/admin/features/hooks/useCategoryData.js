@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
+import { FEATURES } from "../../../constants/FEATURES";
 
 export function useCategoryData() {
   const [categories, setCategories] = useState([]);
@@ -11,15 +12,36 @@ export function useCategoryData() {
   const loadCategories = async (features) => {
     setLoading(true);
     try {
-      const catSnap = await getDocs(collection(db, "categories"));
-      let cats = catSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      let cats = [];
       
-      // Assign featureId if missing
+      // Load regular categories (for Quiz, Puzzle, Games)
+      const catSnap = await getDocs(collection(db, "categories"));
+      const regularCategories = catSnap.docs.map((d) => ({ 
+        id: d.id, 
+        ...d.data(),
+        _collectionName: "categories" // Track which collection it came from
+      }));
+      
+      // Load story categories separately
+      const storyCatSnap = await getDocs(collection(db, "storyCategories"));
+      const storyCategories = storyCatSnap.docs.map((d) => ({ 
+        id: d.id, 
+        ...d.data(),
+        featureId: FEATURES.STORIES.id, // Assign Stories feature ID
+        _collectionName: "storyCategories"
+      }));
+      
+      // Note: Puzzle categories are now in the unified "categories" collection with featureId: "puzzles"
+      // No need to load separately from puzzleCategories
+      
+      cats = [...regularCategories, ...storyCategories];
+      
+      // Assign featureId if missing (for regular categories)
       for (let cat of cats) {
-        if (!cat.featureId && features.length > 0) {
+        if (!cat.featureId && cat._collectionName === "categories" && features.length > 0) {
           const quizFeature = features.find(f => f.featureType === "quiz");
           const defaultFeature = quizFeature || features[0];
-          cat.featureId = defaultFeature?.id;
+          cat.featureId = defaultFeature?.featureId || defaultFeature?.id;
           
           if (cat.id) {
             await updateDoc(doc(db, "categories", cat.id), { 
@@ -29,7 +51,7 @@ export function useCategoryData() {
         }
         
         // Get quiz count if not set
-        if (!cat.quizCount && cat.name) {
+        if (!cat.quizCount && cat.name && cat._collectionName === "categories") {
           try {
             const questionsQuery = query(
               collection(db, "questions"),
@@ -61,8 +83,17 @@ export function useCategoryData() {
         createdAt: new Date().toISOString(),
       };
       
-      const docRef = await addDoc(collection(db, "categories"), newCat);
-      const created = { id: docRef.id, ...newCat };
+      // Determine which collection to use based on featureId
+      // Stories go to storyCategories, everything else (including puzzles) goes to categories
+      const isStories = categoryData.featureId === FEATURES.STORIES.id;
+      const collectionName = isStories ? "storyCategories" : "categories";
+      
+      const docRef = await addDoc(collection(db, collectionName), newCat);
+      const created = { 
+        id: docRef.id, 
+        ...newCat,
+        _collectionName: collectionName
+      };
       setCategories(prev => [...prev, created]);
       setStatus("✅ Category created successfully");
       return created;
@@ -75,7 +106,11 @@ export function useCategoryData() {
 
   const updateCategory = async (categoryId, categoryData) => {
     try {
-      await updateDoc(doc(db, "categories", categoryId), {
+      // Find the category to determine its collection
+      const cat = categories.find(c => c.id === categoryId);
+      const collectionName = cat?._collectionName || "categories";
+      
+      await updateDoc(doc(db, collectionName, categoryId), {
         ...categoryData,
         updatedAt: new Date().toISOString(),
       });
@@ -93,7 +128,11 @@ export function useCategoryData() {
 
   const deleteCategory = async (categoryId) => {
     try {
-      await deleteDoc(doc(db, "categories", categoryId));
+      // Find the category to determine its collection
+      const cat = categories.find(c => c.id === categoryId);
+      const collectionName = cat?._collectionName || "categories";
+      
+      await deleteDoc(doc(db, collectionName, categoryId));
       setCategories(prev => prev.filter(c => c.id !== categoryId));
       setStatus("✅ Category deleted successfully");
     } catch (err) {
@@ -105,7 +144,11 @@ export function useCategoryData() {
 
   const toggleCategoryPublish = async (categoryId, currentStatus) => {
     try {
-      await updateDoc(doc(db, "categories", categoryId), {
+      // Find the category to determine its collection
+      const cat = categories.find(c => c.id === categoryId);
+      const collectionName = cat?._collectionName || "categories";
+      
+      await updateDoc(doc(db, collectionName, categoryId), {
         isPublished: !currentStatus,
         updatedAt: new Date().toISOString(),
       });

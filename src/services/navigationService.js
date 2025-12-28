@@ -14,6 +14,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import { DEFAULT_FEATURES } from "../constants/FEATURES";
 
 // Simple in-memory cache
 const cache = {
@@ -21,50 +22,6 @@ const cache = {
   categories: {}, // key: featureId, value: array of categories
   config: null,
 };
-
-// Default features matching AmAha_Menu.md design
-const DEFAULT_FEATURES = [
-  {
-    id: "quizzes",
-    name: "Quizzes",
-    icon: "🧠",
-    order: 1,
-    isPublished: true,
-    showInMenu: true,
-    description: "Learn by playing fun quizzes",
-    route: "/quiz"
-  },
-  {
-    id: "puzzles",
-    name: "Puzzles",
-    icon: "🧩",
-    order: 2,
-    isPublished: true,
-    showInMenu: true,
-    description: "Think • Match • Solve",
-    route: "/puzzle"
-  },
-  {
-    id: "games",
-    name: "Games",
-    icon: "🎮",
-    order: 3,
-    isPublished: true,
-    showInMenu: true,
-    description: "Play and learn",
-    route: "/games"
-  },
-  {
-    id: "stories",
-    name: "Stories",
-    icon: "📖",
-    order: 4,
-    isPublished: true,
-    showInMenu: true,
-    description: "Interactive stories",
-    route: "/stories"
-  },
-];
 
 /**
  * Fetch all published features from Firestore
@@ -79,20 +36,41 @@ export async function fetchPublishedFeatures() {
   }
 
   try {
-    // Query ALL features (no where clause) since many don't have isPublished field
-    // Filter in JavaScript instead
-    const snapshot = await getDocs(collection(db, "features"));
+    // Try to query only published features first (more efficient)
+    let snapshot;
+    try {
+      const q = query(
+        collection(db, "features"),
+        where("isPublished", "==", true),
+        orderBy("order", "asc"),
+        limit(20)
+      );
+      snapshot = await getDocs(q);
+    } catch (err) {
+      // If the index doesn't exist, fall back to fetching all and filtering
+      console.debug("Published features query failed, using fallback", err.message);
+      snapshot = await getDocs(collection(db, "features"));
+    }
+
     const features = snapshot.docs
       .filter((doc) => {
         const data = doc.data();
         // Include if isPublished is true, enabled is true, or status is 'enabled'
         return data.isPublished !== false && (data.enabled !== false || data.status === "enabled");
       })
-      .map((doc) => ({
-        id: doc.id,
-        order: doc.data().order || 999,
-        ...doc.data(),
-      }))
+      .map((doc) => {
+        const data = doc.data();
+        // Normalize feature ID to lowercase for consistency
+        const normalizedId = (data.id || doc.id || "").toLowerCase().trim();
+        return {
+          id: normalizedId,
+          featureId: normalizedId,
+          order: data.order || 999,
+          ...data,
+          // Ensure name is also lowercase
+          name: (data.name || "").toLowerCase().trim(),
+        };
+      })
       // Sort by order field
       .sort((a, b) => (a.order || 999) - (b.order || 999));
 
@@ -112,6 +90,7 @@ export async function fetchPublishedFeatures() {
 /**
  * Fetch categories for a specific feature
  * For all features (quizzes, puzzles, etc), fetches from categories collection
+ * For stories, fetches from storyCategories collection
  * Filters by featureId and isPublished status
  * Cached per feature to minimize Firestore reads
  * @param {string} featureId - The feature ID
@@ -119,44 +98,173 @@ export async function fetchPublishedFeatures() {
  * @returns {Promise<Array>} Array of category objects
  */
 export async function fetchCategoriesByFeature(featureId, feature = null) {
-  // Return cached categories if available
-  if (cache.categories[featureId]) {
-    return cache.categories[featureId];
+  // Normalize featureId for consistent caching
+  const normalizedFeatureId = (featureId || "").toLowerCase().trim();
+  
+  // Return cached categories if available (use normalized ID for cache key)
+  if (cache.categories[normalizedFeatureId]) {
+    console.log(`[navigationService] ✅ Returning cached categories for ${normalizedFeatureId}`);
+    return cache.categories[normalizedFeatureId];
   }
 
   try {
     let categories = [];
+    console.log(`[navigationService] 🔍 Fetching categories for feature: "${featureId}" (normalized: "${normalizedFeatureId}")`);
 
-    // Fetch ALL categories first, then filter in JavaScript
-    // This handles various field naming conventions (featureId, featureType, etc.)
-    const allSnapshot = await getDocs(collection(db, "categories"));
+    // Special handling for Stories - use storyCategories collection
+    if (normalizedFeatureId === "stories") {
+      try {
+        const storySnapshot = await getDocs(
+          query(
+            collection(db, "storyCategories"),
+            where("isPublished", "==", true),
+            orderBy("order", "asc"),
+            limit(100)
+          )
+        );
+        categories = storySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          key: doc.id,
+          title: doc.data().label || doc.data().name || doc.id,
+          name: doc.data().name || doc.id,
+          label: doc.data().label || doc.data().name || doc.id,
+          description: doc.data().description,
+          icon: doc.data().icon,
+          order: doc.data().order || 999,
+          ...doc.data(),
+        }));
 
-    // Determine the expected feature type based on the featureId
-    // Use feature.featureType if available, otherwise map from featureId
-    const featureTypeMap = {
-      "quizzes": "quiz",
-      "UpNde0cmlHFDQXgTcQOJ": "quiz", // The actual ID for Quizzes feature
-      "puzzles": "puzzle",
-      "Puzzles": "puzzle",
-      "games": "game",
-      "stories": "story"
-    };
+        if (categories.length > 0) {
+          console.log(`[navigationService] ✅ Loaded ${categories.length} story categories`);
+          cache.categories[normalizedFeatureId] = categories;
+          return categories;
+        }
+      } catch (err) {
+        console.debug(`Story categories query failed, trying fallback:`, err.message);
+        // Fallback for stories
+        const allSnapshot = await getDocs(collection(db, "storyCategories"));
+        categories = allSnapshot.docs
+          .filter((doc) => doc.data().isPublished !== false)
+          .map((doc) => ({
+            id: doc.id,
+            key: doc.id,
+            title: doc.data().label || doc.data().name || doc.id,
+            name: doc.data().name || doc.id,
+            label: doc.data().label || doc.data().name || doc.id,
+            description: doc.data().description,
+            icon: doc.data().icon,
+            order: doc.data().order || 999,
+            ...doc.data(),
+          }))
+          .sort((a, b) => (a.order || 999) - (b.order || 999));
 
-    const featureType = feature?.featureType || featureTypeMap[featureId];
+        if (categories.length > 0) {
+          console.log(`[navigationService] ✅ Loaded ${categories.length} story categories (fallback)`);
+          cache.categories[normalizedFeatureId] = categories;
+          return categories;
+        }
+      }
+    }
+
+    // For non-stories, try the optimized query approach
+    // First, try querying by uiMode (for puzzles, quizzes, etc.)
+    const singularForm = normalizedFeatureId.endsWith('s') ? normalizedFeatureId.slice(0, -1) : normalizedFeatureId;
+    try {
+      const q_uiMode = query(
+        collection(db, "categories"),
+        where("uiMode", "==", singularForm),
+        where("isPublished", "==", true),
+        orderBy("order", "asc"),
+        limit(100)
+      );
+      const snapshot_uiMode = await getDocs(q_uiMode);
+      if (snapshot_uiMode.docs.length > 0) {
+        categories = snapshot_uiMode.docs.map((doc) => ({
+          id: doc.id,
+          key: doc.id,
+          title: doc.data().label || doc.data().name || doc.id,
+          name: doc.data().name || doc.id,
+          label: doc.data().label || doc.data().name || doc.id,
+          description: doc.data().description,
+          icon: doc.data().icon,
+          featureId: doc.data().featureId,
+          order: doc.data().order || 999,
+          ...doc.data(),
+        }));
+        console.log(`[navigationService] ✅ Loaded ${categories.length} categories for feature ${normalizedFeatureId} (uiMode: "${singularForm}" query)`);
+        cache.categories[normalizedFeatureId] = categories;
+        return categories;
+      }
+    } catch (err) {
+      console.debug(`[navigationService] ⚠️  uiMode query failed for ${singularForm}:`, err.message);
+    }
+
+    // Next, try querying by featureId
+    try {
+      const q1 = query(
+        collection(db, "categories"),
+        where("featureId", "==", normalizedFeatureId),
+        where("isPublished", "==", true),
+        orderBy("order", "asc"),
+        limit(100)
+      );
+      const snapshot1 = await getDocs(q1);
+      categories = snapshot1.docs.map((doc) => ({
+        id: doc.id,
+        key: doc.id,
+        title: doc.data().label || doc.data().name || doc.id,
+        name: doc.data().name || doc.id,
+        label: doc.data().label || doc.data().name || doc.id,
+        description: doc.data().description,
+        icon: doc.data().icon,
+        featureId: doc.data().featureId,
+        order: doc.data().order || 999,
+        ...doc.data(),
+      }));
+
+      if (categories.length > 0) {
+        console.log(`[navigationService] ✅ Loaded ${categories.length} categories for feature ${normalizedFeatureId} (featureId query)`);
+        cache.categories[normalizedFeatureId] = categories;
+        return categories;
+      }
+    } catch (err) {
+      // This query might fail if index doesn't exist, fall back to client-side filtering
+      console.debug(`[navigationService] ⚠️  featureId query failed for ${normalizedFeatureId}:`, err.message);
+    }
+
+    // Fallback: Fetch all published categories and filter in JavaScript
+    // This is slower but handles missing indexes gracefully
+    const allSnapshot = await getDocs(
+      query(
+        collection(db, "categories"),
+        where("isPublished", "==", true)
+      )
+    );
 
     categories = allSnapshot.docs
       .filter((doc) => {
         const data = doc.data();
-        // Match by featureId, or by featureType, or by feature name
-        const matchesFeatureId = data.featureId === featureId;
-        const matchesFeatureType = featureType && (data.featureType === featureType || data.type === featureType);
-        const matchesFeatureName = data.featureName?.toLowerCase() === featureId.toLowerCase() || 
-                                   data.name?.toLowerCase() === featureId.replace(/s$/, '').toLowerCase();
         
-        // Also check if published/enabled (default to true if not specified)
-        const isEnabled = data.isPublished !== false && data.enabled !== false && data.status !== "disabled";
+        // Match by various field conventions:
+        // 1. featureId field (direct match with normalized comparison)
+        const matchesFeatureId = (data.featureId || "").toLowerCase().trim() === normalizedFeatureId;
         
-        return (matchesFeatureId || matchesFeatureType || matchesFeatureName) && isEnabled;
+        // 2. featureType or type field (if we know the feature type)
+        const featureType = feature?.featureType || feature?.type;
+        const matchesFeatureType = featureType && (
+          (data.featureType || "").toLowerCase() === featureType.toLowerCase() ||
+          (data.type || "").toLowerCase() === featureType.toLowerCase()
+        );
+        
+        // 3. uiMode field (used by puzzle categories)
+        const matchesUiMode = data.uiMode === normalizedFeatureId || 
+                              data.uiMode === normalizedFeatureId.slice(0, -1); // "puzzles" -> "puzzle"
+        
+        // 4. featureName or name field (as last resort)
+        const matchesName = (data.featureName || "").toLowerCase() === normalizedFeatureId ||
+                           (data.name || "").toLowerCase() === normalizedFeatureId;
+        
+        return matchesFeatureId || matchesFeatureType || matchesUiMode || matchesName;
       })
       .map((doc) => ({
         id: doc.id,
@@ -167,18 +275,24 @@ export async function fetchCategoriesByFeature(featureId, feature = null) {
         description: doc.data().description,
         icon: doc.data().icon,
         featureId: doc.data().featureId,
-        order: doc.data().order || 999, // Default order for sorting
+        order: doc.data().order || 999,
         ...doc.data(),
       }))
       // Sort by order field
       .sort((a, b) => (a.order || 999) - (b.order || 999));
 
-    // Cache the result
-    cache.categories[featureId] = categories;
+    if (categories.length > 0) {
+      console.log(`[navigationService] ✅ Loaded ${categories.length} categories for feature ${normalizedFeatureId} (fallback)`);
+    } else {
+      console.warn(`[navigationService] ❌ NO categories found for feature "${featureId}" (normalized: "${normalizedFeatureId}")`);
+    }
+
+    // Cache the result using normalized ID
+    cache.categories[normalizedFeatureId] = categories;
     return categories;
   } catch (error) {
     console.error(
-      `Error fetching categories for feature ${featureId}:`,
+      `[navigationService] ❌ Error fetching categories for feature "${featureId}" (normalized: "${(featureId || "").toLowerCase().trim()}"):`,
       error
     );
     // Return empty array on error (CategoriesPanel will handle it gracefully)

@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import {
   getAllStoriesAdmin,
@@ -24,6 +25,16 @@ import ChapterDetailEditor from './modals/ChapterDetailEditor';
 import './StoryEditor.css';
 
 export default function StoryEditor() {
+  const location = useLocation();
+  const navigationState = location.state;
+  
+  // Mode: "create" or "edit", passed from SubTopicsList
+  const [mode, setMode] = useState(navigationState?.mode || "browse"); // browse, create, edit
+  const [subtopicId, setSubtopicId] = useState(navigationState?.subtopicId || null);
+  const [topicId, setTopicId] = useState(navigationState?.topicId || null);
+  const [categoryId, setCategoryId] = useState(navigationState?.categoryId || null);
+  const [subtopic, setSubtopic] = useState(navigationState?.subtopic || null);
+  
   const [stories, setStories] = useState([]);
   const [selectedStory, setSelectedStory] = useState(null);
   const [isCreating, setIsCreating] = useState(false);

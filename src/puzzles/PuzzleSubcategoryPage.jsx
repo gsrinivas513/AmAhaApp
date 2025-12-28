@@ -214,8 +214,8 @@ export default function PuzzleSubcategoryPage() {
                     <div
                       key={subtopic.id}
                       onClick={() => hasPuzzles && navigate(
-                        `/puzzle/${encodeURIComponent(category.name || category.label)}/` +
-                        `${encodeURIComponent(topic.name || topic.label)}/` +
+                        `/puzzle/${encodeURIComponent(categoryName)}/` +
+                        `${encodeURIComponent(topicName)}/` +
                         `${encodeURIComponent(subtopic.name || subtopic.label)}`
                       )}
                       className={`group ${hasPuzzles ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}

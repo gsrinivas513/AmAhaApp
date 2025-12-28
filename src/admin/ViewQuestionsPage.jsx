@@ -4,6 +4,7 @@ import { db } from "../firebase/firebaseConfig";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { Card, Button } from "../components/ui";
+import TablePagination from "./components/TablePagination";
 
 function ViewQuestionsPage() {
   const [selectedIds, setSelectedIds] = useState([]);
@@ -18,7 +19,9 @@ function ViewQuestionsPage() {
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubtopic, setFilterSubtopic] = useState("");
   const [sortColumn, setSortColumn] = useState("");
-  const [sortDirection, setSortDirection] = useState("asc"); // "asc" or "desc"
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [itemsPerPage, setItemsPerPage] = useState("10");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const navigate = useNavigate();
 
@@ -378,6 +381,18 @@ function ViewQuestionsPage() {
     hard: list.filter(q => q.difficulty === "hard").length,
   };
 
+  // Pagination logic
+  const itemsToDisplay = itemsPerPage === 'all' ? sortedList.length : parseInt(itemsPerPage);
+  const totalPages = itemsPerPage === 'all' ? 1 : Math.ceil(sortedList.length / itemsToDisplay);
+  const startIndex = itemsPerPage === 'all' ? 0 : (currentPage - 1) * itemsToDisplay;
+  const endIndex = itemsPerPage === 'all' ? sortedList.length : startIndex + itemsToDisplay;
+  const paginatedList = sortedList.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterFeature, filterCategory, filterSubtopic, filterDifficulty]);
+
   return (
     <AdminLayout>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -500,9 +515,13 @@ function ViewQuestionsPage() {
             </Button>
           )}
           
-          <div style={{ marginLeft: "auto", fontSize: "13px", color: "#64748b", fontWeight: 500 }}>
-            Showing {stats.filtered} of {stats.total} questions
-          </div>
+          <TablePagination
+            totalItems={stats.filtered}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </Card>
 
@@ -518,12 +537,22 @@ function ViewQuestionsPage() {
                   <input
                     type="checkbox"
                     checked={
-                      sortedList.length > 0 &&
-                      selectedIds.length === sortedList.length
+                      paginatedList.length > 0 &&
+                      paginatedList.every((q) => selectedIds.includes(q.id))
                     }
                     onChange={(e) =>
                       setSelectedIds(
-                        e.target.checked ? sortedList.map((q) => q.id) : []
+                        e.target.checked
+                          ? [
+                              ...selectedIds,
+                              ...paginatedList
+                                .map((q) => q.id)
+                                .filter((id) => !selectedIds.includes(id)),
+                            ]
+                          : selectedIds.filter(
+                              (id) =>
+                                !paginatedList.map((q) => q.id).includes(id)
+                            )
                       )
                     }
                   />
@@ -632,7 +661,7 @@ function ViewQuestionsPage() {
                   </td>
                 </tr>
               ) : (
-                sortedList.map((q) => (
+                paginatedList.map((q) => (
                   <tr key={q.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
                     <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
                       <input

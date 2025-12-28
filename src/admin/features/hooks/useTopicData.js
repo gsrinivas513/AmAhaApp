@@ -2,13 +2,14 @@
 import { useState } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
+import { FEATURES } from "../../../constants/FEATURES";
 
 export function useTopicData() {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
-  const loadTopics = async (categoryId) => {
+  const loadTopics = async (categoryId, categoryData = null) => {
     if (!categoryId) {
       setTopics([]);
       return;
@@ -16,16 +17,28 @@ export function useTopicData() {
     
     setLoading(true);
     try {
+      // Determine if this category belongs to Stories or Puzzles by checking its collection type
+      const category = categoryData?.categories?.find(c => c.id === categoryId);
+      const isStoryCategory = category?._collectionName === "storyCategories";
+      const isPuzzleCategory = category?._collectionName === "puzzleCategories";
+      
+      const topicsCollectionName = isStoryCategory ? "storyTopics" : isPuzzleCategory ? "puzzleTopics" : "topics";
+      const subtopicsCollectionName = isStoryCategory ? "storySubtopics" : isPuzzleCategory ? "puzzleSubtopics" : "subtopics";
+      
       const topicsQuery = query(
-        collection(db, "topics"),
+        collection(db, topicsCollectionName),
         where("categoryId", "==", categoryId)
       );
       const topicsSnap = await getDocs(topicsQuery);
-      let topicsList = topicsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      let topicsList = topicsSnap.docs.map((d) => ({ 
+        id: d.id, 
+        ...d.data(),
+        _collectionName: topicsCollectionName
+      }));
       
       // Load all subtopics for this category to count them per topic
       const subtopicsQuery = query(
-        collection(db, "subtopics"),
+        collection(db, subtopicsCollectionName),
         where("categoryId", "==", categoryId)
       );
       const subtopicsSnap = await getDocs(subtopicsQuery);
@@ -59,8 +72,10 @@ export function useTopicData() {
     }
   };
 
-  const createTopic = async (topicData, categoryId) => {
+  const createTopic = async (topicData, categoryId, isStory = false) => {
     try {
+      const topicsCollectionName = isStory ? "storyTopics" : "topics";
+      
       const newTopic = {
         ...topicData,
         categoryId,
@@ -70,8 +85,12 @@ export function useTopicData() {
         updatedAt: new Date(),
       };
       
-      const docRef = await addDoc(collection(db, "topics"), newTopic);
-      const created = { id: docRef.id, ...newTopic };
+      const docRef = await addDoc(collection(db, topicsCollectionName), newTopic);
+      const created = { 
+        id: docRef.id, 
+        ...newTopic,
+        _collectionName: topicsCollectionName
+      };
       setTopics(prev => [...prev, created]);
       setStatus("✅ Topic created successfully");
       return created;
@@ -84,7 +103,11 @@ export function useTopicData() {
 
   const updateTopic = async (topicId, topicData) => {
     try {
-      await updateDoc(doc(db, "topics", topicId), {
+      // Find the topic to determine its collection
+      const topic = topics.find(t => t.id === topicId);
+      const collectionName = topic?._collectionName || "topics";
+      
+      await updateDoc(doc(db, collectionName, topicId), {
         ...topicData,
         updatedAt: new Date(),
       });
@@ -102,7 +125,11 @@ export function useTopicData() {
 
   const deleteTopic = async (topicId) => {
     try {
-      await deleteDoc(doc(db, "topics", topicId));
+      // Find the topic to determine its collection
+      const topic = topics.find(t => t.id === topicId);
+      const collectionName = topic?._collectionName || "topics";
+      
+      await deleteDoc(doc(db, collectionName, topicId));
       setTopics(prev => prev.filter(t => t.id !== topicId));
       setStatus("✅ Topic deleted successfully");
     } catch (err) {
@@ -114,7 +141,11 @@ export function useTopicData() {
 
   const toggleTopicPublish = async (topicId, currentStatus) => {
     try {
-      await updateDoc(doc(db, "topics", topicId), {
+      // Find the topic to determine its collection
+      const topic = topics.find(t => t.id === topicId);
+      const collectionName = topic?._collectionName || "topics";
+      
+      await updateDoc(doc(db, collectionName, topicId), {
         isPublished: !currentStatus,
         updatedAt: new Date(),
       });

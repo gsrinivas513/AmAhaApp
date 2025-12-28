@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../firebase/firebaseConfig';
 import { setDoc, doc } from 'firebase/firestore';
+import { FEATURES } from '../constants/FEATURES';
 
 const InitializePuzzleFeature = () => {
   const [loading, setLoading] = useState(false);
@@ -57,16 +58,20 @@ const InitializePuzzleFeature = () => {
 
       // Step 1: Create Puzzle Feature (matching quiz feature structure)
       addLog("1️⃣ Creating Puzzle Feature...");
-      await setDoc(doc(db, 'features', 'Puzzles'), {
-        name: 'puzzles',           // internal name (lowercase)
-        label: 'Puzzles',          // display label
-        featureName: 'Puzzles',    // for compatibility
-        featureType: 'puzzle',     // type identifier
-        icon: '🧩',
+      const puzzleFeature = FEATURES.PUZZLES;
+      await setDoc(doc(db, 'features', puzzleFeature.id), {
+        id: puzzleFeature.id,
+        name: puzzleFeature.name.toLowerCase(),
+        label: puzzleFeature.name,
+        featureName: puzzleFeature.name,
+        featureType: puzzleFeature.type,
+        icon: puzzleFeature.icon,
+        order: puzzleFeature.order,
         enabled: true,
+        isPublished: true,
         status: 'enabled',
         createdAt: new Date(),
-        description: 'Visual and traditional puzzle games'
+        description: puzzleFeature.description
       });
       addLog("  ✅ Puzzle feature created");
 
@@ -85,9 +90,9 @@ const InitializePuzzleFeature = () => {
             imageUrl: '',
             cloudinaryId: '',
             description: 'Interactive visual puzzle games',
-            featureId: 'Puzzles',             // links to feature
-            featureName: 'Puzzles',
-            featureType: 'puzzle',
+            featureId: FEATURES.PUZZLES.id,   // links to feature (from constant)
+            featureName: FEATURES.PUZZLES.name,
+            featureType: FEATURES.PUZZLES.type,
             defaultUiMode: 'playful',         // UI style
             uiMode: 'puzzle',                 // This is what shows as "Mode: puzzle"
             isPublished: true,
@@ -108,9 +113,9 @@ const InitializePuzzleFeature = () => {
             imageUrl: '',
             cloudinaryId: '',
             description: 'Word matching, ordering, and drag-drop games',
-            featureId: 'Puzzles',
-            featureName: 'Puzzles',
-            featureType: 'puzzle',
+            featureId: FEATURES.PUZZLES.id,   // links to feature (from constant)
+            featureName: FEATURES.PUZZLES.name,
+            featureType: FEATURES.PUZZLES.type,
             defaultUiMode: 'playful',
             uiMode: 'puzzle',                 // This shows as "Mode: puzzle"
             isPublished: true,

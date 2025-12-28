@@ -49,6 +49,8 @@ import UiModeSettingsPage from "./admin/UiModeSettingsPage";
 import AutomationTestPage from "./admin/AutomationTestPage";
 import FeatureCategoryManagement from "./admin/FeatureCategoryManagement";
 import NavigationConfigPage from "./admin/NavigationConfigPage";
+import NormalizeFeatures from "./admin/NormalizeFeatures";
+import DebugAllCategories from "./admin/DebugAllCategories";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
@@ -67,10 +69,13 @@ import AddPuzzlePage from "./admin/AddPuzzlePage";
 import PuzzleListPage from "./admin/PuzzleListPage";
 import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
 import VisualPuzzleAdminPage from "./admin/VisualPuzzleAdminPage";
+import CreateTraditionalPuzzlePage from "./admin/CreateTraditionalPuzzlePage";
+import CreateLogicalPuzzlePage from "./admin/CreateLogicalPuzzlePage";
 import SocialMediaManagerPage from "./admin/SocialMediaManagerPage";
 import DailyChallengeAdmin from "./admin/DailyChallengeAdmin";
 import StoryEditor from "./admin/StoryEditor";
 import AnalyticsPage from "./admin/AnalyticsPage";
+import CreateTestPuzzlesPage from "./admin/CreateTestPuzzlesPage";
 import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
@@ -133,10 +138,12 @@ function App() {
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
         <Route path="/admin/automation-tests" element={<AutomationTestPage />} />
         <Route path="/admin/features" element={<FeatureCategoryManagement />} />
+        <Route path="/admin/normalize-features" element={<NormalizeFeatures />} />
+        <Route path="/admin/debug-categories" element={<DebugAllCategories />} />
         <Route path="/admin/navigation" element={<NavigationConfigPage />} />
 
         {/* ADMIN — QUIZ */}
-        <Route path="/admin/add-content" element={<AddQuestionPage />} />
+        <Route path="/admin/add-quiz-content" element={<AddQuestionPage />} />
         <Route path="/admin/view-questions" element={<ViewQuestionsPage />} />
         <Route path="/admin/edit-question/:id" element={<EditQuestionPage />} />
         <Route path="/admin/quiz-ui" element={<QuizUIConfigPage />} />
@@ -152,11 +159,14 @@ function App() {
         <Route path="/admin/add-puzzle" element={<AddPuzzlePage />} />
         <Route path="/admin/add-puzzle/:puzzleId" element={<AddPuzzlePage />} />
         <Route path="/admin/puzzles/dashboard" element={<PuzzlesDashboardPage />} />
+        <Route path="/admin/create-traditional-puzzle" element={<CreateTraditionalPuzzlePage />} />
+        <Route path="/admin/create-logical-puzzle" element={<CreateLogicalPuzzlePage />} />
         <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
+        <Route path="/admin/create-test-puzzles" element={<CreateTestPuzzlesPage />} />
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
         <Route path="/admin/debug-categories" element={<DebugCategories />} />
@@ -170,7 +180,8 @@ function App() {
         <Route path="/puzzle" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
-        <Route path="/puzzle/:categoryName/:topicName/:puzzleId" element={<UnifiedPuzzlePage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
     </div>
   );

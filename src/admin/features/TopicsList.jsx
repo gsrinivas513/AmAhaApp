@@ -1,7 +1,6 @@
 // src/admin/features/TopicsList.jsx
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Card, Button } from "../../components/ui";
-import { countPuzzlesForTopic } from "../../puzzles/puzzleCountService";
 
 function TopicsList({
   topics,
@@ -18,21 +17,9 @@ function TopicsList({
 }) {
   const [puzzleCounts, setPuzzleCounts] = useState({});
 
-  // Load puzzle counts dynamically when topics change
-  useEffect(() => {
-    const loadPuzzleCounts = async () => {
-      if (!topics || topics.length === 0) return;
-      
-      const counts = {};
-      for (const topic of topics) {
-        const count = await countPuzzlesForTopic(topic.id, topic.name || topic.label);
-        counts[topic.id] = count;
-      }
-      setPuzzleCounts(counts);
-    };
-
-    loadPuzzleCounts();
-  }, [topics]);
+  // Note: Puzzle counts are now calculated directly from subtopics
+  // (puzzles are represented as subtopics in the unified hierarchy)
+  
   const getCategoryName = (catId) => {
     const cat = categories.find((c) => c.id === catId);
     return cat ? cat.label : "Unknown Category";
@@ -47,13 +34,22 @@ function TopicsList({
     return cat?.uiMode === "puzzle";
   };
 
+  const isStoryCategory = () => {
+    const cat = getSelectedCategory();
+    return cat?._collectionName === "storyCategories";
+  };
+
   const getSubtopicCount = (topicId) => {
     if (!subtopics) return 0;
     return subtopics.filter(s => s.topicId === topicId).length;
   };
 
   const getQuizCount = (topic) => topic.quizCount || 0;
-  const getPuzzleCount = (topicId) => puzzleCounts[topicId] !== undefined ? puzzleCounts[topicId] : 0;
+  
+  // For puzzles, show the count of subtopics (which represent puzzle content)
+  const getPuzzleCount = (topicId) => {
+    return getSubtopicCount(topicId);
+  };
 
   if (!selectedCategoryId) {
     return (
@@ -126,11 +122,13 @@ function TopicsList({
                 <span style={{ fontSize: 14 }}>{topic.icon || "📑"}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, color: "#0b1220", fontSize: 12 }}>
-                    {topic.label}
+                    {topic.label || topic.name}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
                     {isPuzzleCategory() 
                       ? `${getPuzzleCount(topic.id)} puzzles` 
+                      : isStoryCategory()
+                      ? `${getSubtopicCount(topic.id)} subtopics`
                       : `${getSubtopicCount(topic.id)} subtopics | ${getQuizCount(topic)} quizzes`}
                   </div>
                 </div>

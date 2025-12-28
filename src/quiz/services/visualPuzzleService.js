@@ -81,20 +81,38 @@ export const getVisualPuzzleById = async (puzzleId) => {
  */
 export const getVisualPuzzlesBySubtopic = async (subtopicId) => {
   try {
-    const q = query(
-      collection(db, "puzzles"),
-      where("subtopicId", "==", subtopicId),
-      where("isPublished", "==", true),
-      orderBy("createdAt", "asc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    // First try with composite index (multiple where + orderBy)
+    try {
+      const q = query(
+        collection(db, "puzzles"),
+        where("subtopicId", "==", subtopicId),
+        where("isPublished", "==", true),
+        orderBy("createdAt", "asc")
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    } catch (indexError) {
+      // Fallback: query without composite index, sort in memory
+      console.warn("Composite index not available, using fallback query:", indexError.message);
+      const q = query(
+        collection(db, "puzzles"),
+        where("subtopicId", "==", subtopicId)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter(puzzle => puzzle.isPublished !== false)
+        .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+    }
   } catch (error) {
     console.error("Error fetching puzzles by subtopic:", error);
-    throw error;
+    return []; // Return empty array instead of throwing to prevent UI crash
   }
 };
 

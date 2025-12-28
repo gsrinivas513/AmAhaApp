@@ -1,0 +1,43 @@
+/* TestDataButton.css */
+
+.test-data-button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.test-data-button {
+  padding: 10px 20px;
+  background-color: #ffc107;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+.test-data-button:hover:not(:disabled) {
+  background-color: #ffb300;
+  transform: scale(1.05);
+}
+
+.test-data-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.test-data-message {
+  padding: 8px 12px;
+  background-color: white;
+  border-radius: 4px;
+  font-size: 13px;
+  border-left: 3px solid #ffc107;
+  font-weight: 500;
+}

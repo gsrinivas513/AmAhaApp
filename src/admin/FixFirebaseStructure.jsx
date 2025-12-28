@@ -1,8 +1,9 @@
 // src/admin/FixFirebaseStructure.jsx
 import React, { useState } from "react";
 import AdminLayout from "./AdminLayout";
+import { FEATURES } from "../constants/FEATURES";
 import { db } from "../firebase/firebaseConfig";
-import { collection, addDoc, updateDoc, doc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, updateDoc, setDoc, doc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
 
 export default function FixFirebaseStructure() {
   const [status, setStatus] = useState("");
@@ -23,24 +24,25 @@ export default function FixFirebaseStructure() {
       addProgress("\n🔧 Step 1: Fixing Features...");
       
       const featuresSnap = await getDocs(collection(db, "features"));
-      let quizFeatureId = null;
+      let quizFeatureId = FEATURES.QUIZZES.id;
       
       featuresSnap.forEach(doc => {
         const data = doc.data();
-        if (data.name === "Quiz" || data.featureType === "quiz") {
+        if (data.id === FEATURES.QUIZZES.id || data.name === FEATURES.QUIZZES.name || data.featureType === FEATURES.QUIZZES.type) {
           quizFeatureId = doc.id;
         }
       });
 
       // Update Quiz feature to add featureType if missing
       if (quizFeatureId) {
-        const quizDoc = await getDocs(query(collection(db, "features"), where("name", "==", "Quiz")));
+        const quizDoc = await getDocs(query(collection(db, "features"), where("id", "==", FEATURES.QUIZZES.id)));
         if (!quizDoc.empty) {
           const data = quizDoc.docs[0].data();
           if (!data.featureType) {
-            await updateDoc(doc(db, "features", quizFeatureId), {
+            // Use setDoc with merge to create if doesn't exist
+            await setDoc(doc(db, "features", quizFeatureId), {
               featureType: "quiz"
-            });
+            }, { merge: true });
             addProgress(`✅ Updated Quiz feature with featureType: "quiz"`);
           } else {
             addProgress(`✅ Quiz feature already has featureType`);

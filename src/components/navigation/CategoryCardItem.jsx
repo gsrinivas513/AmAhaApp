@@ -10,6 +10,79 @@
 import React from "react";
 import { ResponsiveImage } from "../OptimizedImage";
 
+// Helper function to convert Tailwind color names to actual hex values
+const colorNameToHex = (colorName) => {
+  const colorMap = {
+    // Rose/Pink family
+    "from-rose-400": "#f43f5e",
+    "via-pink-300": "#f472b6",
+    "to-rose-300": "#fda4af",
+    "from-pink-300": "#f472b6",
+    "to-rose-200": "#fecdd3",
+    
+    // Amber/Orange/Yellow family
+    "from-amber-400": "#fbbf24",
+    "via-orange-300": "#fdba74",
+    "to-yellow-300": "#fcd34d",
+    "from-orange-300": "#fdba74",
+    "to-yellow-200": "#fef08a",
+    
+    "from-orange-400": "#fb923c",
+    "via-amber-300": "#fcd34d",
+    "from-amber-300": "#fcd34d",
+    
+    // Blue/Cyan family
+    "from-blue-400": "#60a5fa",
+    "via-cyan-300": "#67e8f9",
+    "to-blue-300": "#93c5fd",
+    "from-blue-300": "#93c5fd",
+    "to-cyan-200": "#cffafe",
+    
+    // Emerald/Green/Teal family
+    "from-emerald-400": "#34d399",
+    "via-green-300": "#86efac",
+    "to-teal-300": "#7dd3fc",
+    "from-green-300": "#86efac",
+    "to-teal-200": "#ccf0ff",
+    
+    "from-cyan-400": "#06b6d4",
+    "via-teal-300": "#7dd3fc",
+    "from-cyan-300": "#67e8f9",
+    
+    // Red/Orange/Amber family
+    "from-red-400": "#f87171",
+    "via-orange-300": "#fdba74",
+    "to-amber-300": "#fcd34d",
+    "from-red-300": "#fca5a5",
+    "to-orange-200": "#fed7aa",
+    
+    // Purple/Violet/Pink family
+    "from-purple-400": "#c084fc",
+    "via-violet-300": "#ddd6fe",
+    "to-pink-300": "#f472b6",
+    "from-purple-300": "#d8b4fe",
+    "to-pink-200": "#fbcfe8",
+  };
+  return colorMap[colorName] || "#999";
+};
+
+// Helper function to create gradient from colorScheme color string
+const getGradientFromColorScheme = (colorSchemeStr) => {
+  if (!colorSchemeStr) return "linear-gradient(135deg, #999 0%, #999 100%)";
+  
+  const colors = colorSchemeStr.split(" ");
+  const hexColors = colors.map(colorNameToHex);
+  
+  if (hexColors.length === 3) {
+    // from ... via ... to
+    return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[1]} 50%, ${hexColors[2]} 100%)`;
+  } else if (hexColors.length === 2) {
+    // from ... to
+    return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[1]} 100%)`;
+  }
+  return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[0]} 100%)`;
+};
+
 // Color schemes for category cards
 export const colorSchemes = [
   { color: "from-rose-400 via-pink-300 to-rose-300", borderColor: "from-pink-300 to-rose-200" },
@@ -48,6 +121,7 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
         <div
           onClick={onClick}
           className="h-32 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+          style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
         >
           {hasImage ? (
             <ResponsiveImage
@@ -63,9 +137,13 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
             />
           ) : (
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-5xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}
+              className="absolute inset-0 flex items-center justify-center text-5xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: getGradientFromColorScheme(colorScheme.color),
+                zIndex: 1,
+              }}
             >
-              {category.icon}
+              {category.icon || "📚"}
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -90,6 +168,7 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
       <div
         onClick={onClick}
         className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+        style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
       >
         {hasImage ? (
           <ResponsiveImage
@@ -105,9 +184,13 @@ function CategoryCardItem({ category, index, onClick, compact = false }) {
           />
         ) : (
           <div
-            className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}
+            className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+            style={{
+              background: getGradientFromColorScheme(colorScheme.color),
+              zIndex: 1,
+            }}
           >
-            {category.icon}
+            {category.icon || "📚"}
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

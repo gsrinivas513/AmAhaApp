@@ -1,6 +1,7 @@
 // src/admin/InitializeFirebaseStructure.jsx
 import React, { useState } from "react";
 import { collection, addDoc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
+import { FEATURES } from "../constants/FEATURES";
 import { db } from "../firebase/firebaseConfig";
 import AdminLayout from "./AdminLayout";
 
@@ -111,11 +112,11 @@ export default function InitializeFirebaseStructure() {
         
         // Create Quiz Feature
         const quizRef = await addDoc(collection(db, "features"), {
-          name: "Quiz",
-          label: "Quiz",
-          featureType: "quiz",
-          icon: "🎯",
-          description: "Interactive quiz questions with multiple choice answers",
+          name: FEATURES.QUIZZES.name,
+          label: FEATURES.QUIZZES.label,
+          featureType: FEATURES.QUIZZES.type,
+          icon: FEATURES.QUIZZES.icon,
+          description: FEATURES.QUIZZES.description,
           enabled: true,
           sortOrder: 1,
           createdAt: serverTimestamp()
@@ -142,7 +143,7 @@ export default function InitializeFirebaseStructure() {
         // Get existing feature IDs
         featuresSnap.forEach(doc => {
           const data = doc.data();
-          if (data.featureType === "quiz") quizFeatureId = doc.id;
+          if (data.featureType === FEATURES.QUIZZES.type) quizFeatureId = doc.id;
           if (data.featureType === "kids") kidsFeatureId = doc.id;
         });
       }

@@ -6,8 +6,14 @@ import { useAuth } from "../components/AuthProvider";
 
 // Puzzle components - will refactor these to work inline
 import MatchingPuzzle from "./MatchingPuzzle";
-import OrderingPuzzle from "./OrderingPuzzle";
 import DragPuzzle from "./DragPuzzle";
+
+// Visual puzzle renderers (includes OrderingPuzzle)
+import PictureWordPuzzle from "./renderers/PictureWordPuzzle";
+import SpotDifferencePuzzle from "./renderers/SpotDifferencePuzzle";
+import FindPairPuzzle from "./renderers/FindPairPuzzle";
+import PictureShadowPuzzle from "./renderers/PictureShadowPuzzle";
+import OrderingPuzzle from "./renderers/OrderingPuzzle";
 
 export default function UnifiedPuzzlePage() {
   const { categoryName, topicName, puzzleId } = useParams();
@@ -90,6 +96,39 @@ export default function UnifiedPuzzlePage() {
         />
       );
       break;
+    case "pictureword":
+      puzzleComponent = (
+        <PictureWordPuzzle
+          puzzle={puzzle}
+          onComplete={handlePuzzleComplete}
+        />
+      );
+      break;
+    case "spotdifference":
+      puzzleComponent = (
+        <SpotDifferencePuzzle
+          puzzle={puzzle}
+          onComplete={handlePuzzleComplete}
+        />
+      );
+      break;
+    case "findpair":
+    case "findpairs":
+      puzzleComponent = (
+        <FindPairPuzzle
+          puzzle={puzzle}
+          onComplete={handlePuzzleComplete}
+        />
+      );
+      break;
+    case "pictureshadow":
+      puzzleComponent = (
+        <PictureShadowPuzzle
+          puzzle={puzzle}
+          onComplete={handlePuzzleComplete}
+        />
+      );
+      break;
     case "ordering":
       puzzleComponent = (
         <OrderingPuzzle 
@@ -107,52 +146,6 @@ export default function UnifiedPuzzlePage() {
           onComplete={handlePuzzleComplete}
           isInline={true}
         />
-      );
-      break;
-    case "pictureword":
-    case "spotdifference":
-    case "pictureshadow":
-      // For visual puzzles without dedicated components yet
-      puzzleComponent = (
-        <div className="p-8 text-center max-w-2xl mx-auto">
-          <div className="text-6xl mb-6">🧩</div>
-          <h1 className="text-2xl font-bold mb-4">{puzzle.title}</h1>
-          <p className="text-gray-600 mb-6">{puzzle.description}</p>
-
-          {puzzle.imageUrl && (
-            <div className="mb-6 rounded-lg overflow-hidden shadow-lg">
-              <img
-                src={puzzle.imageUrl}
-                alt={puzzle.title}
-                className="w-full max-h-64 object-cover"
-              />
-            </div>
-          )}
-
-          {puzzle.hints && puzzle.hints.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-yellow-800 mb-2">💡 Hints:</h3>
-              <ul className="text-sm text-yellow-700">
-                {puzzle.hints.map((hint, i) => (
-                  <li key={i}>• {hint}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-blue-800">
-              <strong>Answer:</strong> {puzzle.correctAnswer || "Complete the puzzle to find out!"}
-            </p>
-          </div>
-
-          <button
-            onClick={handlePuzzleComplete}
-            className="mt-6 px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600"
-          >
-            ✓ Mark as Complete
-          </button>
-        </div>
       );
       break;
     default:

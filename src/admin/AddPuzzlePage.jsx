@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AdminLayout from './AdminLayout';
+import { FEATURES } from '../constants/FEATURES';
 import { addPuzzle, updatePuzzle, getPuzzleById } from '../quiz/services/puzzleService';
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -296,7 +297,7 @@ function AddPuzzlePage({ puzzleId }) {
           // Canonicalize category for user-facing queries
           const canonicalCat = canonicalCategoryName(p.category || "General");
           // Hierarchy creation
-          const featureId = await getOrCreateFeature(p.feature || "Puzzles");
+          const featureId = await getOrCreateFeature(p.feature || FEATURES.PUZZLES.id);
           const categoryId = await getOrCreateCategory(canonicalCat, featureId);
           const topicId = await getOrCreateTopic(p.topic || "General", categoryId);
           const subtopicId = await getOrCreateSubtopic(p.subtopic || "General", categoryId, featureId, topicId);

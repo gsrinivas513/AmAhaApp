@@ -46,11 +46,11 @@ function FeaturesList({
         {features.map((feat) => (
           <Card
             key={feat.id}
-            onClick={() => onSelectFeature(feat.id)}
+            onClick={() => onSelectFeature(feat.featureId || feat.id)}
             style={{
               padding: 8,
               cursor: "pointer",
-              background: selectedFeatureId === feat.id ? "#f0f9ff" : "#fff",
+              background: selectedFeatureId === (feat.featureId || feat.id) ? "#f0f9ff" : "#fff",
               borderLeft: `4px solid ${feat.color || "#0284c7"}`,
             }}
           >
@@ -62,7 +62,7 @@ function FeaturesList({
                     {feat.label}
                   </div>
                   <div style={{ fontSize: 9, color: "#64748b" }}>
-                    {categories.filter((c) => c.featureId === feat.id).length} categories
+                    {categories.filter((c) => c.featureId === (feat.featureId || feat.id)).length} categories
                   </div>
                 </div>
               </div>

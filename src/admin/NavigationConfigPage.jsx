@@ -108,7 +108,8 @@ function NavigationConfigPage() {
           order: featureOrder[feature.id],
           showInMenu: feature.showInMenu !== false,
         };
-        await updateDoc(doc(db, "features", feature.id), updatedData);
+        // Use setDoc with merge to create if doesn't exist
+        await setDoc(doc(db, "features", feature.id), updatedData, { merge: true });
       }
 
       setStatus("✅ Configuration saved successfully!");

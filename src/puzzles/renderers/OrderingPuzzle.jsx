@@ -10,6 +10,14 @@ function OrderingPuzzle({ puzzle, onComplete }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [attempts, setAttempts] = useState(0);
 
+  const gameRules = [
+    "📋 Look at the items on the right side",
+    "🎯 Drag items to arrange them in the correct order",
+    "📍 Drop items in the sequence area below",
+    "❌ Click the × button to remove items from sequence",
+    "✅ Arrange all items in correct order to complete"
+  ];
+
   useEffect(() => {
     const puzzleItems = puzzle.data.items || [];
     // Shuffle items
@@ -96,12 +104,13 @@ function OrderingPuzzle({ puzzle, onComplete }) {
             )}
             {order.map((itemId, index) => {
               const item = items.find((i) => i.id === itemId);
+              if (!item) return null;
               return (
                 <div key={itemId} className="sequence-step">
                   <span className="step-number">{index + 1}</span>
                   <div className="step-content">
-                    {item.image && <img src={item.image} alt="" />}
-                    {item.label && <span>{item.label}</span>}
+                    {item.image && <img src={item.image} alt={item.label || "Item"} />}
+                    {item.label && <span className="item-text">{item.label}</span>}
                   </div>
                   <button
                     type="button"
@@ -126,12 +135,32 @@ function OrderingPuzzle({ puzzle, onComplete }) {
                 draggable
                 onDragStart={(e) => handleDragStart(e, item.id)}
               >
-                {item.image && <img src={item.image} alt="" />}
+                {item.image && <img src={item.image} alt={item.label || "Item"} />}
                 {item.label && <span className="item-label">{item.label}</span>}
               </div>
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Game Rules Below Puzzle */}
+      <div style={{
+        background: "white",
+        borderRadius: "15px",
+        padding: "2rem",
+        maxWidth: "600px",
+        marginTop: "2rem",
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
+        textAlign: "left"
+      }}>
+        <h4 style={{ color: "#333", marginTop: 0 }}>📋 Game Rules:</h4>
+        <ul style={{ margin: "1rem 0", paddingLeft: "1.5rem" }}>
+          {gameRules.map((rule, idx) => (
+            <li key={idx} style={{ marginBottom: "0.6rem", fontSize: "0.95rem", color: "#555" }}>
+              {rule}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
