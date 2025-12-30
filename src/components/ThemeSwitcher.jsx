@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
-import { ThemeContext } from '../theme/ThemeProvider';
+import React from 'react';
+import { useTheme } from '../theme/ThemeProvider';
 
 export const ThemeSwitcher = () => {
-  const { currentTheme, setTheme } = useContext(ThemeContext);
+  const { mode: currentTheme, setMode: setTheme } = useTheme();
 
   const themes = [
     { id: 'playful', name: '🎨 Playful' },
