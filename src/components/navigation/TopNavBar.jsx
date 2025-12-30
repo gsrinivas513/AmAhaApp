@@ -19,6 +19,7 @@ import MobileMenu from "./MobileMenu";
 import { Button, Avatar } from "../ui";
 import AchievementsBadge from "../AchievementsBadge";
 import StreakDisplay from "../StreakDisplay/StreakDisplay";
+import ThemeSwitcher from "../ThemeSwitcher";
 import { FEATURES, getFeatureById } from "../../constants/FEATURES";
 
 function TopNavBar() {
@@ -319,6 +320,9 @@ function TopNavBar() {
                 <span style={{ fontWeight: "bold", color: "#92400e" }}>{coins}</span>
               </div>
             )}
+
+            {/* Theme Switcher */}
+            <ThemeSwitcher />
 
             {/* Achievements Badge */}
             {user && <AchievementsBadge userId={user.uid} />}

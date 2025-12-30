@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import { Card, Button } from "../components/ui";
+import { CTASection } from "../design/DesignSystem";
 
 /**
  * TopicPage
@@ -304,6 +305,26 @@ export default function TopicPage() {
             );
           })}
         </div>
+
+        {/* CTA Section */}
+        <CTASection
+          title="Boost Your Knowledge"
+          subtitle={`Master ${topicName} and earn rewards`}
+          primaryCta={{
+            label: "🚀 Start Quizzing",
+            onClick: () => {
+              if (subtopics.length > 0) {
+                navigate(
+                  `/quiz/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}/${encodeURIComponent(subtopics[0].name)}/easy`
+                );
+              }
+            }
+          }}
+          secondaryCta={{
+            label: "📊 View Leaderboards",
+            onClick: () => navigate("/leaderboards")
+          }}
+        />
       </div>
     </SiteLayout>
   );

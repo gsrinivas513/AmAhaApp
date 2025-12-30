@@ -11,6 +11,7 @@ import { countPuzzlesForTopic, getPuzzlesForTopic } from "./puzzleCountService";
 import { getRandomPuzzleByCategory } from "./quickPlayService";
 import { ResponsiveImage } from "../components/OptimizedImage";
 import { TopicCard, CarouselSection } from "./components/TopicCardGrid";
+import { CTASection } from "../design/DesignSystem";
 
 export default function PuzzleTopicPage() {
   const { categoryName } = useParams();
@@ -412,6 +413,22 @@ export default function PuzzleTopicPage() {
                 );
               })}
             </div>
+          )}
+
+          {/* CTA Section at the end */}
+          {categoryName && (
+            <CTASection
+              title="Ready to Master This Category?"
+              subtitle={`Challenge yourself with more ${decodeURIComponent(categoryName)} puzzles`}
+              primaryCta={{
+                label: `🎮 Play Random ${decodeURIComponent(categoryName)}`,
+                onClick: handleQuickPlayByCategory
+              }}
+              secondaryCta={{
+                label: "📚 Browse All Categories",
+                onClick: () => navigate("/puzzle")
+              }}
+            />
           )}
         </div>
       </section>
