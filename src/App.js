@@ -18,7 +18,7 @@ import Navbar from "./components/Navbar"; // DEPRECATED: Functionality moved to 
 import TopNavBar from "./components/navigation/TopNavBar";
 
 /* PUBLIC */
-import HomePage from "./home/HomePage";
+import HomePagePuzzleFreeExact from "./home/HomePagePuzzleFreeExact";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import AllFeaturesPage from "./pages/AllFeaturesPage";
 import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
@@ -110,7 +110,7 @@ function App() {
       {/* <Navbar /> */}
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePagePuzzleFreeExact />} />
         <Route path="/categories" element={<AllFeaturesPage />} />
         <Route path="/explore" element={<ExploreCategoriesPage />} />
 

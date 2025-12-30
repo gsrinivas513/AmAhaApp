@@ -23,67 +23,112 @@ export const HeroSection = ({
     <div style={{
       background: backgroundGradient || defaultGradient,
       color: 'white',
-      padding: '80px 20px',
+      padding: '100px 20px',
       textAlign: 'center',
-      borderRadius: '0 0 24px 24px'
+      borderRadius: '0 0 32px 32px',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <h1 style={{
-        fontSize: '3.5rem',
-        fontWeight: 800,
-        marginBottom: 16,
-        textShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        {title}
-      </h1>
-      
-      <p style={{
-        fontSize: '1.3rem',
-        marginBottom: 32,
-        opacity: 0.95,
-        maxWidth: '600px',
-        margin: '0 auto 32px'
-      }}>
-        {subtitle}
-      </p>
-
+      {/* Animated background elements */}
       <div style={{
-        display: 'flex',
-        gap: 16,
-        justifyContent: 'center',
-        flexWrap: 'wrap'
+        position: 'absolute',
+        top: '-50%',
+        right: '-10%',
+        width: '500px',
+        height: '500px',
+        background: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '50%',
+        filter: 'blur(80px)'
+      }} />
+      
+      <div style={{
+        position: 'relative',
+        zIndex: 1
       }}>
-        {primaryCta && (
-          <button style={{
-            padding: '14px 32px',
-            fontSize: '1.1rem',
-            fontWeight: 700,
-            background: 'white',
-            color: '#667eea',
-            border: 'none',
-            borderRadius: 12,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-          }} onClick={primaryCta.onClick}>
-            {primaryCta.label}
-          </button>
-        )}
+        <h1 style={{
+          fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
+          fontWeight: 800,
+          marginBottom: 20,
+          textShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          letterSpacing: '-1px',
+          lineHeight: 1.2
+        }}>
+          {title}
+        </h1>
         
-        {secondaryCta && (
-          <button style={{
-            padding: '14px 32px',
-            fontSize: '1.1rem',
-            fontWeight: 700,
-            background: 'rgba(255,255,255,0.2)',
-            color: 'white',
-            border: '2px solid white',
-            borderRadius: 12,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-          }} onClick={secondaryCta.onClick}>
-            {secondaryCta.label}
-          </button>
-        )}
+        <p style={{
+          fontSize: 'clamp(1rem, 2vw, 1.4rem)',
+          marginBottom: 40,
+          opacity: 0.95,
+          maxWidth: '650px',
+          margin: '0 auto 40px',
+          lineHeight: 1.6,
+          fontWeight: 400
+        }}>
+          {subtitle}
+        </p>
+
+        <div style={{
+          display: 'flex',
+          gap: 20,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginBottom: 20
+        }}>
+          {primaryCta && (
+            <button style={{
+              padding: '16px 40px',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              background: 'white',
+              color: '#667eea',
+              border: 'none',
+              borderRadius: 16,
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.25)',
+              letterSpacing: '0.5px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.35)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.25)';
+            }}
+            onClick={primaryCta.onClick}>
+              {primaryCta.label}
+            </button>
+          )}
+          
+          {secondaryCta && (
+            <button style={{
+              padding: '16px 40px',
+              fontSize: '1.1rem',
+              fontWeight: 700,
+              background: 'rgba(255,255,255,0.15)',
+              color: 'white',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: 16,
+              cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              backdropFilter: 'blur(10px)',
+              letterSpacing: '0.5px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+              e.currentTarget.style.transform = 'translateY(-3px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+            onClick={secondaryCta.onClick}>
+              {secondaryCta.label}
+            </button>
+          )}
+        </div>
       </div>
 
       {children}
@@ -95,56 +140,83 @@ export const HeroSection = ({
 // CATEGORY GRID - Display categories as clickable cards
 // ============================================================================
 export const CategoryGrid = ({ categories, onCategoryClick }) => {
+  const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9d56 0%, #ff6a88 100%)',
+  ];
+
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-      gap: 12,
+      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+      gap: 16,
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: '40px 20px'
+      padding: '0 20px 40px'
     }}>
-      {categories.map((category) => (
+      {categories.map((category, idx) => (
         <div
           key={category.id}
           onClick={() => onCategoryClick(category)}
           style={{
-            padding: 16,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: 20,
+            background: gradients[idx % gradients.length],
             color: 'white',
-            borderRadius: 12,
+            borderRadius: 16,
             textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             transform: 'translateY(0)',
-            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.4)';
+            e.currentTarget.style.transform = 'translateY(-6px)';
+            e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.2)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.2)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.12)';
           }}
         >
-          <div style={{ fontSize: '2rem', marginBottom: 8 }}>
+          <div style={{ 
+            fontSize: '2.8rem', 
+            marginBottom: 12,
+            display: 'inline-block',
+            transition: 'transform 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.15) rotate(5deg)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1) rotate(0)';
+          }}>
             {category.icon || '🎮'}
           </div>
           <p style={{
-            fontSize: '0.9rem',
+            fontSize: '1rem',
             fontWeight: 700,
             margin: 0,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            letterSpacing: '0.5px'
           }}>
             {category.name}
           </p>
           <p style={{
-            fontSize: '0.75rem',
-            opacity: 0.85,
-            margin: '6px 0 0 0'
+            fontSize: '0.8rem',
+            opacity: 0.9,
+            margin: '8px 0 0 0',
+            fontWeight: 500
           }}>
             {category.count} puzzles
           </p>
@@ -160,38 +232,73 @@ export const CategoryGrid = ({ categories, onCategoryClick }) => {
 export const StatsSection = ({ stats }) => {
   return (
     <div style={{
-      background: '#f8fafc',
-      padding: '60px 20px',
-      margin: '40px 0'
+      background: 'linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%)',
+      padding: '80px 20px',
+      margin: '60px 0 0 0'
     }}>
       <div style={{
         maxWidth: '1200px',
-        margin: '0 auto',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 30,
-        textAlign: 'center'
+        margin: '0 auto'
       }}>
-        {stats.map((stat, idx) => (
-          <div key={idx}>
-            <div style={{
-              fontSize: '2.8rem',
-              fontWeight: 800,
-              color: '#667eea',
-              marginBottom: 8
-            }}>
-              {stat.value}
+        <h2 style={{
+          fontSize: '2.4rem',
+          fontWeight: 800,
+          marginBottom: 50,
+          textAlign: 'center',
+          color: '#0f172a',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          By The Numbers
+        </h2>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 32,
+          textAlign: 'center'
+        }}>
+          {stats.map((stat, idx) => (
+            <div
+              key={idx}
+              style={{
+                padding: 32,
+                background: 'white',
+                borderRadius: 16,
+                border: '1px solid rgba(0, 0, 0, 0.05)',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.06)';
+              }}
+            >
+              <div style={{
+                fontSize: '3.2rem',
+                fontWeight: 800,
+                color: '#667eea',
+                marginBottom: 12
+              }}>
+                {stat.value}
+              </div>
+              <p style={{
+                fontSize: '1.15rem',
+                color: '#6b7280',
+                margin: 0,
+                fontWeight: 600
+              }}>
+                {stat.label}
+              </p>
             </div>
-            <p style={{
-              fontSize: '1.1rem',
-              color: '#6b7280',
-              margin: 0,
-              fontWeight: 600
-            }}>
-              {stat.label}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -204,50 +311,56 @@ export const FeaturedSection = ({ title, items, onItemClick }) => {
   return (
     <div style={{
       maxWidth: '1200px',
-      margin: '60px auto',
+      margin: '80px auto',
       padding: '0 20px'
     }}>
       <h2 style={{
-        fontSize: '2rem',
+        fontSize: '2.4rem',
         fontWeight: 800,
-        marginBottom: 8,
-        color: '#1f2937'
+        marginBottom: 12,
+        color: '#0f172a',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text'
       }}>
         ⭐ {title}
       </h2>
       
       <p style={{
         color: '#6b7280',
-        marginBottom: 30,
-        fontSize: '1.05rem'
+        marginBottom: 40,
+        fontSize: '1.1rem',
+        fontWeight: 500
       }}>
         Handpicked puzzles loved by our community
       </p>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-        gap: 20
+        gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+        gap: 28
       }}>
         {items.map((item) => (
           <div
             key={item.id}
             onClick={() => onItemClick(item)}
             style={{
-              borderRadius: 12,
+              borderRadius: 16,
               overflow: 'hidden',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-              background: 'white'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+              background: 'white',
+              border: '1px solid rgba(0, 0, 0, 0.05)'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-8px)';
-              e.currentTarget.style.boxShadow = '0 12px 28px rgba(0,0,0,0.15)';
+              e.currentTarget.style.boxShadow = '0 16px 40px rgba(0,0,0,0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
             }}
           >
             <div style={{
@@ -257,17 +370,46 @@ export const FeaturedSection = ({ title, items, onItemClick }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '3rem'
+              fontSize: '3.5rem',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              {item.image || item.icon || '🎮'}
+              <div style={{
+                position: 'absolute',
+                top: '-30%',
+                right: '-10%',
+                width: '200px',
+                height: '200px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '50%',
+                filter: 'blur(60px)'
+              }} />
+              <span style={{ position: 'relative', zIndex: 1 }}>
+                {item.image || item.icon || '🎮'}
+              </span>
+              <div style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                background: 'rgba(255,255,255,0.95)',
+                padding: '8px 14px',
+                borderRadius: 24,
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                zIndex: 2
+              }}>
+                ⭐ {item.rating || 4.5}
+              </div>
             </div>
             
-            <div style={{ padding: 16 }}>
+            <div style={{ padding: 20 }}>
               <h3 style={{
-                fontSize: '1rem',
+                fontSize: '1.1rem',
                 fontWeight: 700,
-                margin: '0 0 6px 0',
-                color: '#1f2937'
+                margin: '0 0 8px 0',
+                color: '#0f172a'
               }}>
                 {item.title}
               </h3>
@@ -281,15 +423,39 @@ export const FeaturedSection = ({ title, items, onItemClick }) => {
                 {item.description}
               </p>
 
+              {item.tags && item.tags.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  gap: 6,
+                  marginBottom: 12,
+                  flexWrap: 'wrap'
+                }}>
+                  {item.tags.slice(0, 2).map((tag, idx) => (
+                    <span key={idx} style={{
+                      display: 'inline-block',
+                      background: '#f0f9ff',
+                      color: '#0369a1',
+                      padding: '4px 10px',
+                      borderRadius: 12,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      border: '1px solid #bae6fd'
+                    }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 color: '#9ca3af'
               }}>
-                <span>⭐ {item.rating || 4.5}</span>
-                <span>{item.plays || 0} plays</span>
+                <span>▶️ {item.plays || 0}</span>
+                <span>✓ {item.completed || 0}</span>
               </div>
             </div>
           </div>

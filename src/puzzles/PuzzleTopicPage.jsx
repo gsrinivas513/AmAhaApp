@@ -5,12 +5,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import { Card, Button } from "../components/ui";
+import Breadcrumb from "../components/Breadcrumb";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { countPuzzlesForTopic, getPuzzlesForTopic } from "./puzzleCountService";
 import { getRandomPuzzleByCategory } from "./quickPlayService";
 import { ResponsiveImage } from "../components/OptimizedImage";
 import { TopicCard, CarouselSection } from "./components/TopicCardGrid";
+import EnhancedTopicCard from "./components/EnhancedTopicCard";
 import { CTASection } from "../design/DesignSystem";
 
 export default function PuzzleTopicPage() {
@@ -208,6 +210,14 @@ export default function PuzzleTopicPage() {
     if (!categoryName) {
       return (
         <SiteLayout>
+          {/* Breadcrumb Navigation */}
+          <Breadcrumb
+            items={[
+              { label: '🏠 Home', onClick: () => navigate('/') },
+              { label: '🧩 Puzzles' }
+            ]}
+          />
+          
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 text-white py-14 px-4 shadow-xl">
             <div className="max-w-7xl mx-auto">
@@ -271,15 +281,19 @@ export default function PuzzleTopicPage() {
                           ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                               {cat.topics.map((topic, topicIndex) => (
-                                <TopicCard 
+                                <EnhancedTopicCard 
                                   key={topic.id}
-                                  item={topic}
+                                  item={{
+                                    ...topic,
+                                    icon: topic.icon || '🧩',
+                                    tags: topic.tags || [],
+                                    rating: topic.rating || 4.5,
+                                    difficulty: topic.difficulty || 'medium'
+                                  }}
                                   categoryName={cat.label || cat.name}
-                                  theme={theme}
                                   itemIndex={topicIndex}
                                   navigate={navigate}
                                   getNavigationPath={(t) => `/puzzle/${encodeURIComponent(cat.name || cat.label)}/${encodeURIComponent(t.name || t.label)}`}
-                                  isCarousel={false}
                                 />
                               ))}
                             </div>
@@ -303,6 +317,15 @@ export default function PuzzleTopicPage() {
 
   return (
     <SiteLayout>
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: '🏠 Home', onClick: () => navigate('/') },
+          { label: '🧩 Puzzles', onClick: () => navigate('/puzzle') },
+          { label: category?.label || category?.name }
+        ]}
+      />
+      
       {/* Header with Back Button */}
       <div className="bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-200 text-gray-800 py-8 px-4 shadow-lg">
         <div className="max-w-6xl mx-auto">
@@ -389,11 +412,16 @@ export default function PuzzleTopicPage() {
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {subtopicsToShow.map((subtopic, subIndex) => (
-                          <TopicCard 
+                          <EnhancedTopicCard 
                             key={subtopic.id}
-                            item={subtopic}
+                            item={{
+                              ...subtopic,
+                              icon: subtopic.icon || '🎮',
+                              tags: subtopic.tags || [],
+                              rating: subtopic.rating || 4.5,
+                              difficulty: subtopic.difficulty || 'medium'
+                            }}
                             categoryName={null}
-                            theme={theme}
                             itemIndex={subIndex}
                             navigate={handleNavigateToPuzzle}
                             getNavigationPath={(s) => {
@@ -404,7 +432,6 @@ export default function PuzzleTopicPage() {
                               // Otherwise it's a subtopic, use firstPuzzleId
                               return s.firstPuzzleId ? `/play/${s.firstPuzzleId}` : '#';
                             }}
-                            isCarousel={false}
                           />
                         ))}
                       </div>

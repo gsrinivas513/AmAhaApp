@@ -2,26 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import {
-  HeroSection,
-  CategoryGrid,
-  StatsSection,
-  FeaturedSection,
-  HowItWorksSection,
-  BenefitsSection,
-  CTASection
-} from "../design/DesignSystem";
+  HeroSectionModern,
+  CategoryGridModern,
+  StatsSectionModern,
+  HowItWorksModern,
+  BenefitsSectionModern,
+  CTASectionModern
+} from "../design/ModernDesignSystem";
 import DailyChallengeCard from "../components/DailyChallenge/DailyChallengeCard";
 import Footer from "./components/Footer";
 
-export default function HomePage() {
+export default function HomePageModern() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [stats, setStats] = useState([
-    { value: "500+", label: "Puzzles" },
-    { value: "10K+", label: "Active Players" },
-    { value: "50K+", label: "Puzzles Solved" },
-    { value: "1M+", label: "Total Plays" }
-  ]);
 
   const steps = [
     {
@@ -33,11 +26,11 @@ export default function HomePage() {
       description: "Challenge yourself with different difficulty levels"
     },
     {
-      title: "See Your Progress",
-      description: "Track your achievements and compete with friends"
+      title: "Track Progress",
+      description: "Monitor your achievements and compete with friends"
     },
     {
-      title: "Share & Enjoy",
+      title: "Share & Celebrate",
       description: "Share your results and celebrate your wins"
     }
   ];
@@ -61,12 +54,11 @@ export default function HomePage() {
     {
       icon: "⭐",
       title: "Daily Challenges",
-      description: "New puzzles every day to keep you engaged and motivated"
+      description: "New puzzles every day to keep you engaged"
     }
   ];
 
   useEffect(() => {
-    // Fetch categories from your API/Firebase
     setCategories([
       { id: 1, name: "Jigsaw", icon: "🧩", count: 45 },
       { id: 2, name: "Matching", icon: "🎯", count: 38 },
@@ -83,14 +75,10 @@ export default function HomePage() {
     navigate(`/puzzle/${encodeURIComponent(category.name)}`);
   };
 
-  const handlePlayDaily = () => {
-    // Navigation handled by DailyChallengeCard
-  };
-
   return (
     <SiteLayout>
-      {/* Hero Section */}
-      <HeroSection
+      {/* Modern Hero Section with Glassmorphism */}
+      <HeroSectionModern
         title="Solve Puzzles, Challenge Yourself"
         subtitle="Explore hundreds of exciting puzzles and test your skills. From Jigsaw to Word Search, find your favorite puzzle type and become a master."
         primaryCta={{
@@ -106,34 +94,37 @@ export default function HomePage() {
       {/* Daily Challenge Section */}
       <div style={{
         maxWidth: "1200px",
-        margin: "60px auto 40px",
+        margin: "80px auto 40px",
         padding: "0 20px"
       }}>
         <h2 style={{
-          fontSize: "1.8rem",
-          fontWeight: 700,
-          marginBottom: "20px",
-          color: "#1f2937"
+          fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
+          fontWeight: 800,
+          marginBottom: "30px",
+          color: "#1f2937",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px"
         }}>
           🎯 Today's Challenge
         </h2>
-        <DailyChallengeCard onPlayClick={handlePlayDaily} />
+        <DailyChallengeCard onPlayClick={() => {}} />
       </div>
 
-      {/* Categories Section */}
+      {/* Categories Section with Modern Design */}
       <div style={{
-        background: "linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%)",
-        padding: "60px 20px",
+        background: 'linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%)',
+        padding: "100px 20px",
         marginTop: 40
       }}>
         <div style={{
           maxWidth: "1200px",
-          margin: "0 auto"
+          margin: "0 auto 50px"
         }}>
           <h2 style={{
-            fontSize: "2.2rem",
-            fontWeight: 700,
-            marginBottom: 8,
+            fontSize: "clamp(2rem, 5vw, 2.8rem)",
+            fontWeight: 900,
+            marginBottom: 16,
             color: "#0f172a",
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             WebkitBackgroundClip: "text",
@@ -144,82 +135,35 @@ export default function HomePage() {
           </h2>
           <p style={{
             color: "#6b7280",
-            marginBottom: 40,
-            fontSize: "1.05rem",
-            fontWeight: 500
+            fontSize: "1.15rem",
+            fontWeight: 500,
+            margin: 0
           }}>
             Select a category to start exploring puzzles
           </p>
         </div>
-        <CategoryGrid
+        <CategoryGridModern
           categories={categories}
           onCategoryClick={handleCategoryClick}
         />
       </div>
 
-      {/* How It Works */}
-      <HowItWorksSection steps={steps} />
+      {/* How It Works Section */}
+      <HowItWorksModern steps={steps} />
 
-      {/* Benefits Section */}
-      <BenefitsSection benefits={benefits} />
+      {/* Benefits Section with Glassmorphism */}
+      <BenefitsSectionModern benefits={benefits} />
 
       {/* Stats Section */}
-      <StatsSection stats={stats} />
-
-      {/* Featured/Popular Puzzles */}
-      <FeaturedSection
-        title="Popular This Week"
-        items={[
-          {
-            id: 1,
-            title: "Mountain Landscape",
-            description: "Beautiful jigsaw puzzle",
-            rating: 4.8,
-            plays: 1250,
-            completed: 845,
-            icon: "🏔️",
-            tags: ["Scenic", "Relaxing"],
-            difficulty: "medium"
-          },
-          {
-            id: 2,
-            title: "Ocean Adventure",
-            description: "Relaxing puzzle experience",
-            rating: 4.7,
-            plays: 980,
-            completed: 612,
-            icon: "🌊",
-            tags: ["Nature", "Water"],
-            difficulty: "easy"
-          },
-          {
-            id: 3,
-            title: "Forest Mystery",
-            description: "Challenge your mind",
-            rating: 4.9,
-            plays: 2100,
-            completed: 1654,
-            icon: "🌲",
-            tags: ["Adventure", "Puzzle"],
-            difficulty: "hard"
-          },
-          {
-            id: 4,
-            title: "City Lights",
-            description: "Urban puzzle scene",
-            rating: 4.6,
-            plays: 756,
-            completed: 489,
-            icon: "🌃",
-            tags: ["Urban", "Modern"],
-            difficulty: "medium"
-          }
-        ]}
-        onItemClick={(item) => navigate(`/play/${item.id}`)}
-      />
+      <StatsSectionModern stats={[
+        { value: "500+", label: "Puzzles" },
+        { value: "10K+", label: "Players" },
+        { value: "50K+", label: "Solved" },
+        { value: "1M+", label: "Plays" }
+      ]} />
 
       {/* Final CTA */}
-      <CTASection
+      <CTASectionModern
         title="Ready to Test Your Skills?"
         subtitle="Join thousands of puzzle enthusiasts and start your puzzle journey today"
         primaryCta={{

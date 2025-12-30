@@ -21,6 +21,7 @@ import AchievementsBadge from "../AchievementsBadge";
 import StreakDisplay from "../StreakDisplay/StreakDisplay";
 import ThemeSwitcher from "../ThemeSwitcher";
 import { FEATURES, getFeatureById } from "../../constants/FEATURES";
+import { useTheme } from "../../context/ThemeContext";
 
 function TopNavBar() {
   const navigate = useNavigate();
@@ -111,17 +112,15 @@ function TopNavBar() {
     return (
       <nav
         style={{
-          background: "white",
-          borderBottom: "1px solid #e0e0e0",
+          background: "#1a1a2e",
+          borderBottom: "1px solid #2d2d44",
           padding: "12px 16px",
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           zIndex: 50,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(4px)",
-          backgroundColor: "rgba(255, 255, 255, 0.98)",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
         }}
       >
         <div
@@ -134,7 +133,7 @@ function TopNavBar() {
             height: "56px",
           }}
         >
-          <span style={{ color: "#999", fontSize: "14px" }}>Loading menu...</span>
+          <span style={{ color: "#b0b0c8", fontSize: "14px" }}>Loading menu...</span>
         </div>
       </nav>
     );
@@ -142,19 +141,17 @@ function TopNavBar() {
 
   return (
     <>
-      {/* Desktop Navigation */}
+      {/* Desktop Navigation - PuzzleFree.game Style */}
       <nav
         style={{
-          background: "white",
-          borderBottom: "2px solid #f0f0f0",
+          background: "#1a1a2e",
+          borderBottom: "1px solid #2d2d44",
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           zIndex: 50,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(4px)",
-          backgroundColor: "rgba(255, 255, 255, 0.98)",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
         }}
       >
         <div
@@ -198,11 +195,11 @@ function TopNavBar() {
             className="hidden md:flex"
           >
             {loading ? (
-              <span style={{ color: "#999", fontSize: "14px" }}>Loading features...</span>
+              <span style={{ color: "#b0b0c8", fontSize: "14px" }}>Loading features...</span>
             ) : error ? (
-              <span style={{ color: "#d32f2f", fontSize: "14px" }}>Error loading features: {error}</span>
+              <span style={{ color: "#ff6b6b", fontSize: "14px" }}>Error loading features: {error}</span>
             ) : features.length === 0 ? (
-              <span style={{ color: "#999", fontSize: "14px" }}>No features available</span>
+              <span style={{ color: "#b0b0c8", fontSize: "14px" }}>No features available</span>
             ) : (
               features.map((feature) => (
                 <button
@@ -232,12 +229,12 @@ function TopNavBar() {
                     border: "none",
                     background:
                       hoveredFeature?.id === feature.id
-                        ? (feature.color || "#6C63FF")
+                        ? "#6366f1"
                         : "transparent",
                     color:
                       hoveredFeature?.id === feature.id
                         ? "white"
-                        : "#0b1220",
+                        : "#b0b0c8",
                     cursor: "pointer",
                     borderRadius: "6px",
                     fontSize: "14px",
@@ -247,11 +244,10 @@ function TopNavBar() {
                     alignItems: "center",
                     gap: "6px",
                     whiteSpace: "nowrap",
-                    boxShadow: hoveredFeature?.id === feature.id ? `0 4px 8px ${(feature.color || "#6C63FF")}30` : "none",
                   }}
                   title={`${feature.icon} ${feature.displayName || feature.name || feature.label} - ${feature.description || ""}`}
                 >
-                  {feature.icon && <span style={{ fontSize: "18px" }}>{feature.icon}</span>}
+                  {feature.icon && <span style={{ fontSize: "16px" }}>{feature.icon}</span>}
                   {feature.displayName || feature.name || feature.label}
                 </button>
               ))
@@ -264,21 +260,23 @@ function TopNavBar() {
                 marginLeft: "auto",
                 padding: "8px 16px",
                 textDecoration: "none",
-                color: "#0b1220",
+                color: "#b0b0c8",
                 fontSize: "14px",
                 fontWeight: "500",
                 transition: "all 150ms ease",
                 cursor: "pointer",
-                borderRadius: "4px",
+                borderRadius: "6px",
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = "#f0f0f0";
+                e.target.style.background = "#2d2d44";
+                e.target.style.color = "#ffffff";
               }}
               onMouseLeave={(e) => {
                 e.target.style.background = "transparent";
+                e.target.style.color = "#b0b0c8";
               }}
             >
               ⚙️ Admin
@@ -309,20 +307,18 @@ function TopNavBar() {
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
-                  background: "#fef3c7",
+                  background: "#2d2d44",
                   padding: "6px 12px",
                   borderRadius: "6px",
-                  border: "1px solid #fcd34d",
+                  border: "1px solid #3d3d54",
                   fontSize: "13px",
+                  color: "#b0b0c8"
                 }}
               >
                 <span>🪙</span>
-                <span style={{ fontWeight: "bold", color: "#92400e" }}>{coins}</span>
+                <span style={{ fontWeight: "bold", color: "#ffffff" }}>{coins}</span>
               </div>
             )}
-
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
 
             {/* Achievements Badge */}
             {user && <AchievementsBadge userId={user.uid} />}
@@ -342,28 +338,62 @@ function TopNavBar() {
                   size="sm"
                 />
                 <div style={{ fontSize: "13px" }}>
-                  <p style={{ margin: "0", fontWeight: "600", color: "#0b1220" }}>
+                  <p style={{ margin: "0", fontWeight: "600", color: "#f1f5f9" }}>
                     {user.displayName || user.email?.split("@")[0]}
                   </p>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
+                <ThemeSwitcher />
+                <button
                   onClick={() => signOut()}
-                  style={{ fontSize: "12px" }}
+                  style={{
+                    padding: "8px 14px",
+                    background: "transparent",
+                    color: "#b0b0c8",
+                    border: "1px solid #2d2d44",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 150ms ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.color = "#ffffff";
+                    e.target.style.borderColor = "#6366f1";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.color = "#b0b0c8";
+                    e.target.style.borderColor = "#2d2d44";
+                  }}
                 >
                   Sign out
-                </Button>
+                </button>
               </div>
             ) : (
-              <Button 
-                variant="primary" 
-                size="sm"
-                onClick={() => signInWithGoogle()}
-                style={{ fontSize: "12px" }}
-              >
-                👤 Sign in
-              </Button>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <ThemeSwitcher />
+                <button
+                  onClick={() => signInWithGoogle()}
+                  style={{
+                    padding: "8px 18px",
+                    background: "#6366f1",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "background 150ms ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "#4f46e5";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "#6366f1";
+                  }}
+                >
+                  👤 Sign in
+                </button>
+              </div>
             )}
           </div>
 
@@ -403,7 +433,7 @@ function TopNavBar() {
                 style={{
                   width: "24px",
                   height: "3px",
-                  background: "#0b1220",
+                  background: "#b0b0c8",
                   borderRadius: "2px",
                   transition: "all 250ms ease",
                 }}
@@ -412,7 +442,7 @@ function TopNavBar() {
                 style={{
                   width: "24px",
                   height: "3px",
-                  background: "#0b1220",
+                  background: "#b0b0c8",
                   borderRadius: "2px",
                   transition: "all 250ms ease",
                 }}
@@ -421,7 +451,7 @@ function TopNavBar() {
                 style={{
                   width: "24px",
                   height: "3px",
-                  background: "#0b1220",
+                  background: "#b0b0c8",
                   borderRadius: "2px",
                   transition: "all 250ms ease",
                 }}

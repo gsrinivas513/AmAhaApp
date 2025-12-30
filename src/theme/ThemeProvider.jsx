@@ -2,19 +2,50 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { THEME_MODES } from "./themeModes";
+import THEME_COLORS from "../config/themeColors";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../components/AuthProvider";
 
 const ThemeContext = createContext({
   mode: "playful",
   theme: THEME_MODES.playful,
+  themeColor: "green",
+  isDarkMode: false,
+  currentTheme: THEME_COLORS.green.light,
   setMode: () => {},
+  setThemeColor: () => {},
+  toggleDarkMode: () => {},
 });
 
 export function ThemeProvider({ children }) {
   const { category } = useParams() || {};
   const { user } = useAuth();
   const [mode, setMode] = useState("playful");
+  const [themeColor, setThemeColor] = useState("green");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Load theme preferences from localStorage
+  useEffect(() => {
+    const savedThemeColor = localStorage.getItem("appThemeColor") || "green";
+    const savedDarkMode = localStorage.getItem("appDarkMode") === "true";
+    setThemeColor(savedThemeColor);
+    setIsDarkMode(savedDarkMode);
+  }, []);
+
+  // Save theme color to localStorage
+  useEffect(() => {
+    localStorage.setItem("appThemeColor", themeColor);
+  }, [themeColor]);
+
+  // Save dark mode to localStorage
+  useEffect(() => {
+    localStorage.setItem("appDarkMode", isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark-mode");
+    } else {
+      document.documentElement.classList.remove("dark-mode");
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     let mounted = true;
@@ -65,9 +96,32 @@ export function ThemeProvider({ children }) {
   }, [user, category]);
 
   const theme = THEME_MODES[mode] || THEME_MODES.playful;
+  const currentTheme = THEME_COLORS[themeColor][isDarkMode ? "dark" : "light"];
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleSetThemeColor = (color) => {
+    if (THEME_COLORS[color]) {
+      setThemeColor(color);
+    }
+  };
 
   return (
-    <ThemeContext.Provider value={{ mode, theme, setMode }}>
+    <ThemeContext.Provider
+      value={{
+        mode,
+        theme,
+        themeColor,
+        isDarkMode,
+        currentTheme,
+        setMode,
+        setThemeColor: handleSetThemeColor,
+        toggleDarkMode,
+        availableColors: Object.keys(THEME_COLORS),
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

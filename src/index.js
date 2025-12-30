@@ -10,19 +10,22 @@ import "./App.css";
 import { AuthProvider } from "./components/AuthProvider";
 import { ToastProvider } from "./components/Toast";
 import { AdUnlockProvider } from "./ads/AdUnlockProvider";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ToastProvider>
-        <AuthProvider>
-          <AdUnlockProvider>
-            <App />
-          </AdUnlockProvider>
-        </AuthProvider>
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <AdUnlockProvider>
+              <App />
+            </AdUnlockProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

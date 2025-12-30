@@ -1,52 +1,42 @@
 import React from 'react';
-import { useTheme } from '../theme/ThemeProvider';
+import { useTheme } from '../context/ThemeContext';
 
 export const ThemeSwitcher = () => {
-  const { mode: currentTheme, setMode: setTheme } = useTheme();
-
-  const themes = [
-    { id: 'playful', name: '🎨 Playful' },
-    { id: 'calm', name: '🧘 Calm' },
-    { id: 'competitive', name: '⚡ Competitive' }
-  ];
+  const { isDarkMode, toggleTheme } = useTheme();
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      background: 'rgba(0,0,0,0.05)',
-      padding: '4px 8px',
-      borderRadius: 20,
-      cursor: 'pointer'
-    }}>
-      <div style={{
+    <button
+      onClick={toggleTheme}
+      style={{
+        background: isDarkMode 
+          ? '#2d2d44'
+          : '#e5e7eb',
+        border: `1px solid ${isDarkMode ? '#3d3d54' : '#d1d5db'}`,
+        borderRadius: '6px',
+        padding: '8px 14px',
         display: 'flex',
-        gap: 0
-      }}>
-        {themes.map(theme => (
-          <button
-            key={theme.id}
-            onClick={() => setTheme(theme.id)}
-            style={{
-              padding: '6px 12px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              background: currentTheme === theme.id ? '#667eea' : 'transparent',
-              color: currentTheme === theme.id ? 'white' : '#666',
-              border: 'none',
-              borderRadius: 16,
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              whiteSpace: 'nowrap'
-            }}
-            title={`Switch to ${theme.name}`}
-          >
-            {theme.name}
-          </button>
-        ))}
-      </div>
-    </div>
+        alignItems: 'center',
+        gap: '6px',
+        cursor: 'pointer',
+        fontSize: '0.85rem',
+        fontWeight: 600,
+        transition: 'all 150ms ease',
+        color: isDarkMode ? '#b0b0c8' : '#4b5563',
+        whiteSpace: 'nowrap',
+        minWidth: 'fit-content'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = isDarkMode ? '#3d3d54' : '#d1d5db';
+        e.currentTarget.style.color = isDarkMode ? '#ffffff' : '#1f2937';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = isDarkMode ? '#2d2d44' : '#e5e7eb';
+        e.currentTarget.style.color = isDarkMode ? '#b0b0c8' : '#4b5563';
+      }}
+      title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    >
+      {isDarkMode ? '🌙 Dark' : '☀️ Light'}
+    </button>
   );
 };
 
