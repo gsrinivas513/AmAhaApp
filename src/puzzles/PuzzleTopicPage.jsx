@@ -12,8 +12,6 @@ import { countPuzzlesForTopic, getPuzzlesForTopic } from "./puzzleCountService";
 import { getRandomPuzzleByCategory } from "./quickPlayService";
 import { ResponsiveImage } from "../components/OptimizedImage";
 import { TopicCard, CarouselSection } from "./components/TopicCardGrid";
-import EnhancedTopicCard from "./components/EnhancedTopicCard";
-import { CTASection } from "../design/DesignSystem";
 
 export default function PuzzleTopicPage() {
   const { categoryName } = useParams();
@@ -281,19 +279,15 @@ export default function PuzzleTopicPage() {
                           ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                               {cat.topics.map((topic, topicIndex) => (
-                                <EnhancedTopicCard 
+                                <TopicCard 
                                   key={topic.id}
-                                  item={{
-                                    ...topic,
-                                    icon: topic.icon || '🧩',
-                                    tags: topic.tags || [],
-                                    rating: topic.rating || 4.5,
-                                    difficulty: topic.difficulty || 'medium'
-                                  }}
+                                  item={topic}
                                   categoryName={cat.label || cat.name}
+                                  theme={theme}
                                   itemIndex={topicIndex}
                                   navigate={navigate}
                                   getNavigationPath={(t) => `/puzzle/${encodeURIComponent(cat.name || cat.label)}/${encodeURIComponent(t.name || t.label)}`}
+                                  isCarousel={false}
                                 />
                               ))}
                             </div>
@@ -412,16 +406,11 @@ export default function PuzzleTopicPage() {
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {subtopicsToShow.map((subtopic, subIndex) => (
-                          <EnhancedTopicCard 
+                          <TopicCard 
                             key={subtopic.id}
-                            item={{
-                              ...subtopic,
-                              icon: subtopic.icon || '🎮',
-                              tags: subtopic.tags || [],
-                              rating: subtopic.rating || 4.5,
-                              difficulty: subtopic.difficulty || 'medium'
-                            }}
+                            item={subtopic}
                             categoryName={null}
+                            theme={theme}
                             itemIndex={subIndex}
                             navigate={handleNavigateToPuzzle}
                             getNavigationPath={(s) => {
@@ -432,6 +421,7 @@ export default function PuzzleTopicPage() {
                               // Otherwise it's a subtopic, use firstPuzzleId
                               return s.firstPuzzleId ? `/play/${s.firstPuzzleId}` : '#';
                             }}
+                            isCarousel={false}
                           />
                         ))}
                       </div>
