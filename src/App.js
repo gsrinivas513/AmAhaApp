@@ -6,7 +6,10 @@ import FixPuzzleCategoryDirect from "./admin/FixPuzzleCategoryDirect";
 import FixPuzzleHierarchy from "./admin/FixPuzzleHierarchy";
 import FixPuzzlePublished from "./admin/FixPuzzlePublished";
 import FixPuzzleType from "./admin/FixPuzzleType";
+import PuzzlePublishedFix from "./admin/PuzzlePublishedFix";
+import NumbersOrderingPuzzleSetupPage from "./admin/NumbersOrderingPuzzleSetupPage";
 import PuzzlePlayHierarchicalPage from "./puzzles/PuzzlePlayHierarchicalPage";
+import CreateOrderingPuzzlesFromTemplatesPage from "./admin/CreateOrderingPuzzlesFromTemplatesPage";
 // src/App.js
 import React from "react";
 import { Routes, Route } from "react-router-dom";
@@ -50,6 +53,9 @@ import FeatureCategoryManagement from "./admin/FeatureCategoryManagement";
 import NavigationConfigPage from "./admin/NavigationConfigPage";
 import DebugAllCategories from "./admin/DebugAllCategories";
 import InspectCollectionsPage from "./admin/InspectCollectionsPage";
+import CloudinaryImageManager from "./admin/CloudinaryImageManager";
+import ImageDeduplicationPanel from "./admin/ImageDeduplicationPanel";
+import ImageCropEditor from "./admin/ImageCropEditor";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
@@ -67,6 +73,10 @@ import FixQuizzesFeatureIdMismatch from "./admin/FixQuizzesFeatureIdMismatch";
 import StandardizeFeaturesCollection from "./admin/StandardizeFeaturesCollection";
 import DatabaseArchitectureAudit from "./admin/DatabaseArchitectureAudit";
 import FixOrphanedPuzzles from "./admin/FixOrphanedPuzzles";
+import FixGenericPuzzleTypes from "./admin/FixGenericPuzzleTypes";
+import PopulateMissingPuzzleData from "./admin/PopulateMissingPuzzleData";
+import DeleteIncompletePuzzles from "./admin/DeleteIncompletePuzzles";
+import PuzzleDataValidator from "./admin/PuzzleDataValidator";
 
 /* ADMIN — PUZZLES */
 import AddPuzzlePage from "./admin/AddPuzzlePage";
@@ -80,6 +90,8 @@ import DailyChallengeAdmin from "./admin/DailyChallengeAdmin";
 import StoryEditor from "./admin/StoryEditor";
 import AnalyticsPage from "./admin/AnalyticsPage";
 import CreateTestPuzzlesPage from "./admin/CreateTestPuzzlesPage";
+import RegenerateOrderingPuzzlesPage from "./admin/RegenerateOrderingPuzzlesPage";
+import PuzzleRecordCreatorTool from "./admin/PuzzleRecordCreatorTool";
 import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
@@ -144,6 +156,9 @@ function App() {
         <Route path="/admin/debug-categories" element={<DebugAllCategories />} />
         <Route path="/admin/navigation" element={<NavigationConfigPage />} />
         <Route path="/admin/inspect-collections" element={<InspectCollectionsPage />} />
+        <Route path="/admin/cloudinary" element={<CloudinaryImageManager />} />
+        <Route path="/admin/image-deduplication" element={<ImageDeduplicationPanel />} />
+        <Route path="/admin/image-crop-editor" element={<ImageCropEditor />} />
 
         {/* ADMIN — QUIZ */}
         <Route path="/admin/add-quiz-content" element={<AddQuestionPage />} />
@@ -161,9 +176,15 @@ function App() {
         <Route path="/admin/standardize-features" element={<StandardizeFeaturesCollection />} />
         <Route path="/admin/database-audit" element={<DatabaseArchitectureAudit />} />
         <Route path="/admin/fix-orphaned-puzzles" element={<FixOrphanedPuzzles />} />
+        <Route path="/admin/fix-generic-puzzle-types" element={<FixGenericPuzzleTypes />} />
+        <Route path="/admin/populate-missing-puzzle-data" element={<PopulateMissingPuzzleData />} />
+        <Route path="/admin/delete-incomplete-puzzles" element={<DeleteIncompletePuzzles />} />
+        <Route path="/admin/validate-puzzle-data" element={<PuzzleDataValidator />} />
 
         {/* ADMIN — PUZZLES */}
         <Route path="/admin/puzzles" element={<PuzzleListPage />} />
+        <Route path="/admin/puzzles/create" element={<VisualPuzzleAdminPage />} />
+        <Route path="/admin/puzzles/create/:puzzleId" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/add-puzzle" element={<AddPuzzlePage />} />
         <Route path="/admin/add-puzzle/:puzzleId" element={<AddPuzzlePage />} />
         <Route path="/admin/puzzles/dashboard" element={<PuzzlesDashboardPage />} />
@@ -171,10 +192,13 @@ function App() {
         <Route path="/admin/create-logical-puzzle" element={<CreateLogicalPuzzlePage />} />
         <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
+        <Route path="/admin/create-ordering-puzzles" element={<CreateOrderingPuzzlesFromTemplatesPage />} />
+        <Route path="/admin/puzzle-record-creator" element={<PuzzleRecordCreatorTool />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
         <Route path="/admin/create-test-puzzles" element={<CreateTestPuzzlesPage />} />
+        <Route path="/admin/regenerate-ordering-puzzles" element={<RegenerateOrderingPuzzlesPage />} />
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
         <Route path="/admin/debug-categories" element={<DebugCategories />} />
@@ -182,6 +206,8 @@ function App() {
         <Route path="/admin/fix-puzzle-category-direct" element={<FixPuzzleCategoryDirect />} />
         <Route path="/admin/fix-puzzle-hierarchy" element={<FixPuzzleHierarchy />} />
         <Route path="/admin/fix-puzzle-published" element={<FixPuzzlePublished />} />
+        <Route path="/admin/fix-puzzle-published-fix" element={<PuzzlePublishedFix />} />
+        <Route path="/admin/numbers-ordering-setup" element={<NumbersOrderingPuzzleSetupPage />} />
         <Route path="/admin/fix-puzzle-type" element={<FixPuzzleType />} />
 
         {/* PUZZLES - USER */}
@@ -190,6 +216,9 @@ function App() {
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
         <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
         <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<UnifiedPuzzlePage />} />
+        
+        {/* DIRECT PLAY - Skip navigation, go straight to puzzle */}
+        <Route path="/play/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
     </div>
   );

@@ -22,6 +22,7 @@ export const countPuzzlesForTopic = async (topicId, topicName) => {
         data.type === topicId ||
         data.type === topicName ||
         data.topicId === topicId ||
+        data.topicName === topicName ||
         subtopicIds.includes(data.subtopicId) // Check if puzzle belongs to any subtopic of this topic
       ) && data.isPublished !== false;
     }).length;
@@ -95,6 +96,7 @@ export const getPuzzlesForTopic = async (topicId, topicName) => {
            puzzle.type === topicId ||
            puzzle.type === topicName ||
            puzzle.topicId === topicId ||
+           puzzle.topicName === topicName ||
            subtopicIds.includes(puzzle.subtopicId)) // Check if puzzle belongs to any subtopic of this topic
         ) && puzzle.isPublished !== false;
       });

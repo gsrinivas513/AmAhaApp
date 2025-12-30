@@ -36,9 +36,43 @@ const defaultPuzzle = {
   data: {},
 };
 
+const PUZZLE_TYPE_DETAILS = {
+  "picture-word": {
+    title: "🖼️ Create Picture-Word Puzzle",
+    description: "Show images and ask kids to match or identify words",
+    icon: "🖼️",
+    defaultCategory: "Logic Puzzles"
+  },
+  "find-pair": {
+    title: "🔍 Create Find Pair Puzzle",
+    description: "Kids match identical pairs from shuffled items",
+    icon: "🔍",
+    defaultCategory: "Logic Puzzles"
+  },
+  "spot-difference": {
+    title: "🔎 Create Spot Difference Puzzle",
+    description: "Find and click on differences between two images",
+    icon: "🔎",
+    defaultCategory: "Logic Puzzles"
+  },
+  "picture-shadow": {
+    title: "🌙 Create Picture Shadow Puzzle",
+    description: "Match shadows to their corresponding pictures",
+    icon: "🌙",
+    defaultCategory: "Logic Puzzles"
+  },
+  "ordering": {
+    title: "🔢 Create Sequence/Ordering Puzzle",
+    description: "Kids arrange items (numbers, days, months, sizes, etc.) in correct order",
+    icon: "🔢",
+    defaultCategory: "Logic Puzzles"
+  }
+};
+
 function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
   const [searchParams] = useSearchParams();
   const puzzleId = propPuzzleId || searchParams.get("id");
+  const typeFromUrl = searchParams.get("type"); // Get type from URL
   const [puzzle, setPuzzle] = useState(defaultPuzzle);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,6 +94,7 @@ function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
     const subtopicName = searchParams.get("subtopicName");
     const topicId = searchParams.get("topicId");
     const categoryId = searchParams.get("categoryId");
+    const puzzleType = searchParams.get("type");
 
     if (subtopicId && categories.length > 0) {
       setPuzzle(prev => ({
@@ -67,7 +102,19 @@ function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
         subtopicId,
         subtopicName,
         topicId,
-        categoryId
+        categoryId,
+        type: puzzleType || prev.type
+      }));
+    } else if (puzzleType && categories.length > 0) {
+      // If only type is provided (no subtopic), auto-select category
+      const defaultCategoryName = PUZZLE_TYPE_DETAILS[puzzleType]?.defaultCategory;
+      const matchingCategory = categories.find(cat => cat.name === defaultCategoryName);
+      
+      setPuzzle(prev => ({
+        ...prev,
+        type: puzzleType,
+        categoryId: matchingCategory?.id || "",
+        categoryName: matchingCategory?.name || ""
       }));
     }
   }, [categories, searchParams]);
@@ -373,8 +420,8 @@ function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
     <AdminLayout>
       <div className="puzzle-admin-container">
         <div className="puzzle-admin-header">
-          <h1>🧩 Create Visual Puzzle</h1>
-          <p>Design interactive visual puzzles for kids</p>
+          <h1>{PUZZLE_TYPE_DETAILS[puzzle.type]?.title || "🧩 Create Visual Puzzle"}</h1>
+          <p>{PUZZLE_TYPE_DETAILS[puzzle.type]?.description || "Design interactive visual puzzles for kids"}</p>
         </div>
 
       <form onSubmit={handleSave} className="puzzle-admin-form">
@@ -418,33 +465,35 @@ function VisualPuzzleAdminPage({ puzzleId: propPuzzleId }) {
           </div>
         </section>
 
-        {/* Type Selection */}
-        <section className="form-section">
-          <h2>Puzzle Type</h2>
-          <div className="puzzle-type-grid">
-            {VISUAL_PUZZLE_TYPES.map((type) => (
-              <label 
-                key={type.value} 
-                className="puzzle-type-option"
-                onClick={() => handlePuzzleTypeChange(type.value)}
-                style={{ cursor: 'pointer' }}
-              >
-                <input
-                  type="radio"
-                  name="type"
-                  value={type.value}
-                  checked={puzzle.type === type.value}
-                  onChange={handleBasicChange}
-                />
-                <div className="puzzle-type-card">
-                  <span className="type-icon">{type.icon}</span>
-                  <span className="type-label">{type.label}</span>
-                  <span className="type-desc">{type.description}</span>
-                </div>
-              </label>
-            ))}
-          </div>
-        </section>
+        {/* Type Selection - Only show if not coming from a specific type link AND not editing existing puzzle */}
+        {!typeFromUrl && !puzzleId && (
+          <section className="form-section">
+            <h2>Puzzle Type</h2>
+            <div className="puzzle-type-grid">
+              {VISUAL_PUZZLE_TYPES.map((type) => (
+                <label 
+                  key={type.value} 
+                  className="puzzle-type-option"
+                  onClick={() => handlePuzzleTypeChange(type.value)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <input
+                    type="radio"
+                    name="type"
+                    value={type.value}
+                    checked={puzzle.type === type.value}
+                    onChange={handleBasicChange}
+                  />
+                  <div className="puzzle-type-card">
+                    <span className="type-icon">{type.icon}</span>
+                    <span className="type-label">{type.label}</span>
+                    <span className="type-desc">{type.description}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Hierarchy */}
         <section className="form-section">

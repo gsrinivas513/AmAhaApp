@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import PuzzleLevelPath from "./PuzzleLevelPath";
+import { getRandomPuzzleBySubtopic } from "./quickPlayService";
 
 export default function PuzzleCategoryPage() {
   const { categoryName, topicName, subtopicName } = useParams();
@@ -24,6 +25,8 @@ export default function PuzzleCategoryPage() {
       const decodedTopicName = decodeURIComponent(topicName);
       const decodedSubtopicName = decodeURIComponent(subtopicName);
 
+      console.log("📍 PuzzleCategoryPage loading:", { decodedCategoryName, decodedTopicName, decodedSubtopicName });
+
       // Load category
       const categoriesSnap = await getDocs(collection(db, "categories"));
       const categoryDoc = categoriesSnap.docs.find(doc => {
@@ -32,11 +35,13 @@ export default function PuzzleCategoryPage() {
       });
 
       if (!categoryDoc) {
+        console.log("❌ Category not found:", decodedCategoryName);
         navigate("/");
         return;
       }
 
       const catData = { id: categoryDoc.id, ...categoryDoc.data() };
+      console.log("✅ Category found:", catData);
 
       // Load topic
       const topicsSnap = await getDocs(
@@ -49,11 +54,13 @@ export default function PuzzleCategoryPage() {
       });
 
       if (!topicDoc) {
+        console.log("❌ Topic not found:", decodedTopicName);
         navigate(-1);
         return;
       }
 
       const topicData = { id: topicDoc.id, ...topicDoc.data() };
+      console.log("✅ Topic found:", topicData);
 
       // Load subtopic
       const subtopicsSnap = await getDocs(
@@ -66,11 +73,14 @@ export default function PuzzleCategoryPage() {
       });
 
       if (!subtopicDoc) {
+        console.log("❌ Subtopic not found:", decodedSubtopicName);
+        console.log("Available subtopics:", subtopicsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         navigate(-1);
         return;
       }
 
       const subtopicData = { id: subtopicDoc.id, ...subtopicDoc.data() };
+      console.log("✅ Subtopic found:", subtopicData);
       setSubtopic(subtopicData);
     } catch (error) {
       console.error("Error loading puzzle data:", error);
@@ -78,6 +88,15 @@ export default function PuzzleCategoryPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuickPlayBySubtopic = async () => {
+    const decodedCategoryName = decodeURIComponent(categoryName);
+    const decodedTopicName = decodeURIComponent(topicName);
+    const decodedSubtopicName = decodeURIComponent(subtopicName);
+    
+    const puzzle = await getRandomPuzzleBySubtopic(decodedCategoryName, decodedTopicName, decodedSubtopicName);
+    if (puzzle) navigate(`/play/${puzzle.id}`);
   };
 
   if (loading) {

@@ -140,12 +140,15 @@ export const getVisualPuzzleById = async (puzzleId) => {
 };
 
 /**
- * Get puzzles by subtopic
+ * Get puzzles by subtopic with multiple fallback strategies
  */
 export const getVisualPuzzlesBySubtopic = async (subtopicId) => {
   try {
-    // First try with composite index (multiple where + orderBy)
+    console.log("🔍 getVisualPuzzlesBySubtopic called with subtopicId:", subtopicId);
+    
+    // Strategy 1: Try with composite index (multiple where + orderBy)
     try {
+      console.log("  📊 Strategy 1: Trying composite index query...");
       const q = query(
         collection(db, "puzzles"),
         where("subtopicId", "==", subtopicId),
@@ -153,29 +156,89 @@ export const getVisualPuzzlesBySubtopic = async (subtopicId) => {
         orderBy("createdAt", "asc")
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      console.log("✅ Strategy 1 succeeded, found:", querySnapshot.docs.length, "puzzles");
+      if (querySnapshot.docs.length > 0) {
+        return querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      }
+      // If composite index works but no results, fall through to other strategies
+      console.log("  ℹ️ Strategy 1 returned 0 results, trying other strategies...");
     } catch (indexError) {
-      // Fallback: query without composite index, sort in memory
-      console.warn("Composite index not available, using fallback query:", indexError.message);
+      console.warn("⚠️ Strategy 1 failed:", indexError.message);
+    }
+    
+    // Strategy 2: Query by subtopicId without isPublished filter, sort in memory
+    try {
+      console.log("  📊 Strategy 2: Querying by subtopicId only...");
       const q = query(
         collection(db, "puzzles"),
         where("subtopicId", "==", subtopicId)
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs
+      console.log("  📦 Strategy 2 found:", querySnapshot.docs.length, "puzzles with subtopicId");
+      
+      if (querySnapshot.docs.length > 0) {
+        const results = querySnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter(puzzle => {
+            // Include puzzle if isPublished is not explicitly false
+            // This allows puzzles with missing isPublished field to be included
+            const shouldInclude = puzzle.isPublished !== false;
+            if (!shouldInclude) {
+              console.log("  🚫 Filtering out puzzle (isPublished=false):", puzzle.id, puzzle.title);
+            }
+            return shouldInclude;
+          })
+          .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+        
+        console.log("✅ Strategy 2 succeeded, returning:", results.length, "puzzles after filtering");
+        return results;
+      }
+      console.log("  ℹ️ Strategy 2 returned 0 results, trying other strategies...");
+    } catch (error) {
+      console.warn("⚠️ Strategy 2 failed:", error.message);
+    }
+    
+    // Strategy 3: Get all puzzles and filter client-side (only for debugging/fallback)
+    try {
+      console.log("  📊 Strategy 3: Client-side filtering of all puzzles...");
+      const allPuzzlesSnap = await getDocs(collection(db, "puzzles"));
+      console.log("  📦 Strategy 3 found:", allPuzzlesSnap.docs.length, "total puzzles");
+      
+      const results = allPuzzlesSnap.docs
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }))
-        .filter(puzzle => puzzle.isPublished !== false)
+        .filter(puzzle => puzzle.subtopicId === subtopicId && puzzle.isPublished !== false)
         .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+      
+      if (results.length > 0) {
+        console.log("✅ Strategy 3 succeeded, returning:", results.length, "puzzles");
+        return results;
+      }
+      console.log("❌ Strategy 3 also returned 0 results");
+      
+      // Log diagnostics
+      const allWithSubtopicId = allPuzzlesSnap.docs.filter(doc => doc.data().subtopicId === subtopicId);
+      console.log("  📋 Puzzles with matching subtopicId:", allWithSubtopicId.length);
+      if (allWithSubtopicId.length > 0) {
+        console.log("  📋 Sample puzzles:", allWithSubtopicId.slice(0, 3).map(d => ({ id: d.id, ...d.data() })));
+      }
+    } catch (error) {
+      console.error("⚠️ Strategy 3 failed:", error.message);
     }
+    
+    console.error("❌ All strategies failed to find puzzles for subtopicId:", subtopicId);
+    return [];
   } catch (error) {
-    console.error("Error fetching puzzles by subtopic:", error);
-    return []; // Return empty array instead of throwing to prevent UI crash
+    console.error("❌ Critical error fetching puzzles by subtopic:", error);
+    return [];
   }
 };
 

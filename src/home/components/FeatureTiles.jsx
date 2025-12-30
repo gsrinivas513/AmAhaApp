@@ -9,6 +9,7 @@ import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
 import PuzzleCard from "../../puzzles/PuzzleCard";
 import CategoryCardItem, { colorSchemes } from "../../components/navigation/CategoryCardItem";
 import { getAllStories } from "../../services/storyService";
+import { getFeatureTilesConfig, getSortedVisibleSections } from "../../services/homePageSectionService";
 import { FEATURES } from "../../constants/FEATURES";
 
 // Topics carousel component
@@ -40,15 +41,20 @@ function TopicsCarouselSection({ topics }) {
   const canScrollPrev = scrollPosition > 0;
 
   return (
-    <div className="mb-16">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">📚</span>
-          <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
+    <div>
+      <div className="flex items-center justify-between mb-8 md:mb-10 px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl">
+            <span className="text-3xl md:text-4xl">📚</span>
+          </div>
+          <div>
+            <h3 className="text-xl md:text-2xl font-black text-transparent bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text">All Topics</h3>
+            <p className="text-xs md:text-sm text-gray-500 font-medium">Organized by learning subject</p>
+          </div>
         </div>
         <button 
           onClick={() => navigate("/explore")}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-xs md:text-sm rounded-lg flex items-center gap-1 cursor-pointer whitespace-nowrap ml-4 shadow-md hover:shadow-lg transition-all duration-200"
         >
           See all ({topics.length})
           <span>→</span>
@@ -56,7 +62,7 @@ function TopicsCarouselSection({ topics }) {
       </div>
 
       {topics.length > 0 ? (
-        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+        <div className="relative py-2">
           <div
             ref={containerRef}
             className="flex gap-6 overflow-x-hidden scroll-smooth"
@@ -69,8 +75,8 @@ function TopicsCarouselSection({ topics }) {
                 <div key={topic.id} className="flex-shrink-0 w-56">
                   <div
                     onClick={() => navigate(topic.path)}
-                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
-                    style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
+                    className="h-48 cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group bg-gray-100"
+                    style={{ backgroundColor: hasImage ? '#f3f4f6' : '#e5e7eb' }}
                   >
                     {hasImage ? (
                       <ResponsiveImage
@@ -78,8 +84,8 @@ function TopicsCarouselSection({ topics }) {
                         cloudinaryId={topic.cloudinaryId}
                         alt={topic.title}
                         fallbackIcon={topic.icon}
-                        className="w-full h-full"
-                        crop="fit"
+                        className="w-full h-full object-contain"
+                        crop="contain"
                       />
                     ) : (
                       <div 
@@ -92,7 +98,12 @@ function TopicsCarouselSection({ topics }) {
                         {topic.icon}
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-full transition-all duration-200 shadow-lg hover:scale-105">
+                        ▶ Play Now
+                      </button>
+                    </div>
                   </div>
                   <div className="pt-3">
                     <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
@@ -102,7 +113,7 @@ function TopicsCarouselSection({ topics }) {
                       {topic.categoryName}
                     </p>
                     <p className="text-xs text-gray-600 mb-2 font-medium">
-                    {topic.quizzes || 0} Quizzes
+                      {topic.quizzes || 0} Quizzes
                     </p>
                     {/* Rating display */}
                     <div className="flex items-center gap-1">
@@ -185,15 +196,20 @@ function StoriesCarouselSection({ stories }) {
   const canScrollPrev = scrollPosition > 0;
 
   return (
-    <div className="mb-16">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">📖</span>
-          <h3 className="text-2xl font-bold text-gray-900">Featured Stories</h3>
+    <div>
+      <div className="flex items-center justify-between mb-8 md:mb-10 px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-amber-100 to-orange-50 rounded-xl">
+            <span className="text-3xl md:text-4xl">📖</span>
+          </div>
+          <div>
+            <h3 className="text-xl md:text-2xl font-black text-transparent bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text">Featured Stories</h3>
+            <p className="text-xs md:text-sm text-gray-500 font-medium">Immersive interactive narratives</p>
+          </div>
         </div>
         <button 
           onClick={() => navigate("/stories")}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+          className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs md:text-sm rounded-lg flex items-center gap-1 cursor-pointer whitespace-nowrap ml-4 shadow-md hover:shadow-lg transition-all duration-200"
         >
           See all ({stories.length})
           <span>→</span>
@@ -201,10 +217,10 @@ function StoriesCarouselSection({ stories }) {
       </div>
 
       {stories.length > 0 ? (
-        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+        <div className="relative py-2">
           <div
             ref={containerRef}
-            className="flex gap-6 overflow-x-hidden scroll-smooth"
+            className="flex gap-6 overflow-x-hidden scroll-smooth px-4"
             style={{ scrollBehavior: "smooth" }}
           >
             {stories.map((story, index) => {
@@ -217,8 +233,8 @@ function StoriesCarouselSection({ stories }) {
                   <div key={story.id} className="flex-shrink-0 w-56">
                     <div
                       onClick={() => navigate(`/story/${story.id}`)}
-                      className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
-                      style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
+                      className="h-48 cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group bg-gray-100"
+                      style={{ backgroundColor: hasImage ? '#f3f4f6' : '#e5e7eb' }}
                     >
                       {hasImage ? (
                         <ResponsiveImage
@@ -226,8 +242,8 @@ function StoriesCarouselSection({ stories }) {
                           cloudinaryId={story.cloudinaryId}
                           alt={story.title}
                           fallbackIcon="📖"
-                          className="w-full h-full"
-                          crop="fit"
+                          className="w-full h-full object-contain"
+                          crop="contain"
                         />
                       ) : (
                         <div 
@@ -241,15 +257,20 @@ function StoriesCarouselSection({ stories }) {
                         </div>
                       )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-full transition-all duration-200 shadow-lg">
+                        ▶ Read Now
+                      </button>
+                    </div>
                   </div>
-                  <div className="pt-3">
-                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                  <div className="pt-4 px-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2">
                       {story.title}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs text-gray-600 mb-2 font-medium">
                       {story.description ? story.description.substring(0, 60) + "..." : "An interactive learning story"}
                     </p>
-                    <p className="text-xs text-gray-600 font-medium">
+                    <p className="text-xs text-gray-700 font-semibold">
                       📚 {story.chapterCount || story.totalChapters || 0} Chapters
                     </p>
                   </div>
@@ -265,7 +286,29 @@ function StoriesCarouselSection({ stories }) {
           {canScrollPrev && (
             <button
               onClick={() => scroll("prev")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginLeft: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll left"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,7 +320,29 @@ function StoriesCarouselSection({ stories }) {
           {canScrollNext && (
             <button
               onClick={() => scroll("next")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginRight: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll right"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,21 +398,45 @@ function FeatureCarouselSection({ feature, categories }) {
     return icons[featureType] || "✨";
   };
 
+  const getBackgroundColor = () => {
+    const type = feature.featureType?.toLowerCase() || '';
+    const colors = {
+      quiz: 'from-blue-100 to-blue-50',
+      puzzle: 'from-purple-100 to-purple-50',
+      game: 'from-green-100 to-green-50',
+      story: 'from-amber-100 to-orange-50',
+    };
+    return colors[type] || 'from-gray-100 to-gray-50';
+  };
+
+  const getButtonColor = () => {
+    const type = feature.featureType?.toLowerCase() || '';
+    const colors = {
+      quiz: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+      puzzle: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
+      game: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+      story: 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700',
+    };
+    return colors[type] || 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700';
+  };
+
   return (
-    <div className="mb-16">
-      <div className="flex items-center justify-between mb-6 px-4">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">{feature.icon || getFeatureIcon(feature.featureType)}</span>
+    <div>
+      <div className="flex items-center justify-between mb-8 md:mb-10 px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <div className={`p-3 bg-gradient-to-br ${getBackgroundColor()} rounded-xl`}>
+            <span className="text-3xl md:text-4xl">{feature.icon || getFeatureIcon(feature.featureType)}</span>
+          </div>
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">{feature.label || feature.name}</h3>
+            <h3 className="text-xl md:text-2xl font-black text-transparent bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text">{feature.label || feature.name}</h3>
             {feature.description && (
-              <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+              <p className="text-xs md:text-sm text-gray-500 font-medium mt-2">{feature.description}</p>
             )}
           </div>
         </div>
         <button 
           onClick={() => navigate(`/feature/${feature.id}`)}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+          className={`px-4 py-2 text-white font-bold text-xs md:text-sm rounded-lg flex items-center gap-1 cursor-pointer whitespace-nowrap ml-4 shadow-md hover:shadow-lg transition-all duration-200 ${getButtonColor()}`}
         >
           See all ({categories.length})
           <span>→</span>
@@ -355,10 +444,10 @@ function FeatureCarouselSection({ feature, categories }) {
       </div>
 
       {categories.length > 0 ? (
-        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+        <div className="relative py-3">
           <div
             ref={containerRef}
-            className="flex gap-6 overflow-x-hidden scroll-smooth px-4"
+            className="flex gap-6 overflow-x-hidden scroll-smooth"
             style={{ scrollBehavior: "smooth" }}
           >
             {categories.map((category, index) => {
@@ -375,8 +464,8 @@ function FeatureCarouselSection({ feature, categories }) {
                         navigate(`/quiz/${encodeURIComponent(category.name || category.label)}`);
                       }
                     }}
-                    className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
-                    style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
+                    className="h-48 cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group bg-gray-100"
+                    style={{ backgroundColor: hasImage ? '#f3f4f6' : '#e5e7eb' }}
                   >
                     {hasImage ? (
                       <ResponsiveImage 
@@ -384,8 +473,8 @@ function FeatureCarouselSection({ feature, categories }) {
                         cloudinaryId={category.cloudinaryId}
                         alt={category.label || category.name}
                         fallbackIcon={category.icon || "📚"}
-                        className="w-full h-full"
-                        crop="fit"
+                        className="w-full h-full object-contain"
+                        crop="contain"
                       />
                     ) : (
                       <div 
@@ -399,28 +488,33 @@ function FeatureCarouselSection({ feature, categories }) {
                       </div>
                     )}
                     
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-full transition-all duration-200 shadow-lg hover:scale-105">
+                        ▶ Play Now
+                      </button>
+                    </div>
                   </div>
                   
-                  <div className="pt-3">
-                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                  <div className="pt-4 px-1">
+                    <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2">
                       {category.label || category.name}
                     </h3>
                     
-                    <p className="text-xs text-gray-600 mb-2 font-medium">
-                      {category.subtopicCount !== undefined ? category.subtopicCount : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
+                    <p className="text-xs text-gray-700 mb-2 font-semibold">
+                      {feature.featureType === "puzzle" ? "🧩" : "🎯"} {category.subtopicCount !== undefined ? category.subtopicCount : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
                     </p>
                     
                     {/* Rating display */}
                     <div className="flex items-center gap-1">
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <span key={star} className={`text-lg ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
+                          <span key={star} className={`text-sm ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
                             ★
                           </span>
                         ))}
                       </div>
-                      <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
+                      <span className="text-xs text-gray-600 ml-1 font-semibold">({(category.rating || 4.0).toFixed(1)})</span>
                     </div>
                   </div>
                 </div>
@@ -431,7 +525,29 @@ function FeatureCarouselSection({ feature, categories }) {
           {canScrollPrev && (
             <button
               onClick={() => scroll("prev")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginLeft: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll left"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -443,7 +559,29 @@ function FeatureCarouselSection({ feature, categories }) {
           {canScrollNext && (
             <button
               onClick={() => scroll("next")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginRight: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll right"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -684,10 +822,10 @@ function CarouselSection({ section }) {
     <div className="mb-12">
       {/* Header with See All */}
       <div className="flex items-center justify-between mb-6 px-4">
-        <h3 className="text-2xl font-bold text-gray-900">{section.title}</h3>
+        <h3 className="text-2xl md:text-3xl font-black text-transparent bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text">{section.title}</h3>
         <button 
           onClick={() => navigate(`/feature/${section.featureId}`)}
-          className="text-primary-600 hover:text-primary-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold text-xs md:text-sm rounded-lg flex items-center gap-1 cursor-pointer whitespace-nowrap shadow-md hover:shadow-lg transition-all duration-200"
         >
           See all ({section.categories.length})
           <span>→</span>
@@ -695,7 +833,7 @@ function CarouselSection({ section }) {
       </div>
 
       {/* Carousel container with background */}
-      <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+      <div className="relative py-2">
         {/* Carousel */}
         <div
           ref={containerRef}
@@ -710,8 +848,8 @@ function CarouselSection({ section }) {
                 {/* Card Image */}
                 <div
                   onClick={() => navigate(category.path)}
-                  className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative group"
-                  style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
+                  className="h-48 cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 relative group bg-gray-100"
+                  style={{ backgroundColor: hasImage ? '#f3f4f6' : '#e5e7eb' }}
                 >
                   {hasImage ? (
                     <ResponsiveImage
@@ -719,8 +857,8 @@ function CarouselSection({ section }) {
                       cloudinaryId={category.cloudinaryId}
                       alt={category.title}
                       fallbackIcon={category.icon}
-                      className="w-full h-full"
-                      crop="fit"
+                      className="w-full h-full object-contain"
+                      crop="contain"
                     />
                   ) : (
                     <div 
@@ -733,18 +871,23 @@ function CarouselSection({ section }) {
                       {category.icon}
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-full transition-all duration-200 shadow-lg hover:scale-105">
+                      ▶ Play Now
+                    </button>
+                  </div>
                 </div>
                 {/* Text Below Card */}
-                <div className="pt-3">
-                  <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                <div className="pt-4 px-1">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1 line-clamp-2">
                     {category.title}
                   </h3>
-                  <p className="text-xs text-gray-600 mb-2 font-medium">
-                    {Array.isArray(category.quizzes) ? category.quizzes.length : (category.quizzes || 0)} Quizzes
+                  <p className="text-xs text-gray-700 mb-2 font-semibold">
+                    🎯 {Array.isArray(category.quizzes) ? category.quizzes.length : (category.quizzes || 0)} Quizzes
                   </p>
                   {/* Rating display */}
-                  <div className="flex items-center gap-1 mb-2">
+                  <div className="flex items-center gap-1">
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <span key={star} className={`text-sm ${star <= Math.floor(category.rating || 4) ? "text-yellow-400" : "text-gray-300"}`}>
@@ -752,7 +895,7 @@ function CarouselSection({ section }) {
                         </span>
                       ))}
                     </div>
-                    <span className="text-xs text-gray-500 ml-1">({(category.rating || 4.0).toFixed(1)})</span>
+                    <span className="text-xs text-gray-600 ml-1 font-semibold">({(category.rating || 4.0).toFixed(1)})</span>
                   </div>
                 </div>
               </div>
@@ -797,6 +940,8 @@ export default function FeatureTiles() {
   const [loading, setLoading] = useState(true);
   const [puzzles, setPuzzles] = useState([]);
   const [stories, setStories] = useState([]);
+  const [sectionConfig, setSectionConfig] = useState([]);
+  const [visibleSections, setVisibleSections] = useState([]);
 
   useEffect(() => {
     const loadCategoriesAndFeatures = async () => {
@@ -1005,6 +1150,22 @@ export default function FeatureTiles() {
     loadStories();
   }, []);
 
+  // Load FeatureTiles section configuration
+  useEffect(() => {
+    const loadSectionConfig = async () => {
+      try {
+        const config = await getFeatureTilesConfig();
+        setSectionConfig(config);
+        const visible = getSortedVisibleSections(config);
+        setVisibleSections(visible.map(s => s.id));
+      } catch (error) {
+        console.error("Error loading section config:", error);
+      }
+    };
+
+    loadSectionConfig();
+  }, []);
+
   // Load puzzle counts for all puzzle categories (non-blocking)
   // DISABLED: This was causing slow loading by fetching all puzzles for each category
   // Instead, use the quizCount field that's already in the database
@@ -1039,61 +1200,115 @@ export default function FeatureTiles() {
   //   loadPuzzleCounts();
   // }, [featuresWithCategories]);
 
+  // Helper function to check if a section should be visible
+  const shouldShowSection = (sectionId) => {
+    return visibleSections.includes(sectionId);
+  };
+
+  // Helper function to get section order
+  const getSectionOrder = (sectionId) => {
+    const section = sectionConfig.find(s => s.id === sectionId);
+    return section?.order || 999;
+  };
+
   const sections = createSections(categories);
 
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Main heading */}
-        <div className="mb-12 px-4">
-          <h2 className="text-4xl font-bold text-gray-900">Explore Learning & Gaming</h2>
-          <p className="text-gray-600 mt-2">Discover quizzes, puzzles, games, studies, and challenges across multiple categories</p>
+    <section className="py-16 md:py-20 bg-gradient-to-br from-slate-50 via-purple-50 via-40% to-pink-50 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-200/20 to-purple-200/20 rounded-full blur-3xl -ml-48 -mb-48"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Main heading with enhanced visual hierarchy */}
+        <div className="mb-16 md:mb-20 px-4 sm:px-6">
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full">
+            <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">Featured Content</span>
+            <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></div>
+          </div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-transparent bg-gradient-to-r from-purple-900 via-purple-700 to-pink-600 bg-clip-text leading-tight mb-4">
+            Explore Learning & Gaming
+          </h2>
+          <p className="text-lg sm:text-xl text-gray-700 mt-4 max-w-3xl font-medium leading-relaxed">
+            Master skills through engaging <span className="text-purple-600 font-bold">quizzes</span>, mind-bending <span className="text-pink-600 font-bold">puzzles</span>, interactive <span className="text-blue-600 font-bold">games</span>, and captivating <span className="text-amber-600 font-bold">stories</span>
+          </p>
         </div>
 
         {/* Loading state */}
         {loading && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <p className="text-gray-600">Loading categories...</p>
           </div>
         )}
 
-        {/* Carousel sections */}
-        {!loading && sections.map((section) => (
-          <CarouselSection key={section.title} section={section} />
-        ))}
+        {/* 1. Quizzes Feature Section */}
+        {!loading && shouldShowSection("quizzes") && featuresWithCategories.length > 0 && (() => {
+          const quizzesSection = featuresWithCategories.find(item => item.feature.id === 'quizzes' || item.feature.featureType === 'quiz');
+          return quizzesSection ? (
+            <div className="mb-20 md:mb-24">
+              <FeatureCarouselSection feature={quizzesSection.feature} categories={quizzesSection.categories} />
+            </div>
+          ) : null;
+        })()}
 
-        {/* All Topics section */}
-        {!loading && topics.length > 0 && (
-          <div className="mb-16 px-4">
-            <TopicsCarouselSection topics={topics} />
-          </div>
-        )}
+        {/* 2. Puzzles Feature Section */}
+        {!loading && shouldShowSection("puzzles") && featuresWithCategories.length > 0 && (() => {
+          const puzzlesSection = featuresWithCategories.find(item => item.feature.id === 'puzzles' || item.feature.featureType === 'puzzle');
+          return puzzlesSection ? (
+            <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-gradient-to-r border-purple-200/50">
+              <FeatureCarouselSection feature={puzzlesSection.feature} categories={puzzlesSection.categories} />
+            </div>
+          ) : null;
+        })()}
 
-        {/* Stories section */}
-        {!loading && stories.length > 0 && (
-          <div className="mb-16 px-4">
+        {/* 3. Stories section with visual separator */}
+        {!loading && shouldShowSection("stories") && stories.length > 0 && (
+          <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-orange-200/50">
             <StoriesCarouselSection stories={stories} />
           </div>
         )}
 
-        {/* Feature sections after Latest Added (no heading) */}
-        {!loading && featuresWithCategories.length > 0 && (
-          <div className="px-4 mt-16">
-            {featuresWithCategories.map((item) => (
-              <FeatureCarouselSection
-                key={item.feature.id}
-                feature={item.feature}
-                categories={item.categories}
-              />
-            ))}
+        {/* 4. Games Feature Section */}
+        {!loading && shouldShowSection("games") && featuresWithCategories.length > 0 && (() => {
+          const gamesSection = featuresWithCategories.find(item => item.feature.id === 'games' || item.feature.featureType === 'game');
+          return gamesSection ? (
+            <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-blue-200/50">
+              <FeatureCarouselSection feature={gamesSection.feature} categories={gamesSection.categories} />
+            </div>
+          ) : null;
+        })()}
+
+        {/* 5. Latest Added (Top 10) section with visual separator */}
+        {!loading && shouldShowSection("latestAdded") && sections.length > 0 && sections[1] && (
+          <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-green-200/50">
+            <CarouselSection section={sections[1]} />
           </div>
         )}
 
-        {/* Puzzles Carousel */}
+        {/* 6. All Categories section with visual separator */}
+        {!loading && shouldShowSection("allCategories") && sections.length > 0 && sections[0] && (
+          <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-amber-200/50">
+            <CarouselSection section={sections[0]} />
+          </div>
+        )}
+
+        {/* 7. All Topics section with visual separator */}
+        {!loading && shouldShowSection("allTopics") && topics.length > 0 && (
+          <div className="mt-20 md:mt-24 mb-20 md:mb-24 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-cyan-200/50">
+            <TopicsCarouselSection topics={topics} />
+          </div>
+        )}
+
+        {/* Puzzles Carousel with visual separator */}
         {puzzles.length > 0 && (
-          <div className="mb-16 px-4">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">🧩 Fun Puzzles</h3>
-            <div className="flex gap-6 overflow-x-auto">
+          <div className="mt-20 md:mt-24 mb-16 px-4 sm:px-6 pt-16 md:pt-20 border-t-2 border-purple-200/50">
+            <div className="flex items-start gap-2 mb-6">
+              <span className="text-2xl md:text-3xl">🧩</span>
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 pt-1">Fun Puzzles</h3>
+            </div>
+            <div className="flex gap-6 overflow-x-auto pb-2">
               {puzzles.map(puzzle => (
                 <PuzzleCard key={puzzle.id} puzzle={puzzle} />
               ))}
@@ -1103,7 +1318,7 @@ export default function FeatureTiles() {
 
         {/* No categories message */}
         {!loading && categories.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16">
             <p className="text-gray-600">No categories available yet. Check back soon!</p>
           </div>
         )}

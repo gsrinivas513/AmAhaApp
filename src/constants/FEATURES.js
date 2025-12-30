@@ -36,6 +36,8 @@ export const FEATURES = {
     name: "Quizzes",
     label: "Quizzes",
     icon: "🧠",
+    imageUrl: "", // Add quiz feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
     type: "quiz",
     order: 1,
     description: "Test your knowledge with interactive quizzes",
@@ -56,6 +58,8 @@ export const FEATURES = {
     name: "Puzzles",
     label: "Puzzles",
     icon: "🧩",
+    imageUrl: "", // Add puzzle feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
     type: "puzzle",
     order: 2,
     description: "Solve fun and challenging puzzles",
@@ -75,6 +79,8 @@ export const FEATURES = {
     name: "Stories",
     label: "Stories",
     icon: "📖",
+    imageUrl: "", // Add stories feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
     type: "story",
     order: 4,
     description: "Learn through interactive stories and adventures",
@@ -97,6 +103,8 @@ export const FEATURES = {
     name: "Games",
     label: "Games",
     icon: "🎮",
+    imageUrl: "", // Add games feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
     type: "game",
     order: 3,
     description: "Play educational games",

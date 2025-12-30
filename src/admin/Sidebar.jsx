@@ -245,6 +245,7 @@ function Sidebar() {
     global: false,
     quiz: false,
     puzzles: false,
+    createVisual: false,
     stories: false,
     devtools: false,
   });
@@ -331,6 +332,9 @@ function Sidebar() {
           <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
           <Item icon={<TrophyIcon />} label="Daily Challenge" path="/admin/daily-challenge" active={isActive("/admin/daily-challenge")} />
           <Item icon={<ChartIcon />} label="Analytics" path="/admin/analytics" active={isActive("/admin/analytics")} />
+          <Item icon="🖼️" label="Cloudinary Images" path="/admin/cloudinary" active={isActive("/admin/cloudinary")} />
+          <Item icon="✂️" label="Crop Images" path="/admin/image-crop-editor" active={isActive("/admin/image-crop-editor")} />
+          <Item icon="🔄" label="Deduplicate Images" path="/admin/image-deduplication" active={isActive("/admin/image-deduplication")} />
           <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
           <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
         </Section>
@@ -352,8 +356,20 @@ function Sidebar() {
           open={open.puzzles}
           onToggle={() => toggle("puzzles")}
         >
-          <Item icon={<PuzzleIcon />} label="Create Visual" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
+          <Section 
+            title="Create Visual" 
+            open={open.createVisual}
+            onToggle={() => toggle("createVisual")}
+          >
+            <Item icon="🖼️" label="Picture-Word" path="/admin/create-visual-puzzle?type=picture-word" active={isActive("/admin/create-visual-puzzle") && location.search.includes("picture-word")} />
+            <Item icon="🔍" label="Find Pair" path="/admin/create-visual-puzzle?type=find-pair" active={isActive("/admin/create-visual-puzzle") && location.search.includes("find-pair")} />
+            <Item icon="🔎" label="Spot Difference" path="/admin/create-visual-puzzle?type=spot-difference" active={isActive("/admin/create-visual-puzzle") && location.search.includes("spot-difference")} />
+            <Item icon="🌙" label="Picture Shadow" path="/admin/create-visual-puzzle?type=picture-shadow" active={isActive("/admin/create-visual-puzzle") && location.search.includes("picture-shadow")} />
+            <Item icon="🔢" label="Sequence/Ordering" path="/admin/create-visual-puzzle?type=ordering" active={isActive("/admin/create-visual-puzzle") && location.search.includes("ordering")} />
+          </Section>
+          <Item icon="⚡" label="Batch Create Ordering" path="/admin/create-ordering-puzzles" active={isActive("/admin/create-ordering-puzzles")} />
           <Item icon={<PuzzleIcon />} label="View Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
+          <Item icon="🔧" label="Create Puzzle Records" path="/admin/puzzle-record-creator" active={isActive("/admin/puzzle-record-creator")} />
         </Section>
 
       {/* ================= STORIES ================= */}

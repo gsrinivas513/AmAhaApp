@@ -3,11 +3,14 @@
 import React, { useState, forwardRef, useEffect } from "react";
 import ImageUpload from "../../components/ImageUpload";
 import { CLOUDINARY_CONFIG } from "../../config/cloudinaryConfig";
+import { ValidationErrorDisplay } from "../../components/Admin/PuzzleValidationDisplay";
+import { validatePuzzleData } from "../../services/puzzleValidationService";
 
 const FindPairEditor = forwardRef(({ data, onChange }, ref) => {
   const [cards, setCards] = useState(data.cards || []);
   const [layout, setLayout] = useState(data.layout || "grid-6x6");
   const [useColorMode, setUseColorMode] = useState(data.useColorMode || false);
+  const [validation, setValidation] = useState(null);
 
   const getCardCountForLayout = (layoutType) => {
     switch (layoutType) {
@@ -51,6 +54,17 @@ const FindPairEditor = forwardRef(({ data, onChange }, ref) => {
       onChange({ cards: newCards, layout });
     }
   }, [layout]);
+
+  // Validate puzzle data whenever cards change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const puzzleData = { cards, layout, useColorMode };
+    const result = validatePuzzleData({
+      type: "find-pair",
+      data: puzzleData
+    });
+    setValidation(result);
+  }, [cards, layout, useColorMode]);
 
   const handleRemoveCard = (index) => {
     const newCards = cards.filter((_, i) => i !== index);
@@ -195,6 +209,9 @@ const FindPairEditor = forwardRef(({ data, onChange }, ref) => {
 
   return (
     <div className="editor-panel">
+      {/* Validation Error Display */}
+      <ValidationErrorDisplay validation={validation} showValidation={true} />
+
       <div className="editor-info">
         <h3>🧩 Find Matching Pair (Memory Game)</h3>
         <p>

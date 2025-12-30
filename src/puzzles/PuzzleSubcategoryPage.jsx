@@ -8,6 +8,8 @@ import { Card, Button } from "../components/ui";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 import { countPuzzlesForTopic, getPuzzlesForTopic } from "./puzzleCountService";
+import { getRandomPuzzleByTopic } from "./quickPlayService";
+import { TopicCard, CarouselSection } from "./components/TopicCardGrid";
 
 export default function PuzzleSubcategoryPage() {
   const { categoryName, topicName } = useParams();
@@ -22,6 +24,20 @@ export default function PuzzleSubcategoryPage() {
   useEffect(() => {
     loadCategoryTopicAndSubtopics();
   }, [categoryName, topicName]);
+
+  // Restore scroll position when page loads
+  useEffect(() => {
+    if (!loading && categoryName && topicName) {
+      const scrollKey = `puzzlePageScroll:${decodeURIComponent(categoryName)}/${decodeURIComponent(topicName)}`;
+      const savedScroll = sessionStorage.getItem(scrollKey);
+      if (savedScroll) {
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(savedScroll));
+          sessionStorage.removeItem(scrollKey);
+        }, 100);
+      }
+    }
+  }, [loading, categoryName, topicName]);
 
   const loadCategoryTopicAndSubtopics = async () => {
     try {
@@ -80,18 +96,22 @@ export default function PuzzleSubcategoryPage() {
 
       // Load all puzzles for this topic first
       const allPuzzlesForTopic = await getPuzzlesForTopic(topicData.id, topicData.name);
+      console.log("🧩 Loaded puzzles for topic:", topicData.name, allPuzzlesForTopic);
       setPuzzles(allPuzzlesForTopic);
-      console.log("Loaded puzzles:", allPuzzlesForTopic.length, allPuzzlesForTopic);
 
       const subtopicsData = subtopicsSnap.docs
         .map(doc => {
           const subtopicData = doc.data();
           // Calculate actual puzzle count for this subtopic
-          const subtopicPuzzleCount = allPuzzlesForTopic.filter(p => p.subtopicId === doc.id).length;
+          const subtopicPuzzles = allPuzzlesForTopic.filter(p => p.subtopicId === doc.id);
+          const subtopicPuzzleCount = subtopicPuzzles.length;
+          const firstPuzzleId = subtopicPuzzles.length > 0 ? subtopicPuzzles[0].id : null;
+          
           return {
             id: doc.id,
             ...subtopicData,
-            puzzleCount: subtopicPuzzleCount, // Override with actual count
+            puzzleCount: subtopicPuzzleCount,
+            firstPuzzleId: firstPuzzleId, // Store first puzzle ID for direct navigation
           };
         })
         .filter(sub => sub.isPublished !== false);
@@ -110,30 +130,40 @@ export default function PuzzleSubcategoryPage() {
     }
   };
 
+  // Quick play - get random puzzle by topic
+  const handleQuickPlayByTopic = async () => {
+    try {
+      // Save scroll position before navigating
+      const scrollKey = `puzzlePageScroll:${decodeURIComponent(categoryName)}/${decodeURIComponent(topicName)}`;
+      sessionStorage.setItem(scrollKey, window.scrollY.toString());
+
+      const puzzle = await getRandomPuzzleByTopic(categoryName, topicName);
+      if (puzzle) {
+        navigate(`/play/${puzzle.id}`);
+      } else {
+        alert("No puzzles available in this type yet.");
+      }
+    } catch (error) {
+      console.error("Error quick playing:", error);
+    }
+  };
+
+  // Save scroll position when navigating to puzzle
+  const handleNavigateToPuzzle = (path) => {
+    console.log("📍 handleNavigateToPuzzle called with path:", path);
+    const scrollKey = `puzzlePageScroll:${decodeURIComponent(categoryName)}/${decodeURIComponent(topicName)}`;
+    sessionStorage.setItem(scrollKey, window.scrollY.toString());
+    navigate(path);
+  };
+
   if (loading) {
     return <SiteLayout><div className="p-8 text-center">Loading...</div></SiteLayout>;
   }
 
   return (
     <SiteLayout>
-      {/* Header with Back Button */}
-      <div className="bg-gradient-to-r from-green-300 via-teal-200 to-cyan-200 text-gray-800 py-8 px-4 shadow-lg">
-        <div className="max-w-6xl mx-auto">
-          <button
-            onClick={() => navigate(`/puzzle/${encodeURIComponent(categoryName)}`)}
-            className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gray-400/30 hover:bg-gray-400/50 rounded-lg transition-colors text-gray-800 font-semibold"
-          >
-            <span>←</span> Back to Topics
-          </button>
-          <h1 className="text-4xl font-bold mb-2">🧩 {topic?.label || topic?.name}</h1>
-          <p className="text-lg opacity-90">
-            {showPuzzlesDirectly ? "Pick a puzzle and challenge yourself" : "Choose a level to begin"}
-          </p>
-        </div>
-      </div>
-
       {/* Content */}
-      <section className="py-12 px-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen">
+      <section className="px-4 py-8 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen">
         <div className="max-w-6xl mx-auto">
           {/* Show puzzles directly if no subtopics */}
           {showPuzzlesDirectly ? (
@@ -144,63 +174,18 @@ export default function PuzzleSubcategoryPage() {
                 <p className="text-sm text-gray-500 mt-2">Check back soon!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {puzzles.map(puzzle => (
-                  <div
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {puzzles.map((puzzle, index) => (
+                  <TopicCard 
                     key={puzzle.id}
-                    onClick={() => navigate(`/puzzle/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}/${puzzle.id}`)}
-                    className="group cursor-pointer"
-                  >
-                    <div className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full transform hover:scale-105 hover:-translate-y-1">
-                      {/* Image or Color Background */}
-                      {puzzle.imageUrl ? (
-                        <div className="h-40 overflow-hidden bg-gray-200">
-                          <img
-                            src={puzzle.imageUrl}
-                            alt={puzzle.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-40 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                          <span className="text-6xl">🧩</span>
-                        </div>
-                      )}
-
-                      {/* Content */}
-                      <div className="p-6">
-                        {/* Title */}
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                          {puzzle.title || puzzle.id}
-                        </h3>
-
-                        {/* Description */}
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                          {puzzle.description || `${puzzle.type} puzzle`}
-                        </p>
-
-                        {/* Meta Information */}
-                        <div className="flex items-center justify-between mb-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            puzzle.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                            puzzle.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {(puzzle.difficulty || 'easy').charAt(0).toUpperCase() + (puzzle.difficulty || 'easy').slice(1)}
-                          </span>
-                          <span className="text-xs text-gray-500 font-semibold">
-                            {puzzle.type && puzzle.type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                          </span>
-                        </div>
-
-                        {/* CTA */}
-                        <div className="flex items-center gap-2 text-purple-600 font-semibold group-hover:text-purple-700 transition-colors">
-                          <span>Play Now</span>
-                          <span className="transform group-hover:translate-x-2 transition-transform">→</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                    item={puzzle}
+                    categoryName={null}
+                    theme={{ headerGradient: 'from-purple-400 to-purple-500' }}
+                    itemIndex={index}
+                    navigate={handleNavigateToPuzzle}
+                    getNavigationPath={(p) => `/play/${p.id}`}
+                    isCarousel={false}
+                  />
                 ))}
               </div>
             )
@@ -212,94 +197,89 @@ export default function PuzzleSubcategoryPage() {
                 <p className="text-xl text-gray-600">No subtopics available yet.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {subtopics.map(subtopic => {
-                  const hasPuzzles = (subtopic.puzzleCount || 0) > 0;
-                  
-                  // Get first puzzle for this subtopic to show as preview
-                  const firstPuzzle = puzzles.find(p => p.subtopicId === subtopic.id) || 
-                                     (subtopic.featuredImageUrl ? { imageUrl: subtopic.featuredImageUrl } : null);
-                  
-                  return (
-                    <div
-                      key={subtopic.id}
-                      onClick={() => hasPuzzles && navigate(
-                        `/puzzle/${encodeURIComponent(categoryName)}/` +
-                        `${encodeURIComponent(topicName)}/` +
-                        `${encodeURIComponent(subtopic.name || subtopic.label)}`
-                      )}
-                      className={`group ${hasPuzzles ? 'cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+              <div>
+                {/* Control Buttons - Only shown for subtopics view */}
+                <div className="mb-8 flex items-center justify-between">
+                  <button
+                    onClick={() => navigate(`/puzzle/${encodeURIComponent(categoryName)}`)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors text-gray-800 font-semibold"
+                  >
+                    <span>←</span> Back to Puzzles
+                  </button>
+                  <button
+                    onClick={handleQuickPlayByTopic}
+                    className="px-6 py-2 bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all"
+                  >
+                    ⚡ Quick Play
+                  </button>
+                </div>
+
+                <div className="bg-purple-50 rounded-3xl p-8 lg:p-12 shadow-lg transition-shadow hover:shadow-xl">
+                {/* Section Header */}
+                <div className="mb-8 flex items-start justify-between">
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-black text-transparent bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text mb-2">
+                      {topic?.label || topic?.name}
+                    </h2>
+                    <p className="text-gray-600 text-sm">
+                      {subtopics.length} {subtopics.length === 1 ? 'Level' : 'Levels'} • {subtopics.reduce((sum, s) => sum + (s.puzzleCount || 0), 0)} Total Puzzles
+                    </p>
+                    {topic?.description && (
+                      <p className="text-gray-600 text-sm mt-2">{topic.description}</p>
+                    )}
+                  </div>
+                  {subtopics && subtopics.length > 4 && (
+                    <button 
+                      onClick={() => navigate(`/puzzle/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}`)}
+                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold text-sm rounded-lg flex items-center gap-1 whitespace-nowrap ml-4 shadow-md hover:shadow-lg transition-all"
                     >
-                      <div className={`relative bg-white rounded-2xl shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col ${
-                        hasPuzzles ? 'hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1' : ''
-                      }`}>
-                        {/* Image Preview - Top Section */}
-                        {firstPuzzle?.imageUrl || firstPuzzle?.data?.cards?.[0]?.image ? (
-                          <div className="h-48 overflow-hidden bg-gray-200 relative">
-                            <img
-                              src={firstPuzzle.imageUrl || firstPuzzle.data.cards[0].image}
-                              alt={subtopic.label || subtopic.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                          </div>
-                        ) : (
-                          <div className="h-48 bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex items-center justify-center relative">
-                            <span className="text-6xl">🎯</span>
-                            <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-red-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                          </div>
-                        )}
-                        
-                        {/* Content - Bottom Section */}
-                        <div className="relative p-6 z-10 flex flex-col flex-grow">
-                          {/* Title */}
-                          <h3 className="text-xl font-bold text-gray-800 mb-2 capitalize group-hover:text-purple-600 transition-colors">
-                            {subtopic.label || subtopic.name}
-                          </h3>
+                      See all ({subtopics.length})
+                      <span>→</span>
+                    </button>
+                  )}
+                </div>
 
-                          {/* Description */}
-                          {subtopic.description && (
-                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                              {subtopic.description}
-                            </p>
-                          )}
-
-                          {/* Puzzle Count and Type */}
-                          <div className="flex flex-col gap-2 mb-4 flex-grow">
-                            <span className={`inline-flex w-fit px-3 py-1 rounded-full text-sm font-bold ${
-                              hasPuzzles
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {subtopic.puzzleCount || 0} Puzzle{(subtopic.puzzleCount || 0) !== 1 ? 's' : ''}
-                            </span>
-                            {firstPuzzle?.type && (
-                              <span className="text-xs text-gray-500 font-semibold">
-                                {firstPuzzle.type === 'find-pair' ? 'Memory Matching' :
-                                 firstPuzzle.type === 'picture-word' ? 'Picture Word' :
-                                 firstPuzzle.type === 'spot-difference' ? 'Spot Difference' :
-                                 firstPuzzle.type === 'picture-shadow' ? 'Picture Shadow' :
-                                 firstPuzzle.type === 'ordering' ? 'Ordering Puzzle' :
-                                 firstPuzzle.type.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* CTA Button */}
-                          {hasPuzzles && (
-                            <div className="flex items-center gap-2 text-purple-600 font-semibold group-hover:text-purple-700 transition-colors mt-auto">
-                              <span>Start Challenge</span>
-                              <span className="transform group-hover:translate-x-2 transition-transform">→</span>
-                            </div>
-                          )}
-                          {!hasPuzzles && (
-                            <div className="text-gray-400 font-semibold">Coming Soon</div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* Subtopics Grid or Carousel */}
+                {subtopics.length > 4 ? (
+                  <CarouselSection 
+                    items={subtopics}
+                    categoryName={topic?.label || topic?.name}
+                    categoryTheme={{ bg: 'bg-purple-50', accent: 'border-purple-300', headerGradient: 'from-purple-400 to-purple-500' }}
+                    catIndex={0}
+                    navigate={navigate}
+                    getNavigationPath={(subtopic) => {
+                      // If it has difficulty field, it's a puzzle itself
+                      if (subtopic.difficulty) {
+                        return `/play/${subtopic.id}`;
+                      }
+                      // Otherwise it's a subtopic, use firstPuzzleId
+                      return subtopic.firstPuzzleId ? `/play/${subtopic.firstPuzzleId}` : '#';
+                    }}
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {subtopics.map((subtopic, index) => (
+                      <TopicCard 
+                        key={subtopic.id}
+                        item={subtopic}
+                        categoryName={null}
+                        theme={{ bg: 'bg-purple-50', accent: 'border-purple-300', headerGradient: 'from-purple-400 to-purple-500' }}
+                        itemIndex={index}
+                        navigate={navigate}
+                        getNavigationPath={(s) => {
+                          // If it has difficulty field, it's a puzzle itself
+                          if (s.difficulty) {
+                            return `/play/${s.id}`;
+                          }
+                          // Otherwise it's a subtopic, use firstPuzzleId
+                          return s.firstPuzzleId ? `/play/${s.firstPuzzleId}` : '#';
+                        }}
+                        isCarousel={false}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
               </div>
             )
           )}

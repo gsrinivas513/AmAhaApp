@@ -11,8 +11,12 @@ function SpotDifferencePuzzle({ puzzle, onComplete }) {
   const [showCelebration, setShowCelebration] = useState(false);
   const containerRef = useRef(null);
 
+  // Get images from either data.imageA/imageB or top-level imageA/imageB
+  const imageA = puzzle?.data?.imageA || puzzle?.imageA;
+  const imageB = puzzle?.data?.imageB || puzzle?.imageB;
+
   useEffect(() => {
-    setDifferences(puzzle.data.differences || []);
+    setDifferences(puzzle?.data?.differences || puzzle?.differences || []);
   }, [puzzle]);
 
   useEffect(() => {
@@ -74,45 +78,87 @@ function SpotDifferencePuzzle({ puzzle, onComplete }) {
         </div>
       )}
 
-      <div className="spot-difference-images">
-        <div className="image-container">
-          <img src={puzzle.data.imageA} alt="Image A" />
-          <p>Find the differences</p>
-        </div>
+      {!imageA || !imageB ? (
+        <div className="spot-difference-images">
+          <div className="image-container">
+            <div style={{
+              width: '100%',
+              height: '300px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2rem',
+              color: '#999'
+            }}>
+              📷 Image A
+            </div>
+            <p>Find the differences</p>
+          </div>
 
-        <div className="image-container clickable" ref={containerRef}>
-          <img
-            src={puzzle.data.imageB}
-            alt="Image B"
-            onClick={handleImageClick}
-            style={{ cursor: "crosshair" }}
-          />
-          {differences.map((diff) => (
-            <div
-              key={diff.id}
-              className={`difference-marker ${found.has(diff.id) ? "found" : ""}`}
-              style={{
-                left: `${diff.x}%`,
-                top: `${diff.y}%`,
-                width: `${(diff.radius * 2)}px`,
-                height: `${(diff.radius * 2)}px`,
-              }}
-            />
-          ))}
-          <p>Click on differences</p>
+          <div className="image-container">
+            <div style={{
+              width: '100%',
+              height: '300px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '2rem',
+              color: '#999'
+            }}>
+              📷 Image B
+            </div>
+            <p>Click on differences</p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="spot-difference-images">
+          <div className="image-container">
+            <img src={imageA} alt="Image A" />
+            <p>Find the differences</p>
+          </div>
+
+          <div className="image-container clickable" ref={containerRef}>
+            <img
+              src={imageB}
+              alt="Image B"
+              onClick={handleImageClick}
+              style={{ cursor: "crosshair" }}
+            />
+            {differences.map((diff) => (
+              <div
+                key={diff.id}
+                className={`difference-marker ${found.has(diff.id) ? "found" : ""}`}
+                style={{
+                  left: `${diff.x}%`,
+                  top: `${diff.y}%`,
+                  width: `${(diff.radius * 2)}px`,
+                  height: `${(diff.radius * 2)}px`,
+                }}
+              />
+            ))}
+            <p>Click on differences</p>
+          </div>
+        </div>
+      )}
 
       <div className="differences-tracker">
         <h4>Found ({found.size}/{differences.length})</h4>
         <div className="tracker-dots">
-          {differences.map((diff) => (
-            <span
-              key={diff.id}
-              className={`dot ${found.has(diff.id) ? "found" : ""}`}
-              title={`Difference ${differences.indexOf(diff) + 1}`}
-            />
-          ))}
+          {differences.length === 0 ? (
+            <p style={{ color: '#999', fontSize: '0.9rem' }}>No differences configured for this puzzle yet.</p>
+          ) : (
+            differences.map((diff) => (
+              <span
+                key={diff.id}
+                className={`dot ${found.has(diff.id) ? "found" : ""}`}
+                title={`Difference ${differences.indexOf(diff) + 1}`}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>

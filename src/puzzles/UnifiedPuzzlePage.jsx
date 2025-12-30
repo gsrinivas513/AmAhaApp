@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 import { getPuzzleById } from "../quiz/services/puzzleService";
 import { useAuth } from "../components/AuthProvider";
+import { getRandomPuzzleByCategory } from "./quickPlayService";
 
 // Puzzle components - will refactor these to work inline
 import MatchingPuzzle from "./MatchingPuzzle";
@@ -29,11 +30,15 @@ export default function UnifiedPuzzlePage() {
     const loadPuzzle = async () => {
       try {
         setLoading(true);
+        console.log("📍 Loading puzzle with ID:", puzzleId);
         const data = await getPuzzleById(puzzleId);
         console.log("🧩 Puzzle loaded:", data);
         if (data) {
           console.log("  - Type:", data.type);
           console.log("  - Title:", data.title);
+          console.log("  - Full data:", data);
+        } else {
+          console.warn("⚠️ Puzzle not found with ID:", puzzleId);
         }
         setPuzzle(data);
       } catch (error) {
@@ -57,7 +62,19 @@ export default function UnifiedPuzzlePage() {
 
   // Handle navigation back
   const handleNavigateBack = () => {
-    navigate(`/puzzle/${encodeURIComponent(categoryName)}/${encodeURIComponent(topicName)}`);
+    navigate(-1); // Go back to previous page in history
+  };
+
+  // Handle quick play random puzzle
+  const handleQuickPlayRandom = async () => {
+    try {
+      const randomPuzzle = await getRandomPuzzleByCategory(categoryName || "General");
+      if (randomPuzzle) {
+        navigate(`/play/${randomPuzzle.id}`);
+      }
+    } catch (error) {
+      console.error("Error loading random puzzle:", error);
+    }
   };
 
   if (loading) {
@@ -163,24 +180,26 @@ export default function UnifiedPuzzlePage() {
   // Show completion modal inline (overlay on same page)
   return (
     <SiteLayout>
-      {/* Header with Back Button */}
-      <div className="bg-gradient-to-r from-purple-300 via-pink-200 to-orange-200 text-gray-800 py-6 px-4 shadow-lg">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <button
-              onClick={handleNavigateBack}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-400/30 hover:bg-gray-400/50 rounded-lg transition-colors font-semibold text-gray-800"
-            >
-              <span>←</span> Back
-            </button>
-          </div>
-          <h2 className="text-2xl font-bold">{puzzle.title}</h2>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
+      {/* Puzzle Content */}
       <div style={{ background: "#ffffff", minHeight: "100vh", padding: "12px 12px 32px 12px" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {/* Button Container */}
+          <div className="mb-6 flex justify-between items-center">
+            {/* Back Button */}
+            <button
+              onClick={handleNavigateBack}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg transition-all font-semibold text-white text-sm shadow-md hover:shadow-lg transform hover:scale-105"
+            >
+              <span>←</span> Back to Explore More Puzzles
+            </button>
+            {/* Quick Play Random Button */}
+            <button
+              onClick={handleQuickPlayRandom}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg transition-all font-semibold text-white text-sm shadow-md hover:shadow-lg transform hover:scale-105"
+            >
+              <span>⚡</span> Quick Play Random
+            </button>
+          </div>
           {puzzleComponent}
         </div>
       </div>

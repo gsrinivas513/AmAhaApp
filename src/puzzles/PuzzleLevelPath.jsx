@@ -8,6 +8,7 @@ import SpotDifferencePuzzle from "./renderers/SpotDifferencePuzzle";
 import FindPairPuzzle from "./renderers/FindPairPuzzle";
 import PictureShadowPuzzle from "./renderers/PictureShadowPuzzle";
 import OrderingPuzzle from "./renderers/OrderingPuzzle";
+import { getRandomPuzzleBySubtopic } from "./quickPlayService";
 import "../styles/puzzle-level-path.css";
 
 function PuzzleLevelPath({
@@ -53,6 +54,15 @@ function PuzzleLevelPath({
     }
   }, [subtopicId]);
 
+  const handleQuickPlayBySubtopic = async () => {
+    const decodedCategoryName = decodeURIComponent(categoryName);
+    const decodedTopicName = decodeURIComponent(topicName);
+    const decodedSubtopicName = decodeURIComponent(subtopicName);
+    
+    const puzzle = await getRandomPuzzleBySubtopic(decodedCategoryName, decodedTopicName, decodedSubtopicName);
+    if (puzzle) navigate(`/play/${puzzle.id}`);
+  };
+
   if (loading) {
     return <div className="level-path-loading">Loading puzzles...</div>;
   }
@@ -84,8 +94,8 @@ function PuzzleLevelPath({
     );
   }
 
-  // If there's only one puzzle, open it directly (no level selection screen needed)
-  if (puzzles.length === 1 && selectedPuzzleIndex === null && !userExplicitlyWentBack) {
+  // Always select the first puzzle to show it directly (no level selection screen)
+  if (selectedPuzzleIndex === null && !userExplicitlyWentBack) {
     setSelectedPuzzleIndex(0);
   }
 
@@ -97,15 +107,53 @@ function PuzzleLevelPath({
     
     return (
       <div className="puzzle-fullscreen-wrapper">
-        {/* Back button overlay */}
-        <button
-          className="puzzle-back-overlay-btn"
-          onClick={() => navigate(`/puzzle/${categoryName}/${topicName}`)}
-        >
-          ← Back to Puzzles
-        </button>
+        {/* Header with back button and quick play */}
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "16px 20px",
+          background: "rgba(255, 255, 255, 0.95)",
+          borderBottom: "1px solid #e0e0e0",
+          zIndex: 100
+        }}>
+          <button
+            onClick={() => navigate(`/puzzle/${categoryName}/${topicName}`)}
+            style={{
+              padding: "8px 16px",
+              background: "#f0f0f0",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "#333"
+            }}
+          >
+            ← Back to Puzzles
+          </button>
+          <button
+            onClick={handleQuickPlayBySubtopic}
+            style={{
+              padding: "8px 16px",
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "white"
+            }}
+          >
+            ⚡ Quick Play
+          </button>
+        </div>
 
-        {/* Render the puzzle in fullscreen */}
+        {/* Render the puzzle in fullscreen with top padding for header */}
         {currentPuzzle.type === "find-pair" && (
           <FindPairPuzzle
             puzzle={currentPuzzle}
@@ -142,7 +190,18 @@ function PuzzleLevelPath({
           <OrderingPuzzle
             puzzle={currentPuzzle}
             onComplete={() => {
-              window.location.reload();
+              // Check if this is an Ascending order puzzle for Size
+              if (currentPuzzle.data?.type === "size" && currentPuzzle.title?.includes("Ascending")) {
+                // Navigate to Descending puzzle instead of reloading
+                const nextIndex = selectedPuzzleIndex + 1;
+                if (nextIndex < puzzles.length) {
+                  setSelectedPuzzleIndex(nextIndex);
+                } else {
+                  window.location.reload();
+                }
+              } else {
+                window.location.reload();
+              }
             }}
           />
         )}
@@ -169,64 +228,8 @@ function PuzzleLevelPath({
     );
   }
 
-  // Show level selection UI if:
-  // 1. There are multiple puzzles, OR
-  // 2. Single puzzle but user explicitly went back
-  const shouldShowLevelSelection = puzzles.length > 1 || userExplicitlyWentBack;
-
-  if (!shouldShowLevelSelection) {
-    // Single puzzle and user hasn't gone back - show puzzle directly (already handled above)
-    return null;
-  }
-
-  return (
-    <div className="puzzle-unified-page">
-      {/* Header */}
-      <div className="puzzle-unified-header">
-        <h1>🧩 {subtopicName} Puzzles</h1>
-        <p>Complete all puzzles to master this topic!</p>
-      </div>
-
-      {/* Puzzle tabs - scroll horizontally */}
-      <div className="puzzle-tabs-container">
-        <div className="puzzle-tabs-scroll">
-          {puzzles.map((puzzle, index) => {
-            const isCompleted = progress[puzzle.id]?.completed;
-            const isPreviousCompleted = index === 0 || progress[puzzles[index - 1]?.id]?.completed;
-            const isLocked = index > 0 && !isPreviousCompleted;
-            const isActive = selectedPuzzleIndex === index;
-
-            return (
-              <button
-                key={puzzle.id}
-                className={`puzzle-tab ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""} ${isLocked ? "locked" : ""}`}
-                onClick={() => handlePuzzleClick(puzzle, index)}
-                disabled={isLocked}
-              >
-                <span className="tab-number">{index + 1}</span>
-                <span className="tab-icon">
-                  {isLocked ? "🔒" : isCompleted ? "✅" : "🎮"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Footer with progress and navigation */}
-      <div className="puzzle-unified-footer">
-        <div className="progress-info">
-          <span>Completed: {Object.values(progress).filter((p) => p.completed).length}/{puzzles.length}</span>
-        </div>
-        <button
-          className="btn-back-path"
-          onClick={() => navigate(`/puzzle/${categoryName}/${topicName}`)}
-        >
-          ← Back to Topics
-        </button>
-      </div>
-    </div>
-  );
+  // No puzzle selected yet - shouldn't happen due to automatic selection above
+  return null;
 }
 
 export default PuzzleLevelPath;

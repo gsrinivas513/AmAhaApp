@@ -8,6 +8,11 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
 import { collection, getDocs, updateDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import { 
+  getFeatureTilesConfig, 
+  saveFeatureTilesConfig,
+  DEFAULT_SECTIONS 
+} from "../services/homePageSectionService";
 
 const DEFAULT_CONFIG = {
   showMegaMenu: true,
@@ -20,6 +25,7 @@ function NavigationConfigPage() {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const [features, setFeatures] = useState([]);
   const [featureOrder, setFeatureOrder] = useState({});
+  const [featureTileSections, setFeatureTileSections] = useState(DEFAULT_SECTIONS);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
 
@@ -51,6 +57,10 @@ function NavigationConfigPage() {
           order[f.id] = f.order || 0;
         });
         setFeatureOrder(order);
+
+        // Load FeatureTiles section config
+        const tileConfig = await getFeatureTilesConfig();
+        setFeatureTileSections(tileConfig);
       } catch (error) {
         console.error("Error loading data:", error);
         setStatus("❌ Failed to load configuration");
@@ -85,6 +95,26 @@ function NavigationConfigPage() {
     );
   };
 
+  const handleToggleTileVisibility = (sectionId) => {
+    setFeatureTileSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, visible: !s.visible }
+          : s
+      )
+    );
+  };
+
+  const handleTileSectionOrderChange = (sectionId, newOrder) => {
+    setFeatureTileSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId
+          ? { ...s, order: parseInt(newOrder) || 0 }
+          : s
+      )
+    );
+  };
+
   const saveConfiguration = async () => {
     try {
       setSaving(true);
@@ -99,24 +129,30 @@ function NavigationConfigPage() {
         await setDoc(doc(configRef), config);
       } else {
         // Update existing config
-        await updateDoc(configDocs.docs[0].ref, config);
+        const configDocRef = doc(db, "ui_navigation_config", configDocs.docs[0].id);
+        await updateDoc(configDocRef, config);
       }
 
-      // Save feature orders and visibility
-      for (const feature of features) {
-        const updatedData = {
-          order: featureOrder[feature.id],
-          showInMenu: feature.showInMenu !== false,
-        };
-        // Use setDoc with merge to create if doesn't exist
-        await setDoc(doc(db, "features", feature.id), updatedData, { merge: true });
+      // Save feature orders
+      for (const [featureId, order] of Object.entries(featureOrder)) {
+        const featureDocRef = doc(db, "features", featureId);
+        await updateDoc(featureDocRef, { order });
       }
+
+      // Update feature visibility
+      for (const feature of features) {
+        const featureDocRef = doc(db, "features", feature.id);
+        await updateDoc(featureDocRef, { showInMenu: feature.showInMenu });
+      }
+
+      // Save FeatureTiles section configuration
+      await saveFeatureTilesConfig(featureTileSections);
 
       setStatus("✅ Configuration saved successfully!");
       setTimeout(() => setStatus(""), 3000);
     } catch (error) {
       console.error("Error saving configuration:", error);
-      setStatus("❌ Failed to save configuration");
+      setStatus("❌ Error saving configuration: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -421,11 +457,150 @@ function NavigationConfigPage() {
           </p>
         </div>
 
+        {/* FeatureTiles Section Configuration */}
+        <div
+          style={{
+            marginTop: "40px",
+            padding: "20px",
+            background: "#f5f7ff",
+            borderRadius: "8px",
+            border: "2px solid #6C63FF",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              color: "#0b1220",
+              margin: "0 0 20px 0",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            🏠 Homepage FeatureTiles Sections
+          </h3>
+
+          <p style={{ fontSize: "13px", color: "#666", marginBottom: "16px" }}>
+            Control which sections appear on the homepage and in what order.
+          </p>
+
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "13px",
+            }}
+          >
+            <thead>
+              <tr style={{ borderBottom: "2px solid #ddd" }}>
+                <th
+                  style={{
+                    padding: "12px 8px",
+                    textAlign: "left",
+                    fontWeight: "600",
+                    color: "#0b1220",
+                  }}
+                >
+                  Section
+                </th>
+                <th
+                  style={{
+                    padding: "12px 8px",
+                    textAlign: "center",
+                    fontWeight: "600",
+                    color: "#0b1220",
+                    width: "100px",
+                  }}
+                >
+                  Visible
+                </th>
+                <th
+                  style={{
+                    padding: "12px 8px",
+                    textAlign: "center",
+                    fontWeight: "600",
+                    color: "#0b1220",
+                    width: "100px",
+                  }}
+                >
+                  Order
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {featureTileSections.map((section) => (
+                <tr
+                  key={section.id}
+                  style={{
+                    borderBottom: "1px solid #eee",
+                    backgroundColor: section.visible ? "white" : "#f9f9f9",
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      color: "#0b1220",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {section.label}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={section.visible}
+                      onChange={() => handleToggleTileVisibility(section.id)}
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 8px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      value={section.order}
+                      onChange={(e) =>
+                        handleTileSectionOrderChange(section.id, e.target.value)
+                      }
+                      style={{
+                        width: "60px",
+                        padding: "6px 8px",
+                        borderRadius: "4px",
+                        border: "1px solid #d0d0d0",
+                        fontSize: "13px",
+                        textAlign: "center",
+                      }}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p style={{ margin: "16px 0 0 0", fontSize: "13px", color: "#666" }}>
+            Lower order numbers appear first on the homepage. Uncheck to hide a section.
+          </p>
+        </div>
+
         {/* Save Button */}
         <button
           onClick={saveConfiguration}
           disabled={saving}
           style={{
+            marginTop: "24px",
             padding: "12px 24px",
             background: saving ? "#ccc" : "#6C63FF",
             color: "white",
@@ -443,7 +618,7 @@ function NavigationConfigPage() {
             if (!saving) e.currentTarget.style.background = "#6C63FF";
           }}
         >
-          {saving ? "💾 Saving..." : "💾 Save Configuration"}
+          {saving ? "💾 Saving..." : "💾 Save All Configuration"}
         </button>
       </div>
     </AdminLayout>

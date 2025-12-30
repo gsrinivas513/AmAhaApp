@@ -245,7 +245,16 @@ function CategoriesPanel({ feature, categories, config, isLoading = false, isAbs
         {canScrollPrev && (
           <button
             onClick={() => scroll("prev")}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-purple-50 text-purple-600 p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 group"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-none group hover:scale-110"
+            style={{
+              background: "#6C63FF",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#7B72FF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#6C63FF";
+            }}
             aria-label="Scroll left"
             title="Previous categories"
           >
@@ -259,7 +268,16 @@ function CategoriesPanel({ feature, categories, config, isLoading = false, isAbs
         {canScrollNext && (
           <button
             onClick={() => scroll("next")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-purple-50 text-purple-600 p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-2 border-purple-200 hover:border-purple-400 group"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white p-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl border-none group hover:scale-110"
+            style={{
+              background: "#6C63FF",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#7B72FF";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#6C63FF";
+            }}
             aria-label="Scroll right"
             title="Next categories"
           >

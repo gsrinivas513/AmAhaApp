@@ -73,6 +73,37 @@ function CategoryPage() {
   return (
     <SiteLayout>
       <div>
+        {/* Back Button */}
+        <div style={{ marginBottom: "20px" }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "8px 16px",
+              backgroundColor: "#f3f4f6",
+              border: "1px solid #d1d5db",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#374151",
+              transition: "all 200ms ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#e5e7eb";
+              e.currentTarget.style.borderColor = "#9ca3af";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#f3f4f6";
+              e.currentTarget.style.borderColor = "#d1d5db";
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+
         {/* Header */}
         <div
           style={{

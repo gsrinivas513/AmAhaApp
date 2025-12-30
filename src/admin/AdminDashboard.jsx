@@ -235,6 +235,10 @@ function AdminDashboard() {
             <button onClick={() => navigate("/admin/standardize-features")} style={{ ...toolBtn, borderColor: "#059669", color: "#059669" }}>⚡ Standardize Features</button>
             <button onClick={() => navigate("/admin/fix-feature-mismatch")} style={{ ...toolBtn, borderColor: "#d97706", color: "#d97706" }}>🔗 Fix Feature Mismatch</button>
             <button onClick={() => navigate("/admin/fix-orphaned-puzzles")} style={{ ...toolBtn, borderColor: "#dc2626", color: "#dc2626" }}>🗑️ Delete Broken Puzzles</button>
+            <button onClick={() => navigate("/admin/fix-generic-puzzle-types")} style={{ ...toolBtn, borderColor: "#9333ea", color: "#9333ea" }}>🔧 Fix Generic Types</button>
+            <button onClick={() => navigate("/admin/populate-missing-puzzle-data")} style={{ ...toolBtn, borderColor: "#1e40af", color: "#1e40af" }}>📊 Check Data</button>
+            <button onClick={() => navigate("/admin/delete-incomplete-puzzles")} style={{ ...toolBtn, borderColor: "#dc2626", color: "#dc2626" }}>🗑️ Delete Incomplete</button>
+            <button onClick={() => navigate("/admin/validate-puzzle-data")} style={{ ...toolBtn, borderColor: "#0d9488", color: "#0d9488" }}>✅ Validate All</button>
           </div>
         </div>
       )}
@@ -321,6 +325,7 @@ function AdminDashboard() {
         <a href="/admin/add-content" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Quiz Questions</a>
         <a href="/admin/add-puzzle" className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Add Puzzles</a>
         <a href="/admin/puzzles" className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500">View All Puzzles</a>
+        <a href="/admin/create-ordering-puzzles" className="bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700" title="Quickly create ordering puzzles from templates">⚡ Batch Create Ordering</a>
         <button onClick={() => setShowDailyChallenge(true)} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">🎯 Daily Challenges</button>
         <button onClick={() => setShowStories(true)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">📖 Stories</button>
       </div>

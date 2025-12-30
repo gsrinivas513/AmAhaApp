@@ -11,6 +11,12 @@ export const INITIAL_FEATURE_FORM = {
   label: "",
   description: "",
   icon: "✨",
+  imageUrl: "",
+  cloudinaryId: "",
+  imageCrop: "cover",
+  imageZoom: 1,
+  imageOffsetX: 0,
+  imageOffsetY: 0,
   enabled: true,
   featureType: "quiz",
 };

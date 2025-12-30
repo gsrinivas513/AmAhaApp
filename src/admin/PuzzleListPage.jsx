@@ -587,8 +587,8 @@ function PuzzleListPage() {
                       <button 
                         title={`Click to edit puzzle: ${p.id}`}
                         onClick={() => {
-                          // Redirect to edit page with puzzle ID
-                          window.location.href = `/admin/create-visual-puzzle?id=${p.id}`;
+                          // Redirect to edit page with puzzle ID and type
+                          window.location.href = `/admin/create-visual-puzzle?id=${p.id}&type=${p.type}`;
                         }}
                         style={{ 
                           cursor: 'pointer', 

@@ -111,7 +111,7 @@ export default function CreateTestPuzzlesPage() {
     },
     {
       title: "Order by Size - Small to Large",
-      description: "Drag the apples from smallest to largest",
+      description: "Drag the items from smallest to largest",
       type: "ordering",
       difficulty: "easy",
       ageGroup: "6-8",
@@ -122,12 +122,19 @@ export default function CreateTestPuzzlesPage() {
       subtopic: "Size Sequencing",
       subtopicId: "ordering-size",
       data: {
+        type: "size",
+        displayType: "sizes",
         items: [
-          { id: "item-1", label: "Small Apple", image: "https://via.placeholder.com/60/FF0000/ffffff?text=Small", order: 1 },
-          { id: "item-2", label: "Medium Apple", image: "https://via.placeholder.com/90/FF0000/ffffff?text=Medium", order: 2 },
-          { id: "item-3", label: "Large Apple", image: "https://via.placeholder.com/120/FF0000/ffffff?text=Large", order: 3 }
+          { id: "item-1", label: "Tiny", image: "https://via.placeholder.com/40/FF6B6B/ffffff?text=Tiny", order: 1, size: 40 },
+          { id: "item-2", label: "Small", image: "https://via.placeholder.com/60/FF6B6B/ffffff?text=Small", order: 2, size: 60 },
+          { id: "item-3", label: "Medium", image: "https://via.placeholder.com/80/FF6B6B/ffffff?text=Medium", order: 3, size: 80 },
+          { id: "item-4", label: "Large", image: "https://via.placeholder.com/100/FF6B6B/ffffff?text=Large", order: 4, size: 100 },
+          { id: "item-5", label: "Extra Large", image: "https://via.placeholder.com/120/FF6B6B/ffffff?text=XL", order: 5, size: 120 },
+          { id: "item-6", label: "2X Large", image: "https://via.placeholder.com/140/FF6B6B/ffffff?text=2XL", order: 6, size: 140 },
+          { id: "item-7", label: "3X Large", image: "https://via.placeholder.com/160/FF6B6B/ffffff?text=3XL", order: 7, size: 160 },
+          { id: "item-8", label: "4X Large", image: "https://via.placeholder.com/180/FF6B6B/ffffff?text=4XL", order: 8, size: 180 }
         ],
-        correctOrder: [1, 2, 3]
+        correctOrder: [1, 2, 3, 4, 5, 6, 7, 8]
       }
     },
     {
@@ -155,8 +162,8 @@ export default function CreateTestPuzzlesPage() {
       }
     },
     {
-      title: "Number Sequence 1-5",
-      description: "Arrange the numbers from 1 to 5 in correct order",
+      title: "Number Sequence 1-50",
+      description: "Arrange numbers in correct order - choose a range from 1-10, 11-20, 21-30, 31-40, or 41-50",
       type: "ordering",
       difficulty: "medium",
       ageGroup: "6-8",
@@ -167,14 +174,72 @@ export default function CreateTestPuzzlesPage() {
       subtopic: "Number Sequences",
       subtopicId: "ordering-numbers",
       data: {
-        items: [
-          { id: "num-1", label: "Five", image: "https://via.placeholder.com/100/0000FF/ffffff?text=5", order: 5 },
-          { id: "num-2", label: "Two", image: "https://via.placeholder.com/100/0000FF/ffffff?text=2", order: 2 },
-          { id: "num-3", label: "Four", image: "https://via.placeholder.com/100/0000FF/ffffff?text=4", order: 4 },
-          { id: "num-4", label: "One", image: "https://via.placeholder.com/100/0000FF/ffffff?text=1", order: 1 },
-          { id: "num-5", label: "Three", image: "https://via.placeholder.com/100/0000FF/ffffff?text=3", order: 3 }
+        maxRange: 50,
+        numberRanges: [
+          { label: "1-10", min: 1, max: 10 },
+          { label: "11-20", min: 11, max: 20 },
+          { label: "21-30", min: 21, max: 30 },
+          { label: "31-40", min: 31, max: 40 },
+          { label: "41-50", min: 41, max: 50 }
         ],
-        correctOrder: [1, 2, 3, 4, 5]
+        items: [
+          // 1-10
+          { id: "num-1", label: "1", number: 1, image: "https://via.placeholder.com/80/0000FF/ffffff?text=1", order: 1 },
+          { id: "num-2", label: "2", number: 2, image: "https://via.placeholder.com/80/0000FF/ffffff?text=2", order: 2 },
+          { id: "num-3", label: "3", number: 3, image: "https://via.placeholder.com/80/0000FF/ffffff?text=3", order: 3 },
+          { id: "num-4", label: "4", number: 4, image: "https://via.placeholder.com/80/0000FF/ffffff?text=4", order: 4 },
+          { id: "num-5", label: "5", number: 5, image: "https://via.placeholder.com/80/0000FF/ffffff?text=5", order: 5 },
+          { id: "num-6", label: "6", number: 6, image: "https://via.placeholder.com/80/0000FF/ffffff?text=6", order: 6 },
+          { id: "num-7", label: "7", number: 7, image: "https://via.placeholder.com/80/0000FF/ffffff?text=7", order: 7 },
+          { id: "num-8", label: "8", number: 8, image: "https://via.placeholder.com/80/0000FF/ffffff?text=8", order: 8 },
+          { id: "num-9", label: "9", number: 9, image: "https://via.placeholder.com/80/0000FF/ffffff?text=9", order: 9 },
+          { id: "num-10", label: "10", number: 10, image: "https://via.placeholder.com/80/0000FF/ffffff?text=10", order: 10 },
+          // 11-20
+          { id: "num-11", label: "11", number: 11, image: "https://via.placeholder.com/80/0000FF/ffffff?text=11", order: 11 },
+          { id: "num-12", label: "12", number: 12, image: "https://via.placeholder.com/80/0000FF/ffffff?text=12", order: 12 },
+          { id: "num-13", label: "13", number: 13, image: "https://via.placeholder.com/80/0000FF/ffffff?text=13", order: 13 },
+          { id: "num-14", label: "14", number: 14, image: "https://via.placeholder.com/80/0000FF/ffffff?text=14", order: 14 },
+          { id: "num-15", label: "15", number: 15, image: "https://via.placeholder.com/80/0000FF/ffffff?text=15", order: 15 },
+          { id: "num-16", label: "16", number: 16, image: "https://via.placeholder.com/80/0000FF/ffffff?text=16", order: 16 },
+          { id: "num-17", label: "17", number: 17, image: "https://via.placeholder.com/80/0000FF/ffffff?text=17", order: 17 },
+          { id: "num-18", label: "18", number: 18, image: "https://via.placeholder.com/80/0000FF/ffffff?text=18", order: 18 },
+          { id: "num-19", label: "19", number: 19, image: "https://via.placeholder.com/80/0000FF/ffffff?text=19", order: 19 },
+          { id: "num-20", label: "20", number: 20, image: "https://via.placeholder.com/80/0000FF/ffffff?text=20", order: 20 },
+          // 21-30
+          { id: "num-21", label: "21", number: 21, image: "https://via.placeholder.com/80/0000FF/ffffff?text=21", order: 21 },
+          { id: "num-22", label: "22", number: 22, image: "https://via.placeholder.com/80/0000FF/ffffff?text=22", order: 22 },
+          { id: "num-23", label: "23", number: 23, image: "https://via.placeholder.com/80/0000FF/ffffff?text=23", order: 23 },
+          { id: "num-24", label: "24", number: 24, image: "https://via.placeholder.com/80/0000FF/ffffff?text=24", order: 24 },
+          { id: "num-25", label: "25", number: 25, image: "https://via.placeholder.com/80/0000FF/ffffff?text=25", order: 25 },
+          { id: "num-26", label: "26", number: 26, image: "https://via.placeholder.com/80/0000FF/ffffff?text=26", order: 26 },
+          { id: "num-27", label: "27", number: 27, image: "https://via.placeholder.com/80/0000FF/ffffff?text=27", order: 27 },
+          { id: "num-28", label: "28", number: 28, image: "https://via.placeholder.com/80/0000FF/ffffff?text=28", order: 28 },
+          { id: "num-29", label: "29", number: 29, image: "https://via.placeholder.com/80/0000FF/ffffff?text=29", order: 29 },
+          { id: "num-30", label: "30", number: 30, image: "https://via.placeholder.com/80/0000FF/ffffff?text=30", order: 30 },
+          // 31-40
+          { id: "num-31", label: "31", number: 31, image: "https://via.placeholder.com/80/0000FF/ffffff?text=31", order: 31 },
+          { id: "num-32", label: "32", number: 32, image: "https://via.placeholder.com/80/0000FF/ffffff?text=32", order: 32 },
+          { id: "num-33", label: "33", number: 33, image: "https://via.placeholder.com/80/0000FF/ffffff?text=33", order: 33 },
+          { id: "num-34", label: "34", number: 34, image: "https://via.placeholder.com/80/0000FF/ffffff?text=34", order: 34 },
+          { id: "num-35", label: "35", number: 35, image: "https://via.placeholder.com/80/0000FF/ffffff?text=35", order: 35 },
+          { id: "num-36", label: "36", number: 36, image: "https://via.placeholder.com/80/0000FF/ffffff?text=36", order: 36 },
+          { id: "num-37", label: "37", number: 37, image: "https://via.placeholder.com/80/0000FF/ffffff?text=37", order: 37 },
+          { id: "num-38", label: "38", number: 38, image: "https://via.placeholder.com/80/0000FF/ffffff?text=38", order: 38 },
+          { id: "num-39", label: "39", number: 39, image: "https://via.placeholder.com/80/0000FF/ffffff?text=39", order: 39 },
+          { id: "num-40", label: "40", number: 40, image: "https://via.placeholder.com/80/0000FF/ffffff?text=40", order: 40 },
+          // 41-50
+          { id: "num-41", label: "41", number: 41, image: "https://via.placeholder.com/80/0000FF/ffffff?text=41", order: 41 },
+          { id: "num-42", label: "42", number: 42, image: "https://via.placeholder.com/80/0000FF/ffffff?text=42", order: 42 },
+          { id: "num-43", label: "43", number: 43, image: "https://via.placeholder.com/80/0000FF/ffffff?text=43", order: 43 },
+          { id: "num-44", label: "44", number: 44, image: "https://via.placeholder.com/80/0000FF/ffffff?text=44", order: 44 },
+          { id: "num-45", label: "45", number: 45, image: "https://via.placeholder.com/80/0000FF/ffffff?text=45", order: 45 },
+          { id: "num-46", label: "46", number: 46, image: "https://via.placeholder.com/80/0000FF/ffffff?text=46", order: 46 },
+          { id: "num-47", label: "47", number: 47, image: "https://via.placeholder.com/80/0000FF/ffffff?text=47", order: 47 },
+          { id: "num-48", label: "48", number: 48, image: "https://via.placeholder.com/80/0000FF/ffffff?text=48", order: 48 },
+          { id: "num-49", label: "49", number: 49, image: "https://via.placeholder.com/80/0000FF/ffffff?text=49", order: 49 },
+          { id: "num-50", label: "50", number: 50, image: "https://via.placeholder.com/80/0000FF/ffffff?text=50", order: 50 }
+        ],
+        correctOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
       }
     },
     {
@@ -411,7 +476,7 @@ export default function CreateTestPuzzlesPage() {
               <div className="bg-white p-4 rounded border border-green-200">
                 <p className="font-semibold mb-2">Next Steps:</p>
                 <ol className="list-decimal list-inside space-y-2 text-gray-600">
-                  <li>Go to: <a href="/quiz/Logic%20Puzzles" className="text-blue-600 hover:underline">Logic Puzzles Category</a></li>
+                  <li>Go to: <a href="/puzzle/logic-puzzles" className="text-blue-600 hover:underline">Logic Puzzles Category</a></li>
                   <li>Or navigate through the menu: 🧩 Puzzles → Logic Puzzles</li>
                   <li>Start playing the test puzzles!</li>
                 </ol>
@@ -431,7 +496,7 @@ export default function CreateTestPuzzlesPage() {
           {completed && (
             <div className="flex gap-4">
               <a
-                href="/quiz/Logic%20Puzzles"
+                href="/puzzle/logic-puzzles"
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors text-center"
               >
                 ➜ Go to Logic Puzzles

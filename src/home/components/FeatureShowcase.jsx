@@ -126,7 +126,29 @@ function FeatureCarouselSection({ feature, categories }) {
           {canScrollPrev && (
             <button
               onClick={() => scroll("prev")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              style={{
+                position: "absolute",
+                left: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginLeft: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll left"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +161,29 @@ function FeatureCarouselSection({ feature, categories }) {
           {canScrollNext && (
             <button
               onClick={() => scroll("next")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "#6C63FF",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                border: "none",
+                cursor: "pointer",
+                zIndex: 10,
+                transition: "all 0.2s ease",
+                marginRight: "-8px",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#7B72FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#6C63FF";
+                e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              }}
               aria-label="Scroll right"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

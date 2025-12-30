@@ -9,8 +9,23 @@ export async function getPuzzlesByCategory(category) {
 }
 
 export async function getPuzzleById(puzzleId) {
+  console.log("🔍 getPuzzleById called with ID:", puzzleId);
   const ref = doc(db, "puzzles", puzzleId);
   const snap = await getDoc(ref);
+  console.log("📦 Firestore query result:", { exists: snap.exists(), id: snap.id, data: snap.data() });
+  
+  // If not found, try searching all puzzles
+  if (!snap.exists()) {
+    console.warn("⚠️ Puzzle not found by ID, searching all puzzles...");
+    const allPuzzles = await getDocs(collection(db, "puzzles"));
+    console.log("📋 Total puzzles in database:", allPuzzles.size);
+    const found = allPuzzles.docs.find(doc => doc.id === puzzleId);
+    if (found) {
+      console.log("✅ Found puzzle after full search:", found.data());
+      return { id: found.id, ...found.data() };
+    }
+  }
+  
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 

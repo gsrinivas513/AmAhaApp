@@ -470,3 +470,219 @@ export default {
   PuzzleValidationEngine,
   VALIDATION_TOLERANCES
 };
+
+/**
+ * ============================================
+ * PUZZLE DATA VALIDATION (Creation & Editing)
+ * ============================================
+ * Validates puzzle data structure before saving to database
+ */
+
+const PUZZLE_TYPE_REQUIREMENTS = {
+  "find-pair": {
+    required: ["cards"],
+    validators: [
+      (puzzle) => {
+        if (!puzzle.data?.cards || !Array.isArray(puzzle.data.cards)) {
+          return { valid: false, error: "Missing 'cards' array" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const cards = puzzle.data.cards;
+        if (cards.length === 0) {
+          return { valid: false, error: "Cards array is empty" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const cards = puzzle.data.cards;
+        const minCards = 8;
+        if (cards.length < minCards) {
+          return { valid: false, error: `Need at least ${minCards} cards (you have ${cards.length})` };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const cards = puzzle.data.cards;
+        if (cards.length % 2 !== 0) {
+          return { valid: false, error: `Cards must be in even pairs (you have ${cards.length})` };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const cards = puzzle.data.cards;
+        for (let i = 0; i < cards.length; i++) {
+          if (!cards[i].image) {
+            return { valid: false, error: `Card ${i + 1} is missing an image` };
+          }
+        }
+        return { valid: true };
+      }
+    ]
+  },
+
+  "picture-word": {
+    required: ["items"],
+    validators: [
+      (puzzle) => {
+        if (!puzzle.data?.items || !Array.isArray(puzzle.data.items)) {
+          return { valid: false, error: "Missing 'items' array" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const items = puzzle.data.items;
+        if (items.length < 4) {
+          return { valid: false, error: `Need at least 4 items (you have ${items.length})` };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const items = puzzle.data.items;
+        for (let i = 0; i < items.length; i++) {
+          if (!items[i].image) {
+            return { valid: false, error: `Item ${i + 1} is missing an image` };
+          }
+          if (!items[i].word) {
+            return { valid: false, error: `Item ${i + 1} is missing a word` };
+          }
+        }
+        return { valid: true };
+      }
+    ]
+  },
+
+  "spot-difference": {
+    required: ["originalImage", "modifiedImage"],
+    validators: [
+      (puzzle) => {
+        if (!puzzle.data?.originalImage) {
+          return { valid: false, error: "Missing 'originalImage'" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        if (!puzzle.data?.modifiedImage) {
+          return { valid: false, error: "Missing 'modifiedImage'" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        if (puzzle.data.originalImage === puzzle.data.modifiedImage) {
+          return { valid: false, error: "Original and modified images must be different" };
+        }
+        return { valid: true };
+      }
+    ]
+  },
+
+  "picture-shadow": {
+    required: ["originalImage", "shadowImage"],
+    validators: [
+      (puzzle) => {
+        if (!puzzle.data?.originalImage) {
+          return { valid: false, error: "Missing 'originalImage'" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        if (!puzzle.data?.shadowImage) {
+          return { valid: false, error: "Missing 'shadowImage'" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        if (puzzle.data.originalImage === puzzle.data.shadowImage) {
+          return { valid: false, error: "Original and shadow images must be different" };
+        }
+        return { valid: true };
+      }
+    ]
+  },
+
+  "ordering": {
+    required: ["items", "correctOrder"],
+    validators: [
+      (puzzle) => {
+        if (!puzzle.data?.items || !Array.isArray(puzzle.data.items)) {
+          return { valid: false, error: "Missing 'items' array" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        if (!puzzle.data?.correctOrder || !Array.isArray(puzzle.data.correctOrder)) {
+          return { valid: false, error: "Missing 'correctOrder' array" };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const items = puzzle.data.items;
+        const order = puzzle.data.correctOrder;
+        if (items.length !== order.length) {
+          return { valid: false, error: `Items (${items.length}) and order (${order.length}) count must match` };
+        }
+        return { valid: true };
+      },
+      (puzzle) => {
+        const items = puzzle.data.items;
+        if (items.length < 2) {
+          return { valid: false, error: `Need at least 2 items to order (you have ${items.length})` };
+        }
+        return { valid: true };
+      }
+    ]
+  }
+};
+
+export function validatePuzzleData(puzzle) {
+  const errors = [];
+  const warnings = [];
+
+  if (!puzzle.type) {
+    errors.push("Puzzle must have a 'type'");
+    return { valid: false, errors, warnings };
+  }
+
+  if (!PUZZLE_TYPE_REQUIREMENTS[puzzle.type]) {
+    errors.push(`Unknown puzzle type: "${puzzle.type}"`);
+    return { valid: false, errors, warnings };
+  }
+
+  if (!puzzle.title || puzzle.title.trim() === "") {
+    errors.push("Puzzle must have a title");
+  }
+
+  if (!puzzle.category && !puzzle.categoryId) {
+    errors.push("Puzzle must have a category");
+  }
+
+  const typeRules = PUZZLE_TYPE_REQUIREMENTS[puzzle.type];
+  for (const validator of typeRules.validators) {
+    const result = validator(puzzle);
+    if (!result.valid) {
+      errors.push(result.error);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
+export function getPuzzleTypeRequirements(type) {
+  return PUZZLE_TYPE_REQUIREMENTS[type]?.required || [];
+}
+
+export function getTypeDescription(type) {
+  const descriptions = {
+    "find-pair": "Memory game with matching image pairs. Requires: 8+ images (4+ pairs)",
+    "picture-word": "Match images with words. Requires: 4+ items with images and words",
+    "spot-difference": "Find differences between two images. Requires: Original and modified images",
+    "picture-shadow": "Match images with their shadows. Requires: Original and shadow images",
+    "ordering": "Arrange items in correct order. Requires: 2+ items and correct order sequence"
+  };
+  return descriptions[type] || "Unknown puzzle type";
+}

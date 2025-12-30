@@ -50,6 +50,13 @@ function FindPairPuzzle({ puzzle, onComplete }) {
 
   // Initialize cards based on grid size
   useEffect(() => {
+    // Safety check: ensure puzzle.data exists
+    if (!puzzle || !puzzle.data) {
+      console.error("❌ FindPairPuzzle: puzzle.data is undefined", { puzzle });
+      setCards([]);
+      return;
+    }
+
     const allCards = puzzle.data.cards || [];
     
     // Calculate total cards and pairs needed based on grid size
