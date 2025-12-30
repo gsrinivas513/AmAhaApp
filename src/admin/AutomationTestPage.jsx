@@ -1,6 +1,7 @@
 // src/admin/AutomationTestPage.jsx
 import React, { useState } from "react";
 import AdminLayout from "./AdminLayout";
+import { FEATURES } from "../constants/FEATURES";
 import { Card, Button } from "../components/ui";
 import { db } from "../firebase/firebaseConfig";
 import {
@@ -281,10 +282,10 @@ function AutomationTestPage() {
         if (questions.length > 0) {
           // Validate question structure by feature type
           const byFeatureType = {
-            quiz: questions.filter(q => q.featureType === "quiz"),
-            puzzle: questions.filter(q => q.featureType === "puzzle"),
+            quiz: questions.filter(q => q.featureType === FEATURES.QUIZZES.type),
+            puzzle: questions.filter(q => q.featureType === FEATURES.PUZZLES.type),
             study: questions.filter(q => q.featureType === "study"),
-            other: questions.filter(q => !q.featureType || !["quiz", "puzzle", "study"].includes(q.featureType))
+            other: questions.filter(q => !q.featureType || ![FEATURES.QUIZZES.type, FEATURES.PUZZLES.type, "study"].includes(q.featureType))
           };
           
           // Validate quiz questions (need options + correctAnswer)
@@ -583,7 +584,7 @@ function AutomationTestPage() {
           if (!data.featureType) issues.push(`Question ${doc.id}: Missing featureType`);
           
           // Feature-specific validation
-          if (data.featureType === "quiz") {
+          if (data.featureType === FEATURES.QUIZZES.type) {
             if (!Array.isArray(data.options) || data.options.length !== 4)
               issues.push(`Quiz Question ${doc.id}: Invalid options (must be array of 4)`);
             if (!data.correctAnswer) issues.push(`Quiz Question ${doc.id}: Missing correctAnswer`);
@@ -740,7 +741,7 @@ function AutomationTestPage() {
       try {
         // Check if there are questions suitable for kids
         const snap = await getDocs(
-          query(collection(db, "questions"), where("featureType", "==", "quiz"), where("difficulty", "==", "easy"))
+          query(collection(db, "questions"), where("featureType", "==", FEATURES.QUIZZES.type), where("difficulty", "==", "easy"))
         );
         
         const duration = Date.now() - startTime;

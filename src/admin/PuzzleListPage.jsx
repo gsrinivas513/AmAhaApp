@@ -5,10 +5,12 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { Button, Card, Modal, Input } from '../components/ui';
+import TablePagination from './components/TablePagination';
 
 function PuzzleListPage() {
   const [puzzles, setPuzzles] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
@@ -17,6 +19,9 @@ function PuzzleListPage() {
   const [filterCategory, setFilterCategory] = useState('');
   const [sortColumn, setSortColumn] = useState('title');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [selectedCategory, setSelectedCategory] = useState(null); // For tabs
+  const [itemsPerPage, setItemsPerPage] = useState("10");
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Dialog state
   const [showDialog, setShowDialog] = useState(false);
@@ -29,14 +34,93 @@ function PuzzleListPage() {
     load();
   }, []);
 
+  // Auto-select first puzzle category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !selectedCategory) {
+      const puzzleCategories = categories.filter(c => c.featureId === 'puzzles' && c.uiMode === 'puzzle');
+      if (puzzleCategories.length > 0) {
+        setSelectedCategory(puzzleCategories[0].id);
+      }
+    }
+  }, [categories, selectedCategory]);
+
   const load = async () => {
     try {
-      const [puzzlesData, catSnap] = await Promise.all([
-        getAllPuzzles(),
+      const [catSnap, topicsSnap, subtopicsSnap] = await Promise.all([
         getDocs(collection(db, 'categories')),
+        getDocs(collection(db, 'topics')),
+        getDocs(collection(db, 'subtopics')),
       ]);
-      setPuzzles(puzzlesData);
-      setCategories(catSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      
+      // Get categories
+      const allCategories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setCategories(allCategories);
+      
+      // Get topics
+      const allTopics = topicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setTopics(allTopics);
+      
+      // Get puzzle subtopics (puzzles are represented as subtopics with featureId: 'puzzles')
+      const allSubtopics = subtopicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const puzzleSubtopics = allSubtopics.filter(s => s.featureId === 'puzzles');
+      
+      // Get actual puzzle documents from puzzles collection
+      const puzzleDocuments = await getAllPuzzles();
+      
+      // Helper to get category name from topic
+      const getCatName = (topicId) => {
+        const topic = allTopics.find(t => t.id === topicId);
+        if (topic && topic.categoryId) {
+          const cat = allCategories.find(c => c.id === topic.categoryId);
+          return cat ? (cat.label || cat.name) : 'Unknown';
+        }
+        return 'Unknown';
+      };
+      
+      // Prioritize actual puzzle documents, fallback to subtopics for reference
+      const mergedPuzzles = [
+        // First, add all actual puzzle documents from the puzzles collection
+        ...puzzleDocuments.map(doc => {
+          const topic = allTopics.find(t => t.id === doc.topicId);
+          const category = allCategories.find(c => c.id === doc.categoryId);
+          return {
+            id: doc.id, // Real Firestore document ID (e.g., sgB9XCIvYhZPJQlS1xtF)
+            title: doc.title,
+            type: doc.type,
+            description: doc.description || '',
+            difficulty: doc.difficulty || 'medium',
+            ageGroup: doc.ageGroup || 'all',
+            topicId: doc.topicId,
+            topicName: topic?.name || 'Unknown',
+            categoryId: doc.categoryId,
+            category: category?.id || 'unknown',
+            subtopicId: doc.subtopicId,
+            createdAt: doc.createdAt,
+            source: 'puzzle-document'
+          };
+        })
+      ];
+
+      // Deduplicate: Keep only the most recently created puzzle per subtopicId
+      const deduplicatedPuzzles = [];
+      const seenSubtopics = new Set();
+      
+      // Sort by createdAt (most recent first)
+      const sortedPuzzles = [...mergedPuzzles].sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
+      // Keep first occurrence of each subtopicId
+      for (const puzzle of sortedPuzzles) {
+        if (!seenSubtopics.has(puzzle.subtopicId)) {
+          seenSubtopics.add(puzzle.subtopicId);
+          deduplicatedPuzzles.push(puzzle);
+        }
+      }
+      
+      setPuzzles(deduplicatedPuzzles);
     } catch (err) {
       setError('Failed to load puzzles or categories');
       console.error(err);
@@ -72,8 +156,11 @@ function PuzzleListPage() {
 
     const matchesType = !filterType || p.type === filterType;
     const matchesCategory = !filterCategory || getCategoryName(p.category) === filterCategory;
+    
+    // Filter by selected tab category
+    const matchesTabCategory = !selectedCategory || p.categoryId === selectedCategory;
 
-    return matchesSearch && matchesType && matchesCategory;
+    return matchesSearch && matchesType && matchesCategory && matchesTabCategory;
   });
 
   const sortedPuzzles = [...filteredPuzzles].sort((a, b) => {
@@ -106,15 +193,30 @@ function PuzzleListPage() {
       : bVal.localeCompare(aVal);
   });
 
+  // Pagination logic
+  const itemsToDisplay = itemsPerPage === 'all' ? sortedPuzzles.length : parseInt(itemsPerPage);
+  const totalPages = Math.ceil(sortedPuzzles.length / itemsToDisplay);
+  const startIndex = (currentPage - 1) * itemsToDisplay;
+  const endIndex = Math.min(startIndex + itemsToDisplay, sortedPuzzles.length);
+  const paginatedPuzzles = sortedPuzzles.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, filterCategory, selectedCategory]);
+
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this puzzle?')) return;
+    if (!window.confirm('Delete this puzzle? This action cannot be undone.')) return;
     try {
+      console.log("🗑️ Deleting puzzle:", id);
       await deleteDoc(doc(db, 'puzzles', id));
       setPuzzles((prev) => prev.filter((p) => p.id !== id));
       setSelectedIds((prev) => prev.filter((qid) => qid !== id));
+      console.log("✅ Puzzle deleted successfully");
+      alert('✅ Puzzle deleted successfully');
     } catch (err) {
-      alert('Failed to delete puzzle');
-      console.error(err);
+      console.error('❌ Delete error:', err);
+      alert('Failed to delete puzzle: ' + err.message);
     }
   };
 
@@ -123,17 +225,37 @@ function PuzzleListPage() {
       alert('Select puzzles to delete');
       return;
     }
-    if (!window.confirm(`Delete ${selectedIds.length} puzzle(s)?`)) return;
+    if (!window.confirm(`Delete ${selectedIds.length} puzzle(s)? This action cannot be undone.`)) return;
     
     try {
+      console.log("🗑️ Deleting puzzles:", selectedIds);
+      let successCount = 0;
+      let failureCount = 0;
+
       for (const id of selectedIds) {
-        await deleteDoc(doc(db, 'puzzles', id));
+        try {
+          await deleteDoc(doc(db, 'puzzles', id));
+          successCount++;
+          console.log(`✅ Deleted puzzle: ${id}`);
+        } catch (err) {
+          failureCount++;
+          console.error(`❌ Failed to delete puzzle ${id}:`, err);
+        }
       }
+
+      // Update local state
       setPuzzles((prev) => prev.filter((p) => !selectedIds.includes(p.id)));
       setSelectedIds([]);
+
+      // Show result
+      if (failureCount === 0) {
+        alert(`✅ Successfully deleted ${successCount} puzzle(s)`);
+      } else {
+        alert(`⚠️ Deleted ${successCount} puzzle(s), but failed to delete ${failureCount}`);
+      }
     } catch (err) {
-      alert('Failed to delete puzzles');
-      console.error(err);
+      console.error('❌ Bulk delete error:', err);
+      alert('Failed to delete puzzles: ' + err.message);
     }
   };
 
@@ -188,20 +310,51 @@ function PuzzleListPage() {
     <AdminLayout>
       <div style={{ padding: 0 }}>
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>🧩 Puzzle Manager</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>🧩 View All Puzzles</h1>
           <p style={{ color: '#64748b', marginBottom: 16, fontSize: 14 }}>
-            Manage all traditional and visual puzzles. Use filters below to find specific puzzles.
+            Use filters below to find specific puzzles.
           </p>
-
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-            <Link to="/admin/add-puzzle" style={{ textDecoration: 'none' }}>
-              <Button style={{ background: '#10b981' }}>+ Add Traditional Puzzle</Button>
-            </Link>
-            <Link to="/admin/create-visual-puzzle" style={{ textDecoration: 'none' }}>
-              <Button style={{ background: '#a855f7' }}>+ Create Visual Puzzle</Button>
-            </Link>
-          </div>
         </div>
+
+        {/* Category Tabs */}
+        {categories.filter(c => c.featureId === 'puzzles' && c.uiMode === 'puzzle').length > 0 && (
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            marginBottom: '20px',
+            borderBottom: '2px solid #e2e8f0',
+            paddingBottom: '0px',
+            overflowX: 'auto',
+            paddingRight: '8px'
+          }}>
+            {categories
+              .filter(c => c.featureId === 'puzzles' && c.uiMode === 'puzzle')
+              .map((cat) => {
+                const catPuzzleCount = puzzles.filter(p => p.categoryId === cat.id).length;
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    style={{
+                      padding: '12px 16px',
+                      background: isSelected ? '#10b981' : 'transparent',
+                      color: isSelected ? 'white' : '#64748b',
+                      border: 'none',
+                      borderBottom: isSelected ? '3px solid #059669' : '3px solid transparent',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: isSelected ? 600 : 500,
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {cat.label || cat.name} <span style={{ fontSize: '12px', opacity: 0.8 }}>({catPuzzleCount})</span>
+                  </button>
+                );
+              })}
+          </div>
+        )}
 
         {/* Filters */}
         <Card style={{ marginBottom: 20 }}>
@@ -272,7 +425,13 @@ function PuzzleListPage() {
               )}
             </div>
             <div>
-              Showing {sortedPuzzles.length} of {puzzles.length} puzzles
+              <TablePagination
+                totalItems={sortedPuzzles.length}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={setItemsPerPage}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </div>
         </Card>
@@ -287,27 +446,26 @@ function PuzzleListPage() {
                     <input
                       type="checkbox"
                       checked={
-                        sortedPuzzles.length > 0 &&
-                        selectedIds.length === sortedPuzzles.length
+                        paginatedPuzzles.length > 0 &&
+                        paginatedPuzzles.every((p) => selectedIds.includes(p.id))
                       }
-                      onChange={(e) =>
-                        setSelectedIds(
-                          e.target.checked ? sortedPuzzles.map((p) => p.id) : []
-                        )
-                      }
+                      onChange={(e) => {
+                        setSelectedIds((prev) => {
+                          if (e.target.checked) {
+                            return [
+                              ...prev,
+                              ...paginatedPuzzles
+                                .map((p) => p.id)
+                                .filter((id) => !prev.includes(id)),
+                            ];
+                          } else {
+                            return prev.filter(
+                              (id) => !paginatedPuzzles.map((p) => p.id).includes(id)
+                            );
+                          }
+                        });
+                      }}
                     />
-                  </th>
-                  <th 
-                    style={{ 
-                      padding: '12px 8px', 
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      background: sortColumn === 'title' ? '#e0f2fe' : 'transparent',
-                      fontWeight: 600
-                    }}
-                    onClick={() => handleSort('title')}
-                  >
-                    Title <SortIndicator column="title" />
                   </th>
                   <th 
                     style={{ 
@@ -319,7 +477,7 @@ function PuzzleListPage() {
                     }}
                     onClick={() => handleSort('type')}
                   >
-                    Type <SortIndicator column="type" />
+                    Feature <SortIndicator column="type" />
                   </th>
                   <th 
                     style={{ 
@@ -334,6 +492,45 @@ function PuzzleListPage() {
                     Category <SortIndicator column="category" />
                   </th>
                   <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Topic
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Subtopic
+                  </th>
+                  <th 
+                    style={{ 
+                      padding: '12px 8px', 
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      background: sortColumn === 'title' ? '#e0f2fe' : 'transparent',
+                      fontWeight: 600
+                    }}
+                    onClick={() => handleSort('title')}
+                  >
+                    Name <SortIndicator column="title" />
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Document ID
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Status
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Created
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Last Updated
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    XP Reward
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Difficulty
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
+                    Age Group
+                  </th>
+                  <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
                     Description
                   </th>
                   <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 600 }}>
@@ -342,7 +539,7 @@ function PuzzleListPage() {
                 </tr>
               </thead>
               <tbody>
-                {sortedPuzzles.map((p) => (
+                {paginatedPuzzles.map((p) => (
                   <tr key={p.id} style={{ borderBottom: '1px solid #e2e8f0', background: selectedIds.includes(p.id) ? '#f0fdf4' : 'transparent' }}>
                     <td style={{ padding: '12px 8px' }}>
                       <input
@@ -356,9 +553,6 @@ function PuzzleListPage() {
                           )
                         }
                       />
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: 500 }}>
-                      {p.title || '-'}
                     </td>
                     <td style={{ padding: '12px 8px' }}>
                       <span style={{
@@ -378,7 +572,83 @@ function PuzzleListPage() {
                         {getCategoryName(p.category)}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 8px', maxWidth: '300px', wordWrap: 'break-word' }}>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{ fontSize: 12, color: '#475569' }}>
+                        {p.topicName || '-'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontSize: '11px', color: '#64748b', maxWidth: '150px' }}>
+                      {p.subtopicId || '-'}
+                    </td>
+                    <td style={{ padding: '12px 8px', fontWeight: 500 }}>
+                      {p.title || '-'}
+                    </td>
+                    <td style={{ padding: '12px 8px', fontFamily: 'monospace', fontSize: '11px', color: '#475569', maxWidth: '180px' }}>
+                      <button 
+                        title={`Click to edit puzzle: ${p.id}`}
+                        onClick={() => {
+                          // Redirect to edit page with puzzle ID
+                          window.location.href = `/admin/create-visual-puzzle?id=${p.id}`;
+                        }}
+                        style={{ 
+                          cursor: 'pointer', 
+                          color: '#3b82f6', 
+                          textDecoration: 'underline',
+                          background: 'none',
+                          border: 'none',
+                          padding: '0',
+                          fontFamily: 'monospace',
+                          fontSize: '11px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          maxWidth: '100%'
+                        }}
+                      >
+                        {p.id}
+                      </button>
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{
+                        fontSize: 11,
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        background: p.isPublished ? '#dcfce7' : '#fee2e2',
+                        color: p.isPublished ? '#15803d' : '#991b1b',
+                        fontWeight: 600,
+                        textTransform: 'uppercase'
+                      }}>
+                        {p.isPublished ? '✓ Published' : '○ Draft'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px', fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                      {p.createdAt ? new Date(p.createdAt.seconds ? p.createdAt.seconds * 1000 : p.createdAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </td>
+                    <td style={{ padding: '12px 8px', fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                      {p.updatedAt ? new Date(p.updatedAt.seconds ? p.updatedAt.seconds * 1000 : p.updatedAt).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                        {p.xpReward || '0'} 🎯
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{
+                        fontSize: 11,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        background: p.difficulty === 'hard' ? '#fee2e2' : p.difficulty === 'medium' ? '#fef3c7' : '#d1fae5',
+                        color: p.difficulty === 'hard' ? '#991b1b' : p.difficulty === 'medium' ? '#92400e' : '#065f46',
+                        fontWeight: 600
+                      }}>
+                        {p.difficulty || 'N/A'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{ fontSize: 12, color: '#475569' }}>
+                        {p.ageGroup || '-'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px', maxWidth: '250px', wordWrap: 'break-word' }}>
                       <div style={{ fontSize: 12, color: '#64748b', maxHeight: '60px', overflow: 'hidden' }}>
                         {p.description || '-'}
                       </div>

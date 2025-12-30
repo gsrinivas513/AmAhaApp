@@ -195,29 +195,30 @@
   }
 }
 
-/* Dark Mode */
+/* Dark Mode - Keep cards white for readability */
 @media (prefers-color-scheme: dark) {
   .story-map-card {
-    background: #1a1a1a;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
-  .story-image-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  .story-map-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   }
 
   .story-title {
-    color: #e9ecef;
+    color: #212529;
   }
 
   .story-description {
-    color: #adb5bd;
+    color: #666;
   }
 
   .stat-item {
-    color: #adb5bd;
+    color: #666;
   }
 
   .progress-bar {
-    background: #444;
+    background: #e9ecef;
   }
 }

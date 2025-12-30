@@ -60,24 +60,15 @@ export async function getStory(storyId) {
 
 /**
  * Get all published stories
+ * Uses simple where clause to avoid Firestore index errors
  */
 export async function getAllStories(filters = {}) {
   try {
-    let q = query(
+    // Try to fetch with published filter (no orderBy to avoid index requirement)
+    const q = query(
       collection(db, 'stories'),
-      where('published', '==', true),
-      orderBy('createdAt', 'desc')
+      where('published', '==', true)
     );
-
-    // Apply filters if provided
-    if (filters.targetAudience) {
-      q = query(
-        collection(db, 'stories'),
-        where('published', '==', true),
-        where('targetAudience', '==', filters.targetAudience),
-        orderBy('createdAt', 'desc')
-      );
-    }
 
     const querySnapshot = await getDocs(q);
     const stories = [];
@@ -89,10 +80,41 @@ export async function getAllStories(filters = {}) {
       });
     });
 
+    console.log('[storyService] getAllStories() found', stories.length, 'published stories');
+    
+    // Sort by createdAt in JavaScript (avoids index requirement)
+    stories.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA; // descending order
+    });
+
     return stories;
   } catch (error) {
     console.error('Error fetching stories:', error);
-    return [];
+    // Fallback: fetch all stories without filter
+    try {
+      console.log('[storyService] Falling back to fetching all stories without filter');
+      const snapshot = await getDocs(collection(db, 'stories'));
+      const stories = [];
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        stories.push({
+          id: doc.id,
+          ...data
+        });
+      });
+      
+      // Filter to only published (or those where published field is not false)
+      const published = stories.filter(s => s.published !== false);
+      
+      console.log('[storyService] Fallback: found', published.length, 'stories');
+      return published;
+    } catch (fallbackError) {
+      console.error('Fallback story fetch failed:', fallbackError);
+      return [];
+    }
   }
 }
 
@@ -187,7 +209,7 @@ export async function getChapter(storyId, chapterId) {
  */
 export async function getStoryProgress(userId, storyId) {
   try {
-    const progressRef = doc(db, `story_progress/${userId}`, storyId);
+    const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
     const progressSnap = await getDoc(progressRef);
 
     if (!progressSnap.exists()) {
@@ -218,7 +240,7 @@ export async function getStoryProgress(userId, storyId) {
  */
 export async function getUserStories(userId) {
   try {
-    const storiesRef = collection(db, `story_progress/${userId}`);
+    const storiesRef = collection(db, 'users', userId, 'storyProgress');
     const querySnapshot = await getDocs(storiesRef);
 
     const userStories = [];
@@ -242,7 +264,7 @@ export async function getUserStories(userId) {
  */
 export async function completeChapter(userId, storyId, chapterId, score, xpEarned = 100) {
   try {
-    const progressRef = doc(db, `story_progress/${userId}`, storyId);
+    const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
     const progressSnap = await getDoc(progressRef);
 
     let currentProgress = progressSnap.exists() ? progressSnap.data() : {
@@ -596,7 +618,7 @@ export async function mergeGuestStoryProgressToUser(userId, guestId, storyIds = 
 
       if (guestProgress.completedChapters.length > 0) {
         // Migrate to user
-        const progressRef = doc(db, `story_progress/${userId}`, storyId);
+        const progressRef = doc(db, 'users', userId, 'storyProgress', storyId);
         const userProgress = await getStoryProgress(userId, storyId);
 
         const mergedCompletions = [

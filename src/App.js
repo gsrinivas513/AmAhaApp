@@ -11,7 +11,8 @@ import PuzzlePlayHierarchicalPage from "./puzzles/PuzzlePlayHierarchicalPage";
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar"; // DEPRECATED: Functionality moved to TopNavBar
+import TopNavBar from "./components/navigation/TopNavBar";
 
 /* PUBLIC */
 import HomePage from "./home/HomePage";
@@ -21,6 +22,12 @@ import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
 import DailyChallengePage from "./pages/DailyChallengePage";
 import LeaderboardsPage from "./pages/LeaderboardsPage";
 import StoryMapPage from "./pages/StoryMapPage";
+import StoryDetailPage from "./pages/StoryDetailPage";
+import StoriesCategoryPage from "./story/pages/StoriesCategoryPage";
+import StoriesTopicPage from "./story/pages/StoriesTopicPage";
+import StoriesSubtopicPage from "./story/pages/StoriesSubtopicPage";
+import CategoryPage from "./pages/CategoryPage";
+import FeaturePage from "./pages/FeaturePage";
 
 /* QUIZ */
 import QuizzesPage from "./quiz/QuizzesPage";
@@ -36,33 +43,44 @@ import UserSettingsPage from "./pages/UserSettingsPage";
 /* ADMIN — GENERAL */
 import AdminDashboard from "./admin/AdminDashboard";
 import CategoriesPage from "./admin/CategoriesPage";
-import AdminScoresPage from "./admin/AdminScoresPage";
 import ImportQuestionsPage from "./admin/ImportQuestionsPage";
 import UiModeSettingsPage from "./admin/UiModeSettingsPage";
 import AutomationTestPage from "./admin/AutomationTestPage";
 import FeatureCategoryManagement from "./admin/FeatureCategoryManagement";
+import NavigationConfigPage from "./admin/NavigationConfigPage";
+import DebugAllCategories from "./admin/DebugAllCategories";
+import InspectCollectionsPage from "./admin/InspectCollectionsPage";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
-import ViewQuestionsPage from "./admin/ViewQuestionsPage";
 import EditQuestionPage from "./admin/EditQuestionPage";
 import QuizUIConfigPage from "./admin/quiz-ui/QuizUIConfigPage";
 import QuizAnalyticsPage from "./admin/quiz/QuizAnalyticsPage";
 import UpdateSubcategoryTopics from "./admin/UpdateSubcategoryTopics";
 import UpdateQuestionsSubtopicPage from "./admin/UpdateQuestionsSubtopicPage";
 import InitializeFirebaseStructure from "./admin/InitializeFirebaseStructure";
+import DocumentDeletePage from "./admin/DocumentDeletePage";
 import FixFirebaseStructure from "./admin/FixFirebaseStructure";
 import SystemToolsPage from "./admin/SystemToolsPage";
+import FixQuizzesMissingFeatureIds from "./admin/FixQuizzesMissingFeatureIds";
+import FixQuizzesFeatureIdMismatch from "./admin/FixQuizzesFeatureIdMismatch";
+import StandardizeFeaturesCollection from "./admin/StandardizeFeaturesCollection";
+import DatabaseArchitectureAudit from "./admin/DatabaseArchitectureAudit";
+import FixOrphanedPuzzles from "./admin/FixOrphanedPuzzles";
 
 /* ADMIN — PUZZLES */
 import AddPuzzlePage from "./admin/AddPuzzlePage";
 import PuzzleListPage from "./admin/PuzzleListPage";
 import PuzzlesDashboardPage from "./admin/puzzles/PuzzlesDashboardPage";
 import VisualPuzzleAdminPage from "./admin/VisualPuzzleAdminPage";
+import CreateTraditionalPuzzlePage from "./admin/CreateTraditionalPuzzlePage";
+import CreateLogicalPuzzlePage from "./admin/CreateLogicalPuzzlePage";
 import SocialMediaManagerPage from "./admin/SocialMediaManagerPage";
 import DailyChallengeAdmin from "./admin/DailyChallengeAdmin";
 import StoryEditor from "./admin/StoryEditor";
 import AnalyticsPage from "./admin/AnalyticsPage";
+import CreateTestPuzzlesPage from "./admin/CreateTestPuzzlesPage";
+import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
 import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
@@ -73,15 +91,21 @@ import VisualPuzzlePlayPage from "./puzzles/VisualPuzzlePlayPage";
 import UnifiedPuzzlePage from "./puzzles/UnifiedPuzzlePage";
 
 function App() {
-      <Route path="/admin/debug-puzzle-fields" element={<DebugPuzzleFields />} />
   return (
     <div className="app-bg">
-      <Navbar />
+      <TopNavBar />
+      {/* DEPRECATED: Navbar component merged into TopNavBar to avoid duplicate panels */}
+      {/* <Navbar /> */}
 
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/categories" element={<AllFeaturesPage />} />
         <Route path="/explore" element={<ExploreCategoriesPage />} />
+
+        {/* FEATURE & CATEGORY PAGES */}
+        <Route path="/feature/:id" element={<FeaturePage />} />
+        <Route path="/category/:id" element={<CategoryPage />} />
+        <Route path="/category/:id/topic/:topicId" element={<CategoryPage />} />
 
         {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
@@ -99,6 +123,12 @@ function App() {
         
         {/* STORIES */}
         <Route path="/stories" element={<StoryMapPage />} />
+        <Route path="/stories/initialize" element={<InitializeStoriesPage />} />
+        <Route path="/stories/category/:categoryName" element={<StoriesCategoryPage />} />
+        <Route path="/stories/category/:categoryName/topic/:topicName" element={<StoriesTopicPage />} />
+        <Route path="/stories/category/:categoryName/topic/:topicName/subtopic/:subtopicName" element={<StoriesSubtopicPage />} />
+        <Route path="/story/:storyId" element={<StoryDetailPage />} />
+        <Route path="/stories/:storyId" element={<StoryDetailPage />} />
 
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />
@@ -107,34 +137,44 @@ function App() {
         {/* ADMIN — GENERAL */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/categories" element={<CategoriesPage />} />
-        <Route path="/admin/scores" element={<AdminScoresPage />} />
         <Route path="/admin/import" element={<ImportQuestionsPage />} />
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
         <Route path="/admin/automation-tests" element={<AutomationTestPage />} />
         <Route path="/admin/features" element={<FeatureCategoryManagement />} />
+        <Route path="/admin/debug-categories" element={<DebugAllCategories />} />
+        <Route path="/admin/navigation" element={<NavigationConfigPage />} />
+        <Route path="/admin/inspect-collections" element={<InspectCollectionsPage />} />
 
         {/* ADMIN — QUIZ */}
-        <Route path="/admin/add-content" element={<AddQuestionPage />} />
-        <Route path="/admin/view-questions" element={<ViewQuestionsPage />} />
+        <Route path="/admin/add-quiz-content" element={<AddQuestionPage />} />
         <Route path="/admin/edit-question/:id" element={<EditQuestionPage />} />
         <Route path="/admin/quiz-ui" element={<QuizUIConfigPage />} />
         <Route path="/admin/quiz/analytics" element={<QuizAnalyticsPage />} />
         <Route path="/admin/update-topics" element={<UpdateSubcategoryTopics />} />
         <Route path="/admin/update-subtopics" element={<UpdateQuestionsSubtopicPage />} />
         <Route path="/admin/initialize" element={<InitializeFirebaseStructure />} />
+        <Route path="/admin/delete-documents" element={<DocumentDeletePage />} />
         <Route path="/admin/fix-structure" element={<FixFirebaseStructure />} />
         <Route path="/admin/system-tools" element={<SystemToolsPage />} />
+        <Route path="/admin/fix-quizzes" element={<FixQuizzesMissingFeatureIds />} />
+        <Route path="/admin/fix-feature-mismatch" element={<FixQuizzesFeatureIdMismatch />} />
+        <Route path="/admin/standardize-features" element={<StandardizeFeaturesCollection />} />
+        <Route path="/admin/database-audit" element={<DatabaseArchitectureAudit />} />
+        <Route path="/admin/fix-orphaned-puzzles" element={<FixOrphanedPuzzles />} />
 
         {/* ADMIN — PUZZLES */}
         <Route path="/admin/puzzles" element={<PuzzleListPage />} />
         <Route path="/admin/add-puzzle" element={<AddPuzzlePage />} />
         <Route path="/admin/add-puzzle/:puzzleId" element={<AddPuzzlePage />} />
         <Route path="/admin/puzzles/dashboard" element={<PuzzlesDashboardPage />} />
+        <Route path="/admin/create-traditional-puzzle" element={<CreateTraditionalPuzzlePage />} />
+        <Route path="/admin/create-logical-puzzle" element={<CreateLogicalPuzzlePage />} />
         <Route path="/admin/create-visual-puzzle" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
+        <Route path="/admin/create-test-puzzles" element={<CreateTestPuzzlesPage />} />
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
         <Route path="/admin/debug-puzzles-category" element={<DebugPuzzlesCategory />} />
         <Route path="/admin/debug-categories" element={<DebugCategories />} />
@@ -148,7 +188,8 @@ function App() {
         <Route path="/puzzle" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
-        <Route path="/puzzle/:categoryName/:topicName/:puzzleId" element={<UnifiedPuzzlePage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
+        <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
     </div>
   );

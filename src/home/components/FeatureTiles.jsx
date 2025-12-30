@@ -7,7 +7,9 @@ import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { getPuzzlesByCategory } from "../../quiz/services/puzzleService";
 import PuzzleCard from "../../puzzles/PuzzleCard";
-import { countPuzzlesForCategory } from "../../puzzles/puzzleCountService";
+import CategoryCardItem, { colorSchemes } from "../../components/navigation/CategoryCardItem";
+import { getAllStories } from "../../services/storyService";
+import { FEATURES } from "../../constants/FEATURES";
 
 // Topics carousel component
 function TopicsCarouselSection({ topics }) {
@@ -44,7 +46,10 @@ function TopicsCarouselSection({ topics }) {
           <span className="text-4xl">📚</span>
           <h3 className="text-2xl font-bold text-gray-900">All Topics</h3>
         </div>
-        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate("/explore")}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({topics.length})
           <span>→</span>
         </button>
@@ -65,6 +70,7 @@ function TopicsCarouselSection({ topics }) {
                   <div
                     onClick={() => navigate(topic.path)}
                     className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                    style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
                   >
                     {hasImage ? (
                       <ResponsiveImage
@@ -76,7 +82,13 @@ function TopicsCarouselSection({ topics }) {
                         crop="fit"
                       />
                     ) : (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{
+                          background: getGradientFromColorScheme(colorScheme.color),
+                          zIndex: 1,
+                        }}
+                      >
                         {topic.icon}
                       </div>
                     )}
@@ -142,6 +154,147 @@ function TopicsCarouselSection({ topics }) {
   );
 }
 
+// Stories carousel component
+function StoriesCarouselSection({ stories }) {
+  const navigate = useNavigate();
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = React.useRef(null);
+  
+  console.log('📖 StoriesCarouselSection received stories:', stories);
+  
+  const itemsPerView = 4;
+  const itemWidth = 240; // width of card + gap
+  const totalWidth = stories.length * itemWidth;
+  const containerWidth = itemsPerView * itemWidth;
+  const maxScroll = Math.max(0, totalWidth - containerWidth);
+
+  const scroll = (direction) => {
+    if (!containerRef.current) return;
+    
+    let newPosition = scrollPosition + (direction === "next" ? itemWidth : -itemWidth);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+    setScrollPosition(newPosition);
+    
+    containerRef.current.scrollTo({
+      left: newPosition,
+      behavior: "smooth",
+    });
+  };
+
+  const canScrollNext = scrollPosition < maxScroll;
+  const canScrollPrev = scrollPosition > 0;
+
+  return (
+    <div className="mb-16">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">📖</span>
+          <h3 className="text-2xl font-bold text-gray-900">Featured Stories</h3>
+        </div>
+        <button 
+          onClick={() => navigate("/stories")}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
+          See all ({stories.length})
+          <span>→</span>
+        </button>
+      </div>
+
+      {stories.length > 0 ? (
+        <div className="relative group bg-gradient-to-r from-transparent via-white via-5% to-transparent bg-opacity-30 rounded-lg py-2">
+          <div
+            ref={containerRef}
+            className="flex gap-6 overflow-x-hidden scroll-smooth"
+            style={{ scrollBehavior: "smooth" }}
+          >
+            {stories.map((story, index) => {
+              try {
+                const colorScheme = colorSchemes[index % colorSchemes.length];
+                const hasImage = story.coverImage || story.image;
+                console.log(`Rendering story ${index}:`, story.id, story.title, 'hasImage:', hasImage);
+                
+                return (
+                  <div key={story.id} className="flex-shrink-0 w-56">
+                    <div
+                      onClick={() => navigate(`/story/${story.id}`)}
+                      className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                      style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
+                    >
+                      {hasImage ? (
+                        <ResponsiveImage
+                          src={story.coverImage || story.image}
+                          cloudinaryId={story.cloudinaryId}
+                          alt={story.title}
+                          fallbackIcon="📖"
+                          className="w-full h-full"
+                          crop="fit"
+                        />
+                      ) : (
+                        <div 
+                          className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{
+                            background: getGradientFromColorScheme(colorScheme.color),
+                            zIndex: 1,
+                          }}
+                        >
+                          📖
+                        </div>
+                      )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <div className="pt-3">
+                    <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">
+                      {story.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {story.description ? story.description.substring(0, 60) + "..." : "An interactive learning story"}
+                    </p>
+                    <p className="text-xs text-gray-600 font-medium">
+                      📚 {story.chapterCount || story.totalChapters || 0} Chapters
+                    </p>
+                  </div>
+                </div>
+                );
+              } catch (error) {
+                console.error('❌ Error rendering story:', error, story);
+                return null;
+              }
+            })}
+          </div>
+
+          {canScrollPrev && (
+            <button
+              onClick={() => scroll("prev")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -ml-2"
+              aria-label="Scroll left"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {canScrollNext && (
+            <button
+              onClick={() => scroll("next")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white p-2 rounded-full z-10 transition-all -mr-2"
+              aria-label="Scroll right"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg p-8 text-center">
+          <p className="text-gray-600">No stories available yet. Check back soon!</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Feature carousel component
 function FeatureCarouselSection({ feature, categories }) {
   const navigate = useNavigate();
@@ -192,7 +345,10 @@ function FeatureCarouselSection({ feature, categories }) {
             )}
           </div>
         </div>
-        <button className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate(`/feature/${feature.id}`)}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({categories.length})
           <span>→</span>
         </button>
@@ -220,6 +376,7 @@ function FeatureCarouselSection({ feature, categories }) {
                       }
                     }}
                     className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 relative group"
+                    style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
                   >
                     {hasImage ? (
                       <ResponsiveImage 
@@ -231,7 +388,13 @@ function FeatureCarouselSection({ feature, categories }) {
                         crop="fit"
                       />
                     ) : (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                        style={{
+                          background: getGradientFromColorScheme(colorScheme.color),
+                          zIndex: 1,
+                        }}
+                      >
                         {category.icon || "📚"}
                       </div>
                     )}
@@ -245,7 +408,7 @@ function FeatureCarouselSection({ feature, categories }) {
                     </h3>
                     
                     <p className="text-xs text-gray-600 mb-2 font-medium">
-                      {feature.featureType === "puzzle" ? (category.puzzleCount !== undefined ? category.puzzleCount : (category.quizCount || 0)) : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
+                      {category.subtopicCount !== undefined ? category.subtopicCount : (category.quizCount || 0)} {feature.featureType === "puzzle" ? "Puzzles" : "Quizzes"}
                     </p>
                     
                     {/* Rating display */}
@@ -297,18 +460,82 @@ function FeatureCarouselSection({ feature, categories }) {
     </div>
   );
 }
+// Helper function to convert Tailwind color names to actual hex values
+const colorNameToHex = (colorName) => {
+  const colorMap = {
+    // Rose/Pink family
+    "from-rose-400": "#f43f5e",
+    "via-pink-300": "#f472b6",
+    "to-rose-300": "#fda4af",
+    "from-pink-300": "#f472b6",
+    "to-rose-200": "#fecdd3",
+    
+    // Amber/Orange/Yellow family
+    "from-amber-400": "#fbbf24",
+    "via-orange-300": "#fdba74",
+    "to-yellow-300": "#fcd34d",
+    "from-orange-300": "#fdba74",
+    "to-yellow-200": "#fef08a",
+    
+    "from-orange-400": "#fb923c",
+    "via-amber-300": "#fcd34d",
+    "from-amber-300": "#fcd34d",
+    
+    // Blue/Cyan family
+    "from-blue-400": "#60a5fa",
+    "via-cyan-300": "#67e8f9",
+    "to-blue-300": "#93c5fd",
+    "from-blue-300": "#93c5fd",
+    "to-cyan-200": "#cffafe",
+    
+    // Emerald/Green/Teal family
+    "from-emerald-400": "#34d399",
+    "via-green-300": "#86efac",
+    "to-teal-300": "#7dd3fc",
+    "from-green-300": "#86efac",
+    "to-teal-200": "#ccf0ff",
+    
+    "from-cyan-400": "#06b6d4",
+    "via-teal-300": "#7dd3fc",
+    "from-cyan-300": "#67e8f9",
+    
+    // Red/Orange/Amber family
+    "from-red-400": "#f87171",
+    "via-orange-300": "#fdba74",
+    "to-amber-300": "#fcd34d",
+    "from-red-300": "#fca5a5",
+    "to-orange-200": "#fed7aa",
+    
+    // Purple/Violet/Pink family
+    "from-purple-400": "#c084fc",
+    "via-violet-300": "#ddd6fe",
+    "to-pink-300": "#f472b6",
+    "from-purple-300": "#d8b4fe",
+    "to-pink-200": "#fbcfe8",
+  };
+  return colorMap[colorName] || "#999";
+};
+
+// Helper function to create gradient from colorScheme color string
+const getGradientFromColorScheme = (colorSchemeStr) => {
+  if (!colorSchemeStr) return "linear-gradient(135deg, #999 0%, #999 100%)";
+  
+  const colors = colorSchemeStr.split(" ");
+  const hexColors = colors.map(colorNameToHex);
+  
+  if (hexColors.length === 3) {
+    // from ... via ... to
+    return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[1]} 50%, ${hexColors[2]} 100%)`;
+  } else if (hexColors.length === 2) {
+    // from ... to
+    return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[1]} 100%)`;
+  }
+  return `linear-gradient(135deg, ${hexColors[0]} 0%, ${hexColors[0]} 100%)`;
+};
 
 // Default color schemes for categories
-const colorSchemes = [
-  { color: "from-rose-400 via-pink-300 to-rose-300", borderColor: "from-pink-300 to-rose-200" },
-  { color: "from-amber-400 via-orange-300 to-yellow-300", borderColor: "from-orange-300 to-yellow-200" },
-  { color: "from-blue-400 via-cyan-300 to-blue-300", borderColor: "from-blue-300 to-cyan-200" },
-  { color: "from-orange-400 via-amber-300 to-yellow-300", borderColor: "from-amber-300 to-yellow-200" },
-  { color: "from-emerald-400 via-green-300 to-teal-300", borderColor: "from-green-300 to-teal-200" },
-  { color: "from-cyan-400 via-teal-300 to-blue-300", borderColor: "from-cyan-300 to-teal-200" },
-  { color: "from-red-400 via-orange-300 to-amber-300", borderColor: "from-red-300 to-orange-200" },
-  { color: "from-purple-400 via-violet-300 to-pink-300", borderColor: "from-purple-300 to-pink-200" },
-];
+// NOTE: Now imported from CategoryCardItem for consistency
+// const colorSchemes = [...]
 
 // Helper function to generate consistent rating based on category ID and quiz count
 const generateRealisticRating = (quizCount = 0, categoryId = '') => {
@@ -458,7 +685,10 @@ function CarouselSection({ section }) {
       {/* Header with See All */}
       <div className="flex items-center justify-between mb-6 px-4">
         <h3 className="text-2xl font-bold text-gray-900">{section.title}</h3>
-        <button className="text-primary-600 hover:text-primary-700 font-semibold text-sm flex items-center gap-1">
+        <button 
+          onClick={() => navigate(`/feature/${section.featureId}`)}
+          className="text-primary-600 hover:text-primary-700 font-semibold text-sm flex items-center gap-1 cursor-pointer"
+        >
           See all ({section.categories.length})
           <span>→</span>
         </button>
@@ -481,6 +711,7 @@ function CarouselSection({ section }) {
                 <div
                   onClick={() => navigate(category.path)}
                   className="h-40 cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 relative group"
+                  style={{ backgroundColor: hasImage ? 'transparent' : '#e5e7eb' }}
                 >
                   {hasImage ? (
                     <ResponsiveImage
@@ -492,7 +723,13 @@ function CarouselSection({ section }) {
                       crop="fit"
                     />
                   ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${colorScheme.color} flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300`}>
+                    <div 
+                      className="absolute inset-0 flex items-center justify-center text-6xl opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        background: getGradientFromColorScheme(colorScheme.color),
+                        zIndex: 1,
+                      }}
+                    >
                       {category.icon}
                     </div>
                   )}
@@ -559,6 +796,7 @@ export default function FeatureTiles() {
   const [featuresWithCategories, setFeaturesWithCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [puzzles, setPuzzles] = useState([]);
+  const [stories, setStories] = useState([]);
 
   useEffect(() => {
     const loadCategoriesAndFeatures = async () => {
@@ -634,31 +872,54 @@ export default function FeatureTiles() {
           .map((doc) => {
             const data = doc.data();
             const colorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
-            const featureData = featuresData.find(f => f.id === data.featureId);
-            const featureType = featureData?.type || featureData?.name?.toLowerCase() || "quiz";
-            const featureName = featureMap[data.featureId] || "Quizzes";
+            
+            // Find feature by featureId or uiMode
+            let featureData = featuresData.find(f => f.id === data.featureId);
+            if (!featureData && data.uiMode) {
+              // For puzzle categories with uiMode: "puzzle", match with "puzzles" feature
+              const singularToPlural = {
+                "puzzle": "puzzles",
+                "quiz": "quizzes",
+                "game": "games",
+                "story": "stories"
+              };
+              const pluralForm = singularToPlural[data.uiMode] || data.uiMode + "s";
+              featureData = featuresData.find(f => f.id === pluralForm || f.name === pluralForm);
+            }
+            
+            const featureType = featureData?.type || featureData?.featureType || featureData?.name?.toLowerCase() || "quiz";
+            const featureName = featureMap[data.featureId] || (featureData?.label) || "Quizzes";
             const categoryName = data.label || data.name;
             const subtopicCount = subtopicCountMap[doc.id] || 0;
-            return {
-              id: doc.id,
-              title: categoryName,
-              icon: data.icon || "📚",
-              quizzes: data.quizCount || 0,
-              featureName: featureName,
-              featureType: featureType,
-              difficulty: "Medium",
-              path: `/quiz/${encodeURIComponent(categoryName)}`,
-              color: colorScheme.color,
-              borderColor: colorScheme.borderColor,
-              isPublished: data.isPublished || false,
-              createdAt: data.createdAt || new Date().toISOString(),
-              rating: generateRealisticRating(data.quizCount || 0, doc.id),
-              imageUrl: data.imageUrl || "",
-              image: data.image || "",
-              cloudinaryId: data.cloudinaryId || "",
-              subtopics: [],
-              subtopicCount,
-            };
+            
+            // Determine the correct route path based on feature type
+            let path = `/quiz/${encodeURIComponent(categoryName)}`;
+            if (featureType === "puzzle" || featureType === "puzzles") {
+              path = `/puzzle/${encodeURIComponent(categoryName)}`;
+            } else if (featureType === "story" || featureType === "stories") {
+              path = `/stories/category/${encodeURIComponent(categoryName)}`;
+            }
+            
+              return {
+                id: doc.id,
+                title: categoryName,
+                icon: data.icon || "📚",
+                quizzes: subtopicCount,
+                featureName: featureName,
+                featureType: featureType,
+                difficulty: "Medium",
+                path: path,
+                color: colorScheme.color,
+                borderColor: colorScheme.borderColor,
+                isPublished: data.isPublished || false,
+                createdAt: data.createdAt || new Date().toISOString(),
+                rating: generateRealisticRating(subtopicCount || 0, doc.id),
+                imageUrl: data.imageUrl || "",
+                image: data.image || "",
+                cloudinaryId: data.cloudinaryId || "",
+                subtopics: [],
+                subtopicCount,
+              };
           })
           .filter((cat) => cat.isPublished === true)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -667,19 +928,43 @@ export default function FeatureTiles() {
           setCategories(categoriesData);
         }
 
-        // Group categories by feature (only published)
+        // Set loading to false early so UI renders while features are being processed
+        setLoading(false);
+
+        // Group categories by feature (only published) - this can happen in background
         const result = featuresData
           .map((feature) => {
             const categories = categorySnapshot.docs
               .map(doc => {
                 const data = doc.data();
+                const categoryName = data.label || data.name;
+                const categorySubtopicCount = subtopicCountMap[doc.id] || 0;
                 return {
                   id: doc.id,
-                  ...data,
-                  rating: generateRealisticRating(data.quizCount || 0, doc.id),
+                  name: categoryName,
+                  label: categoryName,
+                  title: categoryName,
+                  icon: data.icon || "📚",
+                  quizCount: categorySubtopicCount,
+                  puzzleCount: categorySubtopicCount,
+                  subtopicCount: categorySubtopicCount,
+                  featureId: data.featureId,
+                  uiMode: data.uiMode,
+                  isPublished: data.isPublished,
+                  createdAt: data.createdAt,
+                  rating: generateRealisticRating(categorySubtopicCount || 0, doc.id),
+                  imageUrl: data.imageUrl || "",
+                  image: data.image || "",
+                  cloudinaryId: data.cloudinaryId || "",
                 };
               })
-              .filter(cat => cat.featureId === feature.id && cat.isPublished === true);
+              .filter(cat => {
+                // Check if category matches feature by multiple methods
+                const isPublished = cat.isPublished === true;
+                const matchesFeatureId = cat.featureId === feature.id;
+                const matchesUiMode = cat.uiMode === feature.id.slice(0, -1); // "puzzles" -> "puzzle"
+                return isPublished && (matchesFeatureId || matchesUiMode);
+              });
             return { feature, categories };
           })
           .filter(item => item.categories.length > 0)
@@ -693,7 +978,6 @@ export default function FeatureTiles() {
       } catch (error) {
         console.error("Error loading categories:", error);
         setCategories(defaultCategories);
-      } finally {
         setLoading(false);
       }
     };
@@ -705,31 +989,55 @@ export default function FeatureTiles() {
     getPuzzlesByCategory("Kids Learning").then(setPuzzles); // Example: load for one category
   }, []);
 
-  // Load puzzle counts for all puzzle categories
+  // Load stories
   useEffect(() => {
-    const loadPuzzleCounts = async () => {
-      if (featuresWithCategories.length === 0) return;
-      
-      const updated = await Promise.all(
-        featuresWithCategories.map(async (item) => {
-          if (item.feature.featureType === 'puzzle') {
-            const categoriesWithCounts = await Promise.all(
-              item.categories.map(async (cat) => {
-                const puzzleCount = await countPuzzlesForCategory(cat.id, cat.name || cat.label);
-                return { ...cat, puzzleCount };
-              })
-            );
-            return { ...item, categories: categoriesWithCounts };
-          }
-          return item;
-        })
-      );
-      
-      setFeaturesWithCategories(updated);
+    const loadStories = async () => {
+      try {
+        const storiesList = await getAllStories();
+        console.log('Loaded stories for HomePage:', storiesList);
+        setStories(storiesList || []);
+      } catch (error) {
+        console.error("Error loading stories:", error);
+        setStories([]);
+      }
     };
-    
-    loadPuzzleCounts();
+
+    loadStories();
   }, []);
+
+  // Load puzzle counts for all puzzle categories (non-blocking)
+  // DISABLED: This was causing slow loading by fetching all puzzles for each category
+  // Instead, use the quizCount field that's already in the database
+  // useEffect(() => {
+  //   const loadPuzzleCounts = async () => {
+  //     if (featuresWithCategories.length === 0) return;
+  //     
+  //     // Update puzzle counts in the background without blocking rendering
+  //     featuresWithCategories.forEach((item) => {
+  //       if (item.feature.featureType === 'puzzle') {
+  //         item.categories.forEach(async (cat) => {
+  //           const puzzleCount = await countPuzzlesForCategory(cat.id, cat.name || cat.label);
+  //           // Update the specific category with its count
+  //           setFeaturesWithCategories(prev => {
+  //             return prev.map(prevItem => {
+  //               if (prevItem.feature.id === item.feature.id) {
+  //                 return {
+  //                   ...prevItem,
+  //                   categories: prevItem.categories.map(prevCat => 
+  //                     prevCat.id === cat.id ? { ...prevCat, puzzleCount } : prevCat
+  //                   )
+  //                 };
+  //               }
+  //               return prevItem;
+  //             });
+  //           });
+  //         });
+  //       }
+  //     });
+  //   };
+  //   
+  //   loadPuzzleCounts();
+  // }, [featuresWithCategories]);
 
   const sections = createSections(categories);
 
@@ -758,6 +1066,13 @@ export default function FeatureTiles() {
         {!loading && topics.length > 0 && (
           <div className="mb-16 px-4">
             <TopicsCarouselSection topics={topics} />
+          </div>
+        )}
+
+        {/* Stories section */}
+        {!loading && stories.length > 0 && (
+          <div className="mb-16 px-4">
+            <StoriesCarouselSection stories={stories} />
           </div>
         )}
 

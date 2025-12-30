@@ -11,13 +11,50 @@ import {
   PuzzleIcon,
   GearIcon,
 } from "../components/icons/Icons";
-import DailyChallengeModal from "./modals/DailyChallengeModal";
-import StoryModal from "./modals/StoryModal";
+// Modals removed - using route-based page components instead
+
+/* ================= ANIMATIONS ================= */
+const animationStyles = `
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 1000px;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+      max-height: 0;
+    }
+  }
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = animationStyles;
+  document.head.appendChild(styleSheet);
+}
 
 /* ================= COMPONENTS ================= */
 
 // Link-based item (navigates to page)
 function Item({ icon, label, path, active }) {
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <Link to={path} style={{ textDecoration: "none" }}>
       <div
@@ -30,22 +67,25 @@ function Item({ icon, label, path, active }) {
           fontSize: 13,
           color: active ? "#6C63FF" : "#0b1220",
           fontWeight: active ? 600 : 500,
-          background: active ? "rgba(108,99,255,0.1)" : "transparent",
+          background: active ? "rgba(108,99,255,0.1)" : isHovered ? "rgba(108,99,255,0.05)" : "transparent",
           borderLeft: active ? "3px solid #6C63FF" : "3px solid transparent",
           cursor: "pointer",
-          transition: "all 0.2s",
+          transition: "all 0.2s ease",
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         <div style={{
           width: 34,
           height: 34,
           borderRadius: "50%",
-          background: active ? "#6C63FF" : "#f0f0f0",
+          background: active ? "#6C63FF" : isHovered ? "#e8e5ff" : "#f0f0f0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: 16,
           color: active ? "white" : "#333",
+          transition: "all 0.2s ease",
         }}>{icon}</div>
         {label}
       </div>
@@ -103,7 +143,7 @@ function Section({ title, open, onToggle, children }) {
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "#666",
+          color: open ? "#6C63FF" : "#666",
           marginBottom: 10,
           textTransform: "uppercase",
           letterSpacing: 0.6,
@@ -111,16 +151,49 @@ function Section({ title, open, onToggle, children }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          padding: "8px 4px",
+          borderRadius: 6,
+          background: open ? "rgba(108,99,255,0.08)" : "transparent",
+          borderLeft: open ? "2px solid #6C63FF" : "2px solid transparent",
+          transition: "all 0.2s ease",
+          userSelect: "none",
+        }}
+        onMouseEnter={(e) => {
+          if (!open) {
+            e.currentTarget.style.background = "rgba(108,99,255,0.03)";
+            e.currentTarget.style.color = "#4a40c7";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!open) {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "#666";
+          }
         }}
       >
-        {title}
-        <span style={{ fontSize: 14 }}>
-          {open ? "▾" : "▸"}
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {title}
+        </span>
+        <span style={{ 
+          fontSize: 14,
+          transition: "transform 0.3s ease",
+          display: "inline-block",
+          color: open ? "#6C63FF" : "#999"
+        }}>
+          {open ? "▼" : "▶"}
         </span>
       </div>
 
       {open && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          gap: 8,
+          animation: "slideDown 0.25s ease-out",
+          borderLeft: "2px solid rgba(108,99,255,0.2)",
+          paddingLeft: 8,
+          marginLeft: 4,
+        }}>
           {children}
         </div>
       )}
@@ -165,25 +238,45 @@ function Sidebar() {
 
   const isActive = (path) => location.pathname === path;
 
-  /* Modal State */
-  const [showDailyChallenge, setShowDailyChallenge] = useState(false);
-  const [showStories, setShowStories] = useState(false);
+  // Route-based navigation - no modal state needed
 
   /* Collapse State */
   const [open, setOpen] = useState({
     global: false,
     quiz: false,
     puzzles: false,
+    stories: false,
+    devtools: false,
   });
 
   /* Auto-expand section if route belongs to it */
   useEffect(() => {
-    if (location.pathname.startsWith("/admin/quiz")) {
-      setOpen((o) => ({ ...o, quiz: true }));
+    const path = location.pathname;
+    
+    // Determine which section(s) should be open based on current route
+    const newOpen = { ...open };
+    
+    // Quiz section routes
+    if (path.includes("/admin/quiz") || path.includes("/admin/add-quiz-content")) {
+      newOpen.quiz = true;
     }
-    if (location.pathname.startsWith("/admin/puzzles") || location.pathname.includes("visual-puzzle")) {
-      setOpen((o) => ({ ...o, puzzles: true }));
+    
+    // Puzzles section routes
+    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle")) {
+      newOpen.puzzles = true;
     }
+    
+    // Stories section routes
+    if (path.includes("/admin/stories")) {
+      newOpen.stories = true;
+    }
+    
+    // Global section routes (everything else under /admin)
+    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content")) {
+      newOpen.global = true;
+    }
+    
+    setOpen(newOpen);
   }, [location.pathname]);
 
   const toggle = (key) =>
@@ -232,12 +325,11 @@ function Sidebar() {
         {/* ================= GLOBAL ================= */}
         <Section title="Global" open={open.global} onToggle={() => toggle("global")}>
           <Item icon={<DashboardIcon />} label="Dashboard" path="/admin/dashboard" active={isActive("/admin/dashboard")} />
-          <Item icon={<PlusIcon />} label="Features & Categories" path="/admin/features" active={isActive("/admin/features")} />
-          <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-content" active={isActive("/admin/add-content")} />
-          <Item icon={<TrophyIcon />} label="Scores" path="/admin/scores" active={isActive("/admin/scores")} />
+          <Item icon={<PlusIcon />} label="Features" path="/admin/features" active={isActive("/admin/features")} />
+          <Item icon={<GearIcon />} label="Navigation Menu" path="/admin/navigation" active={isActive("/admin/navigation")} />
+          <Item icon={<DocumentIcon />} label="Inspect Collections" path="/admin/inspect-collections" active={isActive("/admin/inspect-collections")} />
           <Item icon={<FilmIcon />} label="Social Media" path="/admin/social-media" active={isActive("/admin/social-media")} />
-          <ModalItem icon={<TrophyIcon />} label="Daily Challenge" onClick={() => setShowDailyChallenge(true)} />
-          <ModalItem icon={<DocumentIcon />} label="Stories" onClick={() => setShowStories(true)} />
+          <Item icon={<TrophyIcon />} label="Daily Challenge" path="/admin/daily-challenge" active={isActive("/admin/daily-challenge")} />
           <Item icon={<ChartIcon />} label="Analytics" path="/admin/analytics" active={isActive("/admin/analytics")} />
           <Item icon={<GearIcon />} label="System Tools" path="/admin/system-tools" active={isActive("/admin/system-tools")} />
           <Item icon={<GearIcon />} label="Automation Tests" path="/admin/automation-tests" active={isActive("/admin/automation-tests")} />
@@ -249,7 +341,7 @@ function Sidebar() {
           open={open.quiz}
           onToggle={() => toggle("quiz")}
         >
-          <Item icon={<DocumentIcon />} label="View Questions" path="/admin/view-questions" active={isActive("/admin/view-questions")} />
+          <Item icon={<PlusIcon />} label="Add Content" path="/admin/add-quiz-content" active={isActive("/admin/add-quiz-content")} />
           <Item icon={<ChartIcon />} label="Quiz Analytics" path="/admin/quiz/analytics" active={isActive("/admin/quiz-analytics")} />
           <Item icon={<FilmIcon />} label="Quiz UI Animations" path="/admin/quiz-ui" active={isActive("/admin/quiz-ui")} />
         </Section>
@@ -260,15 +352,46 @@ function Sidebar() {
           open={open.puzzles}
           onToggle={() => toggle("puzzles")}
         >
-          <Item icon={<PuzzleIcon />} label="Traditional Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
-          <Item icon={<PuzzleIcon />} label="Visual Puzzles" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
-          <DisabledItem icon={<GearIcon />} label="Dashboard (Coming soon)" />
+          <Item icon={<PuzzleIcon />} label="Create Visual" path="/admin/create-visual-puzzle" active={isActive("/admin/create-visual-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="View Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
+        </Section>
+
+      {/* ================= STORIES ================= */}
+        <Section
+          title="Stories"
+          open={open.stories}
+          onToggle={() => toggle("stories")}
+        >
+          <Item icon={<DocumentIcon />} label="Stories" path="/admin/stories" active={isActive("/admin/stories")} />
+          <DisabledItem icon={<GearIcon />} label="More (Coming soon)" />
+        </Section>
+
+        {/* ================= DEVELOPMENT TOOLS ================= */}
+        <Section
+          title="Development Tools"
+          open={open.devtools}
+          onToggle={() => toggle("devtools")}
+        >
+          <Item icon={<GearIcon />} label="Initialize Firebase" path="/admin/initialize" active={isActive("/admin/initialize")} />
+          <Item icon={<GearIcon />} label="Fix Firebase Structure" path="/admin/fix-structure" active={isActive("/admin/fix-structure")} />
+          <Item icon={<GearIcon />} label="Delete Documents" path="/admin/delete-documents" active={isActive("/admin/delete-documents")} />
+          <Item icon={<GearIcon />} label="Update Topics" path="/admin/update-topics" active={isActive("/admin/update-topics")} />
+          <Item icon={<GearIcon />} label="Update Subtopics" path="/admin/update-subtopics" active={isActive("/admin/update-subtopics")} />
+          <Item icon={<PuzzleIcon />} label="Create Traditional" path="/admin/create-traditional-puzzle" active={isActive("/admin/create-traditional-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="Create Logical" path="/admin/create-logical-puzzle" active={isActive("/admin/create-logical-puzzle")} />
+          <Item icon={<PuzzleIcon />} label="Create Test Puzzles" path="/admin/create-test-puzzles" active={isActive("/admin/create-test-puzzles")} />
+          <Item icon={<GearIcon />} label="UI Mode Settings" path="/admin/ui-mode" active={isActive("/admin/ui-mode")} />
+          <Item icon={<DocumentIcon />} label="Debug Puzzles" path="/admin/debug-puzzles-category" active={isActive("/admin/debug-puzzles-category")} />
+          <Item icon={<DocumentIcon />} label="Debug Categories" path="/admin/debug-categories" active={isActive("/admin/debug-categories")} />
+          <Item icon={<DocumentIcon />} label="Fix Puzzle Categories" path="/admin/fix-puzzle-categories" active={isActive("/admin/fix-puzzle-categories")} />
+          <Item icon={<DocumentIcon />} label="Fix Puzzle Category Direct" path="/admin/fix-puzzle-category-direct" active={isActive("/admin/fix-puzzle-category-direct")} />
+          <Item icon={<DocumentIcon />} label="Fix Puzzle Hierarchy" path="/admin/fix-puzzle-hierarchy" active={isActive("/admin/fix-puzzle-hierarchy")} />
+          <Item icon={<DocumentIcon />} label="Fix Puzzle Published" path="/admin/fix-puzzle-published" active={isActive("/admin/fix-puzzle-published")} />
+          <Item icon={<DocumentIcon />} label="Fix Puzzle Type" path="/admin/fix-puzzle-type" active={isActive("/admin/fix-puzzle-type")} />
         </Section>
       </div>
 
-      {/* Modals - Outside of sidebar div so they render properly */}
-      {showDailyChallenge && <DailyChallengeModal isOpen={showDailyChallenge} onClose={() => setShowDailyChallenge(false)} />}
-      {showStories && <StoryModal isOpen={showStories} onClose={() => setShowStories(false)} />}
+      {/* Routes now handled via React Router in App.js */}
     </>
   );
 }

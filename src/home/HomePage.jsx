@@ -18,7 +18,7 @@ export default function HomePage() {
     <SiteLayout>
         <HeroSection />
 
-        <div style={{ marginTop: 72, marginBottom: 40 }}>
+        <div style={{ marginTop: 48, marginBottom: 32 }}>
           <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: 700, marginBottom: "20px", color: "#2c3e50" }}>
               🎯 Today's Challenge
@@ -27,7 +27,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 72 }}>
+        <div style={{ marginTop: 48 }}>
           <FeatureTiles />
         </div>
 
@@ -39,13 +39,9 @@ export default function HomePage() {
           <StatsStrip />
         </div> */}
 
-        <div style={{ marginTop: 56 }}>
-          <TestimonialsSection />
-        </div>
+        <TestimonialsSection />
 
-        <div style={{ marginTop: 72 }}>
-          <MotivationSection />
-        </div>
+        <MotivationSection />
 
         <Footer />
     </SiteLayout>

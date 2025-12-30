@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { Button } from "../../components/ui";
+import TablePagination from "./TablePagination";
 
 function QuestionsTable() {
   const [selectedIds, setSelectedIds] = useState([]);
@@ -17,6 +18,8 @@ function QuestionsTable() {
   const [filterSubtopic, setFilterSubtopic] = useState("");
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [itemsPerPage, setItemsPerPage] = useState("10");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     load();
@@ -160,6 +163,18 @@ function QuestionsTable() {
       : bVal.localeCompare(aVal);
   });
 
+  // Pagination logic
+  const itemsToDisplay = itemsPerPage === 'all' ? sortedList.length : parseInt(itemsPerPage);
+  const totalPages = Math.ceil(sortedList.length / itemsToDisplay);
+  const startIndex = (currentPage - 1) * itemsToDisplay;
+  const endIndex = Math.min(startIndex + itemsToDisplay, sortedList.length);
+  const paginatedList = sortedList.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterFeature, filterCategory, filterSubtopic, filterDifficulty]);
+
   const remove = async (id) => {
     if (!window.confirm("Delete this question?")) return;
     try {
@@ -288,7 +303,13 @@ function QuestionsTable() {
             )}
           </div>
           <div>
-            Showing {stats.filtered} of {stats.total} questions
+            <TablePagination
+              totalItems={sortedList.length}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={setItemsPerPage}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
 
@@ -300,14 +321,25 @@ function QuestionsTable() {
                   <input
                     type="checkbox"
                     checked={
-                      sortedList.length > 0 &&
-                      selectedIds.length === sortedList.length
+                      paginatedList.length > 0 &&
+                      paginatedList.every((q) => selectedIds.includes(q.id))
                     }
-                    onChange={(e) =>
-                      setSelectedIds(
-                        e.target.checked ? sortedList.map((q) => q.id) : []
-                      )
-                    }
+                    onChange={(e) => {
+                      setSelectedIds((prev) => {
+                        if (e.target.checked) {
+                          return [
+                            ...prev,
+                            ...paginatedList
+                              .map((q) => q.id)
+                              .filter((id) => !prev.includes(id)),
+                          ];
+                        } else {
+                          return prev.filter(
+                            (id) => !paginatedList.map((q) => q.id).includes(id)
+                          );
+                        }
+                      });
+                    }}
                   />
                 </th>
                 <th 
@@ -378,7 +410,7 @@ function QuestionsTable() {
               </tr>
             </thead>
             <tbody>
-              {sortedList.map((q) => (
+              {paginatedList.map((q) => (
                 <tr key={q.id} style={{ borderBottom: "1px solid #e2e8f0", background: selectedIds.includes(q.id) ? "#f0fdf4" : "transparent" }}>
                   <td style={{ padding: "12px 8px" }}>
                     <input

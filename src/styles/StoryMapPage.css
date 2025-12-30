@@ -3,11 +3,13 @@
   min-height: 80vh;
   padding: 40px 20px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  width: 100%;
 }
 
 .story-container {
   max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .story-header {
@@ -97,6 +99,11 @@
   margin-bottom: 40px;
 }
 
+/* Ensure cards always display with white background */
+.story-grid .story-map-card {
+  background: white !important;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .story-map-page {
@@ -137,41 +144,4 @@
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .story-map-page {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  }
 
-  .story-header h1 {
-    color: #e0e0e0;
-  }
-
-  .story-header p {
-    color: #b0b0b0;
-  }
-
-  .filter-button {
-    background: #2d2d2d;
-    color: #e0e0e0;
-    border-color: #444;
-  }
-
-  .filter-button:hover {
-    border-color: #8fa3e0;
-    color: #8fa3e0;
-  }
-
-  .filter-button.active {
-    box-shadow: 0 4px 15px rgba(143, 163, 224, 0.4);
-  }
-
-  .empty-state {
-    background: #2d2d2d;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-  }
-
-  .empty-state p {
-    color: #b0b0b0;
-  }
-}

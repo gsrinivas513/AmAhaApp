@@ -3,9 +3,16 @@ import { db } from '../firebase/firebaseConfig';
 
 /**
  * Count puzzles for a specific topic
+ * This includes puzzles directly assigned to topic AND puzzles in subtopics of the topic
  */
 export const countPuzzlesForTopic = async (topicId, topicName) => {
   try {
+    // First get all subtopics for this topic
+    const subtopicsSnap = await getDocs(
+      query(collection(db, 'subtopics'), where('topicId', '==', topicId))
+    );
+    const subtopicIds = subtopicsSnap.docs.map(doc => doc.id);
+
     const puzzlesSnap = await getDocs(collection(db, 'puzzles'));
     const count = puzzlesSnap.docs.filter(doc => {
       const data = doc.data();
@@ -13,7 +20,9 @@ export const countPuzzlesForTopic = async (topicId, topicName) => {
         data.topic === topicId || 
         data.topic === topicName ||
         data.type === topicId ||
-        data.type === topicName
+        data.type === topicName ||
+        data.topicId === topicId ||
+        subtopicIds.includes(data.subtopicId) // Check if puzzle belongs to any subtopic of this topic
       ) && data.isPublished !== false;
     }).length;
     return count;
@@ -65,18 +74,28 @@ export const getPuzzlesForCategory = async (categoryId, categoryName) => {
 
 /**
  * Get all puzzles for a topic
+ * This includes puzzles directly assigned to topic AND puzzles in subtopics of the topic
  */
 export const getPuzzlesForTopic = async (topicId, topicName) => {
   try {
+    // First get all subtopics for this topic
+    const subtopicsSnap = await getDocs(
+      query(collection(db, 'subtopics'), where('topicId', '==', topicId))
+    );
+    const subtopicIds = subtopicsSnap.docs.map(doc => doc.id);
+
+    // Now get all puzzles
     const puzzlesSnap = await getDocs(collection(db, 'puzzles'));
     return puzzlesSnap.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .filter(puzzle => {
         return (
-          puzzle.topic === topicId ||
-          puzzle.topic === topicName ||
-          puzzle.type === topicId ||
-          puzzle.type === topicName
+          (puzzle.topic === topicId ||
+           puzzle.topic === topicName ||
+           puzzle.type === topicId ||
+           puzzle.type === topicName ||
+           puzzle.topicId === topicId ||
+           subtopicIds.includes(puzzle.subtopicId)) // Check if puzzle belongs to any subtopic of this topic
         ) && puzzle.isPublished !== false;
       });
   } catch (error) {

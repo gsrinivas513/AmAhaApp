@@ -1,30 +1,52 @@
 // src/admin/features/hooks/useSubtopicData.js
 import { useState } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
+import { FEATURES } from "../../../constants/FEATURES";
 
 export function useSubtopicData() {
   const [subtopics, setSubtopics] = useState([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
-  const loadSubtopics = async (categoryId, topicId = null) => {
+  const loadSubtopics = async (categoryId, topicId = null, isStory = false, isPuzzle = false) => {
     setLoading(true);
     try {
+      let subtopicsData = [];
+      
+      // Determine which collection to use
+      const subtopicsCollectionName = isStory ? "storySubtopics" : isPuzzle ? "puzzleSubtopics" : "subtopics";
+      
       let subtopicsQuery;
       
       // If no categoryId, load ALL subtopics (for initial count display)
       if (!categoryId) {
-        subtopicsQuery = collection(db, "subtopics");
+        subtopicsQuery = collection(db, subtopicsCollectionName);
       } else {
         subtopicsQuery = query(
-          collection(db, "subtopics"),
+          collection(db, subtopicsCollectionName),
           where("categoryId", "==", categoryId)
         );
       }
       
       const subtopicsSnap = await getDocs(subtopicsQuery);
-      let subtopicsData = subtopicsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      subtopicsData = subtopicsSnap.docs.map((d) => ({ 
+        id: d.id, 
+        ...d.data(),
+        _collectionName: subtopicsCollectionName
+      }));
+      
+      // Also load regular subtopics if not loading stories or puzzles (for combined view)
+      if (!isStory && !isPuzzle && !categoryId) {
+        let regularQuery = collection(db, "subtopics");
+        const regularSnap = await getDocs(regularQuery);
+        const regularData = regularSnap.docs.map((d) => ({ 
+          id: d.id, 
+          ...d.data(),
+          _collectionName: "subtopics"
+        }));
+        subtopicsData = [...subtopicsData, ...regularData];
+      }
       
       // Filter by topicId if selected
       if (topicId) {
@@ -40,8 +62,10 @@ export function useSubtopicData() {
     }
   };
 
-  const createSubtopic = async (subtopicData) => {
+  const createSubtopic = async (subtopicData, isStory = false, isPuzzle = false) => {
     try {
+      const subtopicsCollectionName = isStory ? "storySubtopics" : isPuzzle ? "puzzleSubtopics" : "subtopics";
+      
       const newSubtopic = {
         ...subtopicData,
         quizCount: 0,
@@ -50,8 +74,12 @@ export function useSubtopicData() {
         updatedAt: new Date(),
       };
       
-      const docRef = await addDoc(collection(db, "subtopics"), newSubtopic);
-      const created = { id: docRef.id, ...newSubtopic };
+      const docRef = await addDoc(collection(db, subtopicsCollectionName), newSubtopic);
+      const created = { 
+        id: docRef.id, 
+        ...newSubtopic,
+        _collectionName: subtopicsCollectionName
+      };
       setSubtopics(prev => [...prev, created]);
       setStatus("✅ Subtopic created successfully");
       return created;
@@ -64,7 +92,11 @@ export function useSubtopicData() {
 
   const updateSubtopic = async (subtopicId, subtopicData) => {
     try {
-      await updateDoc(doc(db, "subtopics", subtopicId), {
+      // Find the subtopic to determine its collection
+      const subtopic = subtopics.find(s => s.id === subtopicId);
+      const collectionName = subtopic?._collectionName || "subtopics";
+      
+      await updateDoc(doc(db, collectionName, subtopicId), {
         ...subtopicData,
         updatedAt: new Date(),
       });
@@ -82,7 +114,11 @@ export function useSubtopicData() {
 
   const deleteSubtopic = async (subtopicId) => {
     try {
-      await deleteDoc(doc(db, "subtopics", subtopicId));
+      // Find the subtopic to determine its collection
+      const subtopic = subtopics.find(s => s.id === subtopicId);
+      const collectionName = subtopic?._collectionName || "subtopics";
+      
+      await deleteDoc(doc(db, collectionName, subtopicId));
       setSubtopics(prev => prev.filter(s => s.id !== subtopicId));
       setStatus("✅ Subtopic deleted successfully");
     } catch (err) {
@@ -94,16 +130,50 @@ export function useSubtopicData() {
 
   const toggleSubtopicPublish = async (subtopicId, currentStatus) => {
     try {
-      await updateDoc(doc(db, "subtopics", subtopicId), {
-        isPublished: !currentStatus,
+      const newStatus = !currentStatus;
+      
+      // Find the subtopic to determine its collection
+      const subtopic = subtopics.find(s => s.id === subtopicId);
+      const collectionName = subtopic?._collectionName || "subtopics";
+      
+      // If trying to publish, check if parent topic and category are published
+      if (newStatus) {
+        // Check if parent topic is published
+        if (subtopic?.topicId) {
+          const topicDoc = await getDoc(doc(db, "topics", subtopic.topicId));
+          if (topicDoc.exists()) {
+            const topicData = topicDoc.data();
+            if (topicData.isPublished === false) {
+              throw new Error("Cannot publish subtopic: Parent topic is unpublished");
+            }
+            
+            // Also check if parent category is published
+            if (topicData.categoryId) {
+              const categoryDoc = await getDoc(doc(db, "categories", topicData.categoryId));
+              if (categoryDoc.exists()) {
+                const categoryData = categoryDoc.data();
+                if (categoryData.isPublished === false) {
+                  throw new Error("Cannot publish subtopic: Parent category is unpublished");
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      await updateDoc(doc(db, collectionName, subtopicId), {
+        isPublished: newStatus,
         updatedAt: new Date(),
       });
       
       setSubtopics(prev => prev.map(s => 
-        s.id === subtopicId ? { ...s, isPublished: !currentStatus } : s
+        s.id === subtopicId ? { ...s, isPublished: newStatus } : s
       ));
+      
+      setStatus(newStatus ? "✅ Subtopic published" : "✅ Subtopic unpublished");
     } catch (err) {
       console.error("Toggle subtopic publish error:", err);
+      setStatus("❌ " + err.message);
       throw err;
     }
   };

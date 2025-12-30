@@ -17,6 +17,7 @@ import {
   addChapter,
   deleteChapter
 } from '../../services/storyService';
+import ChapterDetailEditor from './ChapterDetailEditor';
 import './StoryModal.css';
 
 export default function StoryModal({ isOpen, onClose }) {
@@ -25,17 +26,14 @@ export default function StoryModal({ isOpen, onClose }) {
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editingChapter, setEditingChapter] = useState(null);
+  const [showChapterEditor, setShowChapterEditor] = useState(false);
 
   const [storyForm, setStoryForm] = useState({
     title: '',
     description: '',
     targetAudience: 'kids',
     coverImage: ''
-  });
-
-  const [chapterForm, setChapterForm] = useState({
-    title: '',
-    description: ''
   });
 
   useEffect(() => {
@@ -87,29 +85,37 @@ export default function StoryModal({ isOpen, onClose }) {
     }
   };
 
-  const handleAddChapter = async () => {
+  const handleAddChapter = async (chapterData) => {
     try {
       if (!selectedStory) return;
-      if (!chapterForm.title.trim()) {
-        setMessage({ type: 'error', text: 'Chapter title is required' });
-        return;
-      }
 
       const chapters = selectedStory.chapters || [];
       const order = chapters.length + 1;
 
-      await addChapter(selectedStory.id, {
-        title: chapterForm.title,
-        description: chapterForm.description,
+      const newChapter = {
+        ...chapterData,
         order
-      });
+      };
 
-      setMessage({ type: 'success', text: '✅ Chapter added!' });
-      setChapterForm({ title: '', description: '' });
+      await addChapter(selectedStory.id, newChapter);
+
+      setMessage({ type: 'success', text: '✅ Chapter added successfully!' });
+      setShowChapterEditor(false);
+      setEditingChapter(null);
       loadStories();
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
     }
+  };
+
+  const handleOpenChapterEditor = (chapter = null) => {
+    setEditingChapter(chapter);
+    setShowChapterEditor(true);
+  };
+
+  const handleCloseChapterEditor = () => {
+    setShowChapterEditor(false);
+    setEditingChapter(null);
   };
 
   const handlePublish = async (storyId) => {
@@ -270,26 +276,14 @@ export default function StoryModal({ isOpen, onClose }) {
                     </div>
                   )}
 
-                  {/* Add Chapter */}
+                  {/* Add Chapter Button */}
                   <div className="add-chapter-section">
-                    <h4>Add Chapter</h4>
-                    <div className="chapter-form">
-                      <input
-                        type="text"
-                        placeholder="Chapter Title"
-                        value={chapterForm.title}
-                        onChange={(e) => setChapterForm({ ...chapterForm, title: e.target.value })}
-                      />
-                      <textarea
-                        placeholder="Chapter Description"
-                        value={chapterForm.description}
-                        onChange={(e) => setChapterForm({ ...chapterForm, description: e.target.value })}
-                        rows="2"
-                      />
-                      <button className="btn-primary" onClick={handleAddChapter}>
-                        + Add Chapter
-                      </button>
-                    </div>
+                    <button 
+                      className="btn-primary"
+                      onClick={() => handleOpenChapterEditor()}
+                    >
+                      + Add Chapter with Advanced Editor
+                    </button>
                   </div>
 
                   {/* Actions */}
@@ -319,6 +313,17 @@ export default function StoryModal({ isOpen, onClose }) {
           <button className="btn-secondary" onClick={onClose}>Close</button>
         </div>
       </div>
+
+      {/* Chapter Detail Editor Modal */}
+      {showChapterEditor && (
+        <div className="modal-overlay">
+          <ChapterDetailEditor
+            chapter={editingChapter}
+            onSave={handleAddChapter}
+            onCancel={handleCloseChapterEditor}
+          />
+        </div>
+      )}
     </div>
   );
 }

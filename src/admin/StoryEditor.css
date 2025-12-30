@@ -8,11 +8,23 @@
   margin: 0 auto;
 }
 
+.page-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
 .story-editor h2 {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   color: #212529;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  font-weight: 400;
 }
 
 .story-editor h3 {
@@ -37,6 +49,71 @@
 .message.error {
   background: #f8d7da;
   color: #721c24;
+}
+
+/* ========== Quick Guide ========== */
+.quick-guide {
+  background: linear-gradient(135deg, #f0f4ff 0%, #fef6f5 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 32px;
+  border: 2px solid #e9ecef;
+}
+
+.quick-guide h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #212529;
+}
+
+.steps-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-step {
+  display: flex;
+  gap: 12px;
+  background: white;
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.guide-step:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  border-left-color: #764ba2;
+}
+
+.step-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  min-width: 40px;
+  text-align: center;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.step-content p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
 }
 
 .editor-layout {
@@ -79,6 +156,46 @@
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.color-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-picker-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-input {
+  width: 50px;
+  height: 40px;
+  padding: 2px;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.color-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.color-preview {
+  width: 80px;
+  height: 40px;
+  border-radius: 6px;
+  border: 2px solid #dee2e6;
+  transition: border-color 0.2s;
 }
 
 .stories-list {
@@ -173,6 +290,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .chapter-header h5 {
@@ -180,6 +298,43 @@
   font-size: 14px;
   font-weight: 600;
   color: #212529;
+  flex: 1;
+}
+
+.chapter-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-edit {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.btn-edit:hover {
+  background: #b6d4fe;
+}
+
+.btn-delete {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.btn-delete:hover {
+  background: #f5c2c7;
 }
 
 .chapter-item p {
@@ -267,6 +422,21 @@
   background: #f5c2c7;
 }
 
+.btn-preview {
+  background: #cfe2ff;
+  color: #084298;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-preview:hover {
+  background: #b6d4fe;
+}
+
 .form-actions {
   display: flex;
   gap: 8px;
@@ -295,5 +465,139 @@
 
   .story-details {
     padding: 16px;
+  }
+}
+
+/* ========== Add Chapter Section ========== */
+.add-chapter-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+}
+
+.add-chapter-section button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.add-chapter-section button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* ========== Modal Overlay for Chapter Editor ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 1024px) {
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .stories-panel {
+    position: static;
+  }
+
+  .steps-guide {
+    /* Single column maintained */
+  }
+}
+
+@media (max-width: 768px) {
+  .story-editor {
+    padding: 16px;
+  }
+
+  .story-editor h2 {
+    font-size: 24px;
+  }
+
+  .quick-guide {
+    padding: 20px;
+  }
+
+  .steps-guide {
+    /* Single column maintained */
+  }
+
+  .guide-step {
+    padding: 16px;
+  }
+
+  .story-details {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .story-editor {
+    padding: 12px;
+  }
+
+  .page-header {
+    margin-bottom: 20px;
+  }
+
+  .story-editor h2 {
+    font-size: 20px;
+  }
+
+  .quick-guide {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .quick-guide h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .guide-step {
+    padding: 14px;
+  }
+
+  .step-icon {
+    font-size: 28px;
+  }
+
+  .step-content h4 {
+    font-size: 14px;
+  }
+
+  .step-content p {
+    font-size: 12px;
   }
 }

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
+import { FEATURES } from "../constants/FEATURES";
 import { db } from "../firebase/firebaseConfig";
-import { addDoc, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where, doc, setDoc, updateDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { Card, Button } from "../components/ui";
-import QuestionsTable from "./components/QuestionsTable";
+import TablePagination from "./components/TablePagination";
 
 function AddQuestionPage() {
   const location = useLocation();
@@ -58,6 +59,11 @@ function AddQuestionPage() {
       }));
       setSubtopicies(subtopicsData);
 
+      // Load questions for the table view
+      const questionsSnap = await getDocs(collection(db, "questions"));
+      const questionsData = questionsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setList(questionsData);
+
       // Set preselected values if they exist
       if (preselectedData.preselectedCategory) {
         const selectedCat = categoriesData.find(c => c.id === preselectedData.preselectedCategory);
@@ -97,6 +103,21 @@ function AddQuestionPage() {
   const [importedQuestions, setImportedQuestions] = useState([]);
   const [importing, setImporting] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  /* ---------------- TABLE VIEW STATE (from ViewQuestionsPage) ----------- */
+  const [list, setList] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterDifficulty, setFilterDifficulty] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterTopic, setFilterTopic] = useState("");
+  const [filterSubtopic, setFilterSubtopic] = useState("");
+  const [sortColumn, setSortColumn] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [itemsPerPage, setItemsPerPage] = useState("10");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const navigate = useNavigate();
 
   /* ---------------- MANUAL HELPERS ---------------- */
   const update = (field, value) =>
@@ -429,7 +450,7 @@ const normalizeQuestions = (rows) => {
       for (const q of importedQuestions) {
         try {
           // Hierarchy creation
-          const featureId = await getOrCreateFeature(q.feature || "Quiz");
+          const featureId = await getOrCreateFeature(q.feature || FEATURES.QUIZZES.id);
           const categoryId = await getOrCreateCategory(q.category || "General", featureId);
           const topicId = await getOrCreateTopic(q.topic || "General", categoryId);
           const subtopicId = await getOrCreateSubtopic(q.subtopic || "General", categoryId, featureId, topicId);
@@ -541,6 +562,222 @@ const normalizeQuestions = (rows) => {
     XLSX.utils.book_append_sheet(wb, ws, "Questions");
     XLSX.writeFile(wb, "quiz_questions_template.xlsx");
   };
+
+  /* ---------------- TABLE HELPER FUNCTIONS (from ViewQuestionsPage) ----------- */
+  
+  const getFeatureName = (featureIdOrName) => {
+    if (!featureIdOrName) return "-";
+    let feature = features.find(f => f.id === featureIdOrName);
+    if (!feature) {
+      feature = features.find(f => 
+        (f.name && f.name.toLowerCase() === featureIdOrName.toLowerCase()) || 
+        (f.label && f.label.toLowerCase() === featureIdOrName.toLowerCase())
+      );
+    }
+    return feature?.name || feature?.label || featureIdOrName;
+  };
+
+  const getCategoryName = (categoryIdOrName) => {
+    if (!categoryIdOrName) return "-";
+    let category = categories.find(c => c.id === categoryIdOrName);
+    if (!category) {
+      category = categories.find(c => 
+        (c.name && c.name.toLowerCase() === categoryIdOrName.toLowerCase()) || 
+        (c.label && c.label.toLowerCase() === categoryIdOrName.toLowerCase())
+      );
+    }
+    return category?.name || category?.label || categoryIdOrName;
+  };
+
+  const getSubTopicName = (subtopicIdOrName) => {
+    if (!subtopicIdOrName) return "-";
+    let subtopic = subtopics.find(s => s.id === subtopicIdOrName);
+    if (!subtopic) {
+      subtopic = subtopics.find(s => 
+        (s.name && s.name.toLowerCase() === subtopicIdOrName.toLowerCase()) || 
+        (s.label && s.label.toLowerCase() === subtopicIdOrName.toLowerCase())
+      );
+    }
+    return subtopic?.name || subtopic?.label || subtopicIdOrName;
+  };
+
+  const getTopicName = (question) => {
+    if (question?.topic) return question.topic;
+    const subtopicIdOrName = question?.subtopic || question?.subtopicId;
+    if (!subtopicIdOrName) return "-";
+    let subtopic = subtopics.find(s => s.id === subtopicIdOrName);
+    if (!subtopic) {
+      subtopic = subtopics.find(s => 
+        (s.name && s.name.toLowerCase() === subtopicIdOrName.toLowerCase()) || 
+        (s.label && s.label.toLowerCase() === subtopicIdOrName.toLowerCase())
+      );
+    }
+    return subtopic?.topic || "-";
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Delete this question?")) return;
+    const questionToDelete = list.find(q => q.id === id);
+    await deleteDoc(doc(db, "questions", id));
+    await updateCountsAfterDelete([questionToDelete]);
+    loadCategoriesAndFeatures();
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm("Delete selected questions?")) return;
+    const questionsToDelete = list.filter(q => selectedIds.includes(q.id));
+    for (const id of selectedIds) {
+      await deleteDoc(doc(db, "questions", id));
+    }
+    await updateCountsAfterDelete(questionsToDelete);
+    setSelectedIds([]);
+    loadCategoriesAndFeatures();
+  };
+
+  const updateCountsAfterDelete = async (deletedQuestions) => {
+    const affectedCategories = new Set();
+    const affectedSubtopicies = new Set();
+    
+    deletedQuestions.forEach(q => {
+      if (q.category) affectedCategories.add(q.category);
+      if (q.subtopicId) affectedSubtopicies.add(q.subtopicId);
+    });
+    
+    for (const categoryIdOrName of affectedCategories) {
+      let categoryId = categoryIdOrName;
+      const categoryDoc = categories.find(c => c.id === categoryIdOrName);
+      if (!categoryDoc) {
+        const categoryByName = categories.find(c => 
+          (c.name && c.name.toLowerCase() === categoryIdOrName.toLowerCase()) || 
+          (c.label && c.label.toLowerCase() === categoryIdOrName.toLowerCase())
+        );
+        if (categoryByName) {
+          categoryId = categoryByName.id;
+        } else {
+          continue;
+        }
+      }
+      
+      const questionsQuery = query(
+        collection(db, "questions"),
+        where("category", "==", categoryIdOrName)
+      );
+      const questionsSnap = await getDocs(questionsQuery);
+      const newCount = questionsSnap.size;
+      const updateData = { quizCount: newCount };
+      if (newCount === 0) {
+        updateData.isPublished = false;
+      }
+      await updateDoc(doc(db, "categories", categoryId), updateData);
+    }
+    
+    for (const subtopicId of affectedSubtopicies) {
+      const questionsQuery = query(
+        collection(db, "questions"),
+        where("subtopicId", "==", subtopicId)
+      );
+      const questionsSnap = await getDocs(questionsQuery);
+      const newCount = questionsSnap.size;
+      const updateData = { quizCount: newCount };
+      if (newCount === 0) {
+        updateData.published = false;
+        updateData.isPublished = false;
+      }
+      await updateDoc(doc(db, "subtopics", subtopicId), updateData);
+    }
+  };
+
+  const filteredList = list.filter((q) => {
+    const matchesSearch = searchTerm === "" || 
+      q.question?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      q.correctAnswer?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === "" || q.category === filterCategory;
+    const matchesTopic = filterTopic === "" || q.topic === filterTopic;
+    const matchesSubtopic = filterSubtopic === "" || q.subtopic === filterSubtopic || q.subtopicId === filterSubtopic;
+    const matchesDifficulty = filterDifficulty === "" || q.difficulty === filterDifficulty;
+    return matchesSearch && matchesCategory && matchesTopic && matchesSubtopic && matchesDifficulty;
+  });
+
+  const sortedList = [...filteredList].sort((a, b) => {
+    if (!sortColumn) return 0;
+    let aVal, bVal;
+    switch (sortColumn) {
+      case "feature":
+        aVal = getFeatureName(a.feature);
+        bVal = getFeatureName(b.feature);
+        break;
+      case "category":
+        aVal = getCategoryName(a.category);
+        bVal = getCategoryName(b.category);
+        break;
+      case "topic":
+        aVal = getTopicName(a);
+        bVal = getTopicName(b);
+        break;
+      case "subtopic":
+        aVal = getSubTopicName(a.subtopic);
+        bVal = getSubTopicName(b.subtopic);
+        break;
+      case "question":
+        aVal = a.question || "";
+        bVal = b.question || "";
+        break;
+      case "correctAnswer":
+        aVal = a.correctAnswer || "";
+        bVal = b.correctAnswer || "";
+        break;
+      case "difficulty":
+        const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
+        aVal = difficultyOrder[a.difficulty] || 0;
+        bVal = difficultyOrder[b.difficulty] || 0;
+        break;
+      default:
+        return 0;
+    }
+    if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const SortIndicator = ({ column }) => {
+    if (sortColumn !== column) {
+      return <span style={{ opacity: 0.3, marginLeft: "4px" }}>↕</span>;
+    }
+    return (
+      <span style={{ marginLeft: "4px", fontWeight: "bold" }}>
+        {sortDirection === "asc" ? "↑" : "↓"}
+      </span>
+    );
+  };
+
+  const stats = {
+    total: list.length,
+    filtered: sortedList.length,
+    easy: list.filter(q => q.difficulty === "easy").length,
+    medium: list.filter(q => q.difficulty === "medium").length,
+    hard: list.filter(q => q.difficulty === "hard").length,
+  };
+
+  // Pagination logic
+  const itemsToDisplay = itemsPerPage === 'all' ? sortedList.length : parseInt(itemsPerPage);
+  const totalPages = itemsPerPage === 'all' ? 1 : Math.ceil(sortedList.length / itemsToDisplay);
+  const startIndex = itemsPerPage === 'all' ? 0 : (currentPage - 1) * itemsToDisplay;
+  const endIndex = itemsPerPage === 'all' ? sortedList.length : startIndex + itemsToDisplay;
+  const paginatedList = sortedList.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory, filterTopic, filterSubtopic, filterDifficulty]);
 
   /* ---------------- UI ---------------- */
 
@@ -857,11 +1094,395 @@ const normalizeQuestions = (rows) => {
 
       <hr style={{ margin: "40px 0" }} />
 
-      <h2 style={{ marginBottom: 20 }}>📋 View & Manage Questions</h2>
-      <p style={{ color: "#64748b", marginBottom: 16, fontSize: 14 }}>
-        View all quiz questions, filter by feature/category/difficulty, sort, and manage deletions below.
-      </p>
-      <QuestionsTable />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 20 }}>
+        <div>
+          <h2 style={{ margin: 0, marginBottom: 8 }}>All Questions</h2>
+          <div style={{ display: "flex", gap: 12, fontSize: "13px", color: "#64748b" }}>
+            <span><strong>{stats.total}</strong> Total</span>
+            <span>•</span>
+            <span style={{ color: "#16a34a" }}><strong>{stats.easy}</strong> Easy</span>
+            <span style={{ color: "#d97706" }}><strong>{stats.medium}</strong> Medium</span>
+            <span style={{ color: "#dc2626" }}><strong>{stats.hard}</strong> Hard</span>
+          </div>
+        </div>
+        {selectedIds.length > 0 && (
+          <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+            Delete Selected ({selectedIds.length})
+          </Button>
+        )}
+      </div>
+
+      {/* Search and Filters */}
+      <Card style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="🔍 Search questions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: "1 1 300px",
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "14px",
+              outline: "none"
+            }}
+          />
+          
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={{
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "14px",
+              minWidth: "150px"
+            }}
+          >
+            <option value="">All Categories</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.name || c.label}</option>
+            ))}
+          </select>
+          
+          <select
+            value={filterTopic}
+            onChange={(e) => setFilterTopic(e.target.value)}
+            style={{
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "14px",
+              minWidth: "150px"
+            }}
+          >
+            <option value="">All Topics</option>
+            {topics.map(t => (
+              <option key={t.id} value={t.id}>{t.name || t.label}</option>
+            ))}
+          </select>
+          
+          <select
+            value={filterSubtopic}
+            onChange={(e) => setFilterSubtopic(e.target.value)}
+            style={{
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "14px",
+              minWidth: "150px"
+            }}
+          >
+            <option value="">All Subtopics</option>
+            {subtopics.map(s => (
+              <option key={s.id} value={s.id}>{s.name || s.label}</option>
+            ))}
+          </select>
+          
+          <select
+            value={filterDifficulty}
+            onChange={(e) => setFilterDifficulty(e.target.value)}
+            style={{
+              padding: "10px 14px",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+              fontSize: "14px",
+              minWidth: "130px"
+            }}
+          >
+            <option value="">All Difficulties</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+          
+          {(searchTerm || filterCategory || filterTopic || filterSubtopic || filterDifficulty) && (
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setFilterCategory("");
+                setFilterTopic("");
+                setFilterSubtopic("");
+                setFilterDifficulty("");
+              }}
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
+
+        {/* Pagination Controls */}
+        <TablePagination
+          totalItems={stats.filtered}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={setItemsPerPage}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      </Card>
+
+      <Card>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", minWidth: "1400px", fontSize: "13px" }}>
+            <thead>
+              <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                <th style={{ padding: "12px 8px", textAlign: "left", width: "40px" }}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      paginatedList.length > 0 &&
+                      paginatedList.every((q) => selectedIds.includes(q.id))
+                    }
+                    onChange={(e) =>
+                      setSelectedIds(
+                        e.target.checked 
+                          ? [...new Set([...selectedIds, ...paginatedList.map((q) => q.id)])]
+                          : selectedIds.filter((id) => !paginatedList.find((q) => q.id === id))
+                      )
+                    }
+                  />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "120px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "feature" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("feature")}
+                >
+                  Feature <SortIndicator column="feature" />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "120px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "category" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("category")}
+                >
+                  Category <SortIndicator column="category" />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "100px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "topic" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("topic")}
+                >
+                  Topic <SortIndicator column="topic" />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "120px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "subtopic" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("subtopic")}
+                >
+                  SubTopic <SortIndicator column="subtopic" />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    minWidth: "200px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "question" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("question")}
+                >
+                  Question <SortIndicator column="question" />
+                </th>
+                <th style={{ padding: "12px 8px", textAlign: "left", minWidth: "250px" }}>Options</th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "150px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "correctAnswer" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("correctAnswer")}
+                >
+                  Correct Answer <SortIndicator column="correctAnswer" />
+                </th>
+                <th 
+                  style={{ 
+                    padding: "12px 8px", 
+                    textAlign: "left", 
+                    width: "90px",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    background: sortColumn === "difficulty" ? "#e0f2fe" : "transparent"
+                  }}
+                  onClick={() => handleSort("difficulty")}
+                >
+                  Difficulty <SortIndicator column="difficulty" />
+                </th>
+                <th style={{ padding: "12px 8px", textAlign: "left", width: "180px" }}>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {sortedList.length === 0 ? (
+                <tr>
+                  <td colSpan="10" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                    {list.length === 0 ? "No questions found. Add your first question!" : "No questions match your filters."}
+                  </td>
+                </tr>
+              ) : (
+                paginatedList.map((q) => (
+                  <tr key={q.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(q.id)}
+                        onChange={(e) => {
+                          setSelectedIds((prev) =>
+                            e.target.checked
+                              ? [...prev, q.id]
+                              : prev.filter((id) => id !== q.id)
+                          );
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <span style={{ 
+                        fontSize: "12px", 
+                        background: "#eff6ff", 
+                        color: "#1e40af", 
+                        padding: "3px 8px", 
+                        borderRadius: "4px",
+                        fontWeight: 600
+                      }}>
+                        {getFeatureName(q.feature)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <span style={{ fontSize: "12px", color: "#475569", fontWeight: 500 }}>
+                        {getCategoryName(q.category)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <span style={{ 
+                        fontSize: "11px", 
+                        background: "#f0fdf4", 
+                        color: "#15803d", 
+                        padding: "2px 6px", 
+                        borderRadius: "3px",
+                        fontWeight: 500
+                      }}>
+                        {getTopicName(q)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <span style={{ fontSize: "12px", color: "#64748b" }}>
+                        {getSubTopicName(q.subtopic)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <div style={{ 
+                        maxWidth: "300px", 
+                        whiteSpace: "normal", 
+                        wordWrap: "break-word",
+                        lineHeight: "1.5"
+                      }}>
+                        {q.question || "-"}
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      {q.options && q.options.length > 0 ? (
+                        <div style={{ fontSize: "12px", lineHeight: "1.6" }}>
+                          {q.options.map((opt, idx) => (
+                            <div key={idx} style={{ 
+                              marginBottom: "4px",
+                              padding: "4px 8px",
+                              background: opt === q.correctAnswer ? "#f0fdf4" : "#f8fafc",
+                              border: opt === q.correctAnswer ? "1px solid #86efac" : "1px solid #e2e8f0",
+                              borderRadius: "4px"
+                            }}>
+                              <strong>{String.fromCharCode(65 + idx)}:</strong> {opt}
+                              {opt === q.correctAnswer && (
+                                <span style={{ marginLeft: "6px", color: "#16a34a", fontWeight: 600 }}>✓</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: "#94a3b8", fontSize: "12px" }}>No options</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <div style={{
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#16a34a",
+                        background: "#f0fdf4",
+                        padding: "6px 10px",
+                        borderRadius: "4px",
+                        border: "1px solid #86efac",
+                        maxWidth: "200px",
+                        whiteSpace: "normal",
+                        wordWrap: "break-word"
+                      }}>
+                        {q.correctAnswer || "-"}
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <span style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        padding: "4px 10px",
+                        borderRadius: "12px",
+                        background: 
+                          q.difficulty === "easy" ? "#dcfce7" : 
+                          q.difficulty === "medium" ? "#fef3c7" : 
+                          q.difficulty === "hard" ? "#fee2e2" : "#f1f5f9",
+                        color: 
+                          q.difficulty === "easy" ? "#166534" : 
+                          q.difficulty === "medium" ? "#92400e" : 
+                          q.difficulty === "hard" ? "#991b1b" : "#475569"
+                      }}>
+                        {q.difficulty || "N/A"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px 8px", verticalAlign: "top" }}>
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                        <Button size="sm" onClick={() => navigate(`/admin/edit-question/${q.id}`)}>
+                          Edit
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => remove(q.id)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </AdminLayout>
   );
 }

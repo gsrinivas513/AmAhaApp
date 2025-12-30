@@ -8,8 +8,9 @@ export default function SiteLayout({ children }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#f9f9fb",
+        background: "transparent",
         color: "#111",
+        paddingTop: "64px", // Account for fixed navbar
       }}
     >
       {/* Main content area */}
@@ -17,8 +18,7 @@ export default function SiteLayout({ children }) {
         style={{
           flex: 1,
           width: "100%",
-          maxWidth: 1000,
-          margin: "80px auto 40px auto", // positions content correctly under navbar
+          margin: "0 auto",
           padding: "0 16px",
           boxSizing: "border-box",
         }}

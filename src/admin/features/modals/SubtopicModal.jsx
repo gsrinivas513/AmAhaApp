@@ -1,9 +1,12 @@
 // src/admin/features/modals/SubtopicModal.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Button, Input } from "../../../components/ui";
 import ImageUpload from "../../../components/ImageUpload";
+import ImageCropControl from "../../../components/ImageCropControl";
 
 export default function SubtopicModal({ show, editingId, form, setForm, topics, onSave, onClose }) {
+  const [showImageControls, setShowImageControls] = useState(!!form.imageUrl); // Auto-expand if image exists
+
   if (!show) return null;
 
   return (
@@ -47,6 +50,79 @@ export default function SubtopicModal({ show, editingId, form, setForm, topics, 
           }}
           folder="subtopics"
         />
+
+        {/* Image Crop & Zoom Controls */}
+        {form.imageUrl && (
+          <div>
+            <button
+              onClick={() => setShowImageControls(!showImageControls)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                background: showImageControls ? "#e6f2ff" : "#f5f5f5",
+                border: "1px solid #d0d0d0",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "13px",
+                color: showImageControls ? "#0066cc" : "#333",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {showImageControls ? "✖ Hide Image Adjustments" : "⚙️ Adjust Image (Crop/Zoom)"}
+            </button>
+
+            {showImageControls && (
+              <div style={{ marginTop: "12px", padding: "12px", background: "#fafafa", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                <ImageCropControl
+                  imageUrl={form.imageUrl}
+                  currentSettings={{
+                    crop: form.imageCrop || "cover",
+                    zoom: form.imageZoom || 1,
+                    offsetX: form.imageOffsetX || 0,
+                    offsetY: form.imageOffsetY || 0,
+                  }}
+                  onChange={(settings) => {
+                    setForm({
+                      ...form,
+                      imageCrop: settings.crop,
+                      imageZoom: settings.zoom,
+                      imageOffsetX: settings.offsetX,
+                      imageOffsetY: settings.offsetY,
+                    });
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Color Fallback */}
+        <div>
+          <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>
+            Color (fallback if no image)
+          </label>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <input
+              type="color"
+              value={form.color || "#0284c7"}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              style={{
+                width: "60px",
+                height: "40px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            />
+            <Input
+              value={form.color || "#0284c7"}
+              onChange={(e) => setForm({ ...form, color: e.target.value })}
+              placeholder="#0284c7"
+              style={{ flex: 1 }}
+            />
+          </div>
+        </div>
         
         <div>
           <label style={{ display: "block", marginBottom: 8, fontSize: 14, fontWeight: 600 }}>

@@ -21,6 +21,55 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+// ============== VALIDATION ==============
+
+const VALID_PUZZLE_TYPES = ['find-pair', 'picture-word', 'spot-difference', 'picture-shadow', 'ordering'];
+
+/**
+ * Validate puzzle data before saving
+ * @throws {Error} If validation fails
+ */
+export const validatePuzzleData = (puzzleData) => {
+  const errors = [];
+
+  // Required fields
+  if (!puzzleData.title || puzzleData.title.trim() === '') {
+    errors.push("Title is required");
+  }
+  
+  if (!puzzleData.type || !VALID_PUZZLE_TYPES.includes(puzzleData.type)) {
+    errors.push(`Puzzle type is required and must be one of: ${VALID_PUZZLE_TYPES.join(', ')}`);
+  }
+
+  if (!puzzleData.categoryId) {
+    errors.push("Category is required");
+  }
+
+  if (!puzzleData.topicId) {
+    errors.push("Topic is required");
+  }
+
+  if (!puzzleData.subtopicId) {
+    errors.push("Subtopic is required");
+  }
+
+  if (!puzzleData.difficulty) {
+    errors.push("Difficulty is required");
+  }
+
+  // Data content validation
+  if (!puzzleData.data || Object.keys(puzzleData.data).length === 0) {
+    errors.push("Puzzle content/data is required - please configure the puzzle");
+  }
+
+  // Throw error if any validation failed
+  if (errors.length > 0) {
+    throw new Error(`Validation failed:\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n')}`);
+  }
+
+  return true;
+};
+
 // ============== PUZZLE OPERATIONS ==============
 
 /**
@@ -28,6 +77,11 @@ import { getAuth } from "firebase/auth";
  */
 export const createVisualPuzzle = async (puzzleData) => {
   try {
+    // Validate before creating
+    console.log("📝 Validating puzzle data...", puzzleData);
+    validatePuzzleData(puzzleData);
+    console.log("✅ Validation passed");
+    
     const docRef = await addDoc(collection(db, "puzzles"), {
       ...puzzleData,
       isPublished: puzzleData.isPublished || false,
@@ -35,9 +89,10 @@ export const createVisualPuzzle = async (puzzleData) => {
       updatedAt: serverTimestamp(),
       xpReward: puzzleData.xpReward || 10,
     });
+    console.log("✅ Puzzle created with ID:", docRef.id);
     return { id: docRef.id, ...puzzleData };
   } catch (error) {
-    console.error("Error creating puzzle:", error);
+    console.error("❌ Error creating puzzle:", error);
     throw error;
   }
 };
@@ -47,14 +102,22 @@ export const createVisualPuzzle = async (puzzleData) => {
  */
 export const updateVisualPuzzle = async (puzzleId, updates) => {
   try {
+    console.log("📝 updateVisualPuzzle called with:", { puzzleId, updates });
+    
+    // Validate before updating
+    validatePuzzleData(updates);
+    console.log("✅ Validation passed - Type:", updates.type);
+    
     const puzzleRef = doc(db, "puzzles", puzzleId);
     await updateDoc(puzzleRef, {
       ...updates,
       updatedAt: serverTimestamp(),
     });
+    
+    console.log("✅ Puzzle updated successfully in Firestore");
     return { id: puzzleId, ...updates };
   } catch (error) {
-    console.error("Error updating puzzle:", error);
+    console.error("❌ Error updating puzzle:", error);
     throw error;
   }
 };
@@ -81,20 +144,38 @@ export const getVisualPuzzleById = async (puzzleId) => {
  */
 export const getVisualPuzzlesBySubtopic = async (subtopicId) => {
   try {
-    const q = query(
-      collection(db, "puzzles"),
-      where("subtopicId", "==", subtopicId),
-      where("isPublished", "==", true),
-      orderBy("createdAt", "asc")
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    // First try with composite index (multiple where + orderBy)
+    try {
+      const q = query(
+        collection(db, "puzzles"),
+        where("subtopicId", "==", subtopicId),
+        where("isPublished", "==", true),
+        orderBy("createdAt", "asc")
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    } catch (indexError) {
+      // Fallback: query without composite index, sort in memory
+      console.warn("Composite index not available, using fallback query:", indexError.message);
+      const q = query(
+        collection(db, "puzzles"),
+        where("subtopicId", "==", subtopicId)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter(puzzle => puzzle.isPublished !== false)
+        .sort((a, b) => (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+    }
   } catch (error) {
     console.error("Error fetching puzzles by subtopic:", error);
-    throw error;
+    return []; // Return empty array instead of throwing to prevent UI crash
   }
 };
 

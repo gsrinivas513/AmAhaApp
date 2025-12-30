@@ -30,9 +30,8 @@ function CategoriesList({
     );
   }
 
-  const filteredCategories = categories.filter(
-    (cat) => cat.featureId === selectedFeatureId
-  );
+  // Use categories as-is (already filtered by parent FeatureCategoryManagement)
+  const filteredCategories = categories;
 
   return (
     <div className="fcm-categories-section">

@@ -22,6 +22,7 @@ import {
   INITIAL_TOPIC_FORM, 
   INITIAL_SUBTOPIC_FORM 
 } from "./features/constants";
+import { FEATURES } from "../constants/FEATURES";
 
 // Import modals (we'll create these next)
 import FeatureModal from "./features/modals/FeatureModal";
@@ -29,6 +30,7 @@ import CategoryModal from "./features/modals/CategoryModal";
 import TopicModal from "./features/modals/TopicModal";
 import SubtopicModal from "./features/modals/SubtopicModal";
 import AddPuzzleModal from "./modals/AddPuzzleModal";
+import ManageTopicStoriesModal from "./modals/ManageTopicStoriesModal";
 
 export default function FeatureCategoryManagement() {
   // Custom hooks for data management
@@ -48,6 +50,8 @@ export default function FeatureCategoryManagement() {
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [showSubtopicModal, setShowSubtopicModal] = useState(false);
   const [showAddPuzzleModal, setShowAddPuzzleModal] = useState(false);
+  const [showStoriesModal, setShowStoriesModal] = useState(false);
+  const [storiesModalData, setStoriesModalData] = useState(null);
   const [addPuzzleData, setAddPuzzleData] = useState({ category: null, categoryName: '', topic: null, topicName: '' });
 
   // Form states
@@ -74,10 +78,7 @@ export default function FeatureCategoryManagement() {
     features: true,
     categories: true,
     topics: true,
-    subtopics: false,
-    puzzleFeatures: true,
-    puzzleCategories: true,
-    puzzleTypes: true
+    subtopics: true
   });
 
   // Refs to track what has been loaded to prevent redundant calls
@@ -94,11 +95,14 @@ export default function FeatureCategoryManagement() {
   // Auto-select first feature after data loads
   useEffect(() => {
     if (featureData.features.length > 0 && categoryData.categories.length > 0 && !selectedFeatureId) {
-      const puzzleFeature = featureData.features.find(f => f.featureType === "puzzle");
-      const selectedFeature = puzzleFeature || featureData.features.find(f => f.featureType === "quiz") || featureData.features[0];
+      const puzzleFeature = featureData.features.find(f => f.featureType === FEATURES.PUZZLES.type);
+      const selectedFeature = puzzleFeature || featureData.features.find(f => f.featureType === FEATURES.QUIZZES.type) || featureData.features[0];
       if (selectedFeature) {
-        setSelectedFeatureId(selectedFeature.id);
-        setCategoryForm(prev => ({ ...prev, featureId: selectedFeature.id }));
+        // Use featureId if available, otherwise use id
+        const featureId = selectedFeature.featureId || selectedFeature.id;
+        console.log(`🎯 Auto-selecting feature:`, selectedFeature.label, `featureId:`, featureId);
+        setSelectedFeatureId(featureId);
+        setCategoryForm(prev => ({ ...prev, featureId: featureId }));
       }
     }
   }, [featureData.features.length, categoryData.categories.length]);
@@ -121,26 +125,29 @@ export default function FeatureCategoryManagement() {
       
       // Load all topics
       const topicsSnap = await getDocs(collection(db, "topics"));
-      const allTopicsData = topicsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setAllTopics(allTopicsData);
-      console.log("🔄 Refreshed topics:", allTopicsData.length);
-      console.log("📊 Topics data:", allTopicsData.map(t => ({ 
-        name: t.name, 
-        quizCount: t.quizCount,
-        categoryId: t.categoryId 
-      })));
+      const allTopicsData = topicsSnap.docs.map(d => ({ id: d.id, ...d.data(), _collectionName: "topics" }));
+      
+      // Also load story topics
+      const storyTopicsSnap = await getDocs(collection(db, "storyTopics"));
+      const storyTopicsData = storyTopicsSnap.docs.map(d => ({ id: d.id, ...d.data(), _collectionName: "storyTopics" }));
+      
+      // Combine all
+      const allTopics = [...allTopicsData, ...storyTopicsData];
+      setAllTopics(allTopics);
+      console.log("🔄 Refreshed topics:", allTopics.length);
       
       // Load all subtopics
       const subcatsSnap = await getDocs(collection(db, "subtopics"));
-      const allSubcatsData = subcatsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setAllSubtopics(allSubcatsData);
-      console.log("🔄 Refreshed subtopics:", allSubcatsData.length);
-      console.log("📊 Subtopics data:", allSubcatsData.map(s => ({ 
-        name: s.name, 
-        quizCount: s.quizCount,
-        topicId: s.topicId,
-        categoryId: s.categoryId 
-      })));
+      const allSubcatsData = subcatsSnap.docs.map(d => ({ id: d.id, ...d.data(), _collectionName: "subtopics" }));
+      
+      // Also load story subtopics
+      const storySubtopicsSnap = await getDocs(collection(db, "storySubtopics"));
+      const storySubtopicsData = storySubtopicsSnap.docs.map(d => ({ id: d.id, ...d.data(), _collectionName: "storySubtopics" }));
+      
+      // Combine all (regular subtopics already includes puzzle subtopics if they exist)
+      const allSubcats = [...allSubcatsData, ...storySubtopicsData];
+      setAllSubtopics(allSubcats);
+      console.log("🔄 Refreshed subtopics:", allSubcats.length);
 
       // Load all puzzles (for puzzle categories)
       const puzzlesSnap = await getDocs(collection(db, "puzzles"));
@@ -243,6 +250,11 @@ export default function FeatureCategoryManagement() {
       description: category.description || "",
       featureId: category.featureId,
       defaultUiMode: category.defaultUiMode || "playful",
+      imageUrl: category.imageUrl || "",
+      imageCrop: category.imageCrop || "cover",
+      imageZoom: category.imageZoom || 1,
+      imageOffsetX: category.imageOffsetX || 0,
+      imageOffsetY: category.imageOffsetY || 0,
     });
     setEditingCategoryId(category.id);
     setShowCategoryModal(true);
@@ -297,6 +309,11 @@ export default function FeatureCategoryManagement() {
       sortOrder: topic.sortOrder || 0,
       categoryId: topic.categoryId,
       isPublished: topic.isPublished !== false,
+      imageUrl: topic.imageUrl || "",
+      imageCrop: topic.imageCrop || "cover",
+      imageZoom: topic.imageZoom || 1,
+      imageOffsetX: topic.imageOffsetX || 0,
+      imageOffsetY: topic.imageOffsetY || 0,
     });
     setEditingTopicId(topic.id);
     setShowTopicModal(true);
@@ -328,6 +345,7 @@ export default function FeatureCategoryManagement() {
       ...INITIAL_SUBTOPIC_FORM, 
       categoryId: selectedCategoryId,
       topicId: selectedTopicId || "",
+      featureId: selectedFeatureId || "",
     });
     setEditingSubtopicId(null);
     setShowSubtopicModal(true);
@@ -341,6 +359,14 @@ export default function FeatureCategoryManagement() {
       description: subtopic.description || "",
       categoryId: subtopic.categoryId || "",
       topicId: subtopic.topicId || "",
+      featureId: subtopic.featureId || "",
+      imageUrl: subtopic.imageUrl || "",
+      cloudinaryId: subtopic.cloudinaryId || "",
+      imageCrop: subtopic.imageCrop || "cover",
+      imageZoom: subtopic.imageZoom || 1,
+      imageOffsetX: subtopic.imageOffsetX || 0,
+      imageOffsetY: subtopic.imageOffsetY || 0,
+      color: subtopic.color || "#0284c7",
     });
     setEditingSubtopicId(subtopic.id);
     setShowSubtopicModal(true);
@@ -371,15 +397,23 @@ export default function FeatureCategoryManagement() {
     window.location.href = `/admin/add-content?subtopic=${subtopic.name}&category=${subtopic.categoryId}`;
   };
 
+  const handleManageStories = (data) => {
+    // Open modal to manage stories for the selected subtopic
+    setStoriesModalData(data);
+    setShowStoriesModal(true);
+  };
+
   const closeModals = () => {
     setShowFeatureModal(false);
     setShowCategoryModal(false);
     setShowTopicModal(false);
     setShowSubtopicModal(false);
+    setShowStoriesModal(false);
     setEditingFeatureId(null);
     setEditingCategoryId(null);
     setEditingTopicId(null);
     setEditingSubtopicId(null);
+    setStoriesModalData(null);
   };
 
   // Combined status from all hooks
@@ -507,7 +541,7 @@ export default function FeatureCategoryManagement() {
             color: "white",
             margin: 0
           }}>
-            🎯 Quiz Content Management Flow
+            🎯 Content Management Flow
           </h2>
           <p style={{
             fontSize: 14,
@@ -540,12 +574,12 @@ export default function FeatureCategoryManagement() {
                 transition: "all 0.2s ease"
               }}
             >
-              <span>✨ Quiz Features</span>
+              <span>✨ Features</span>
               <span style={{ fontSize: 12 }}>{expandedSections.features ? "▼" : "▶"}</span>
             </div>
             {expandedSections.features && (
               <FeaturesList
-                features={featureData.features.filter(f => f.featureType !== "puzzle")}
+                features={featureData.features}
                 selectedFeatureId={selectedFeatureId}
                 categories={categoryData.categories}
                 onSelectFeature={handleSelectFeature}
@@ -576,22 +610,72 @@ export default function FeatureCategoryManagement() {
                 transition: "all 0.2s ease"
               }}
             >
-              <span>📁 Quiz Categories</span>
+              <span>📁 Categories</span>
               <span style={{ fontSize: 12 }}>{expandedSections.categories ? "▼" : "▶"}</span>
             </div>
             {expandedSections.categories && (
               <CategoriesList
-                categories={categoryData.categories.filter(c => c.featureType !== "puzzle")}
+                categories={categoryData.categories.filter(c => {
+                  // Show categories for the selected feature
+                  if (!selectedFeatureId) return false;
+                  if (c._collectionName === "storyCategories") {
+                    // Story categories belong to Stories feature
+                    return selectedFeatureId === FEATURES.STORIES.id;
+                  }
+                  // Regular categories (including puzzles) use featureId
+                  const matches = c.featureId === selectedFeatureId;
+                  if (c.id && c.id.includes('puzzle') && !matches) {
+                    console.log(`🔍 Category filter: ${c.id} has featureId="${c.featureId}", selectedFeatureId="${selectedFeatureId}", matches=${matches}`);
+                  }
+                  return matches;
+                })}
                 selectedCategoryId={selectedCategoryId}
                 selectedFeatureId={selectedFeatureId}
-                features={featureData.features.filter(f => f.featureType !== "puzzle")}
+                features={featureData.features.filter(f => {
+                  // If Stories is selected, only show Stories
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    return (f.featureId || f.id) === FEATURES.STORIES.id;
+                  }
+                  // If Puzzles is selected, only show Puzzles
+                  if (selectedFeatureId === FEATURES.PUZZLES.id) {
+                    return (f.featureId || f.id) === FEATURES.PUZZLES.id;
+                  }
+                  // Otherwise show quiz/games
+                  return f.featureType === "quiz" || f.featureType === "game";
+                })}
                 topics={allTopics.filter(t => {
+                  if (!selectedFeatureId) return false;
+                  
+                  // For Stories: filter story topics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    if (t._collectionName !== "storyTopics") return false;
+                    const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                    return cat && cat._collectionName === "storyCategories";
+                  }
+                  
+                  // For others: filter non-story topics
+                  if (t._collectionName === "storyTopics") return false;
                   const cat = categoryData.categories.find(c => c.id === t.categoryId);
-                  return cat && cat.featureType !== "puzzle";
+                  return cat && cat.featureId === selectedFeatureId;
                 })}
                 subtopics={allSubtopics.filter(s => {
+                  if (!selectedFeatureId) return false;
+                  
+                  // For Stories: filter story subtopics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    if (s._collectionName !== "storySubtopics") return false;
+                    const topic = allTopics.find(t => t.id === s.topicId);
+                    if (!topic || topic._collectionName !== "storyTopics") return false;
+                    const cat = categoryData.categories.find(c => c.id === topic.categoryId);
+                    return cat && cat._collectionName === "storyCategories";
+                  }
+                  
+                  // For others: filter non-story subtopics
+                  if (s._collectionName === "storySubtopics") return false;
                   const topic = allTopics.find(t => t.id === s.topicId);
-                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                  if (!topic || topic._collectionName === "storyTopics") return false;
+                  const cat = categoryData.categories.find(c => c.id === topic.categoryId);
+                  return cat && cat.featureId === selectedFeatureId;
                 })}
                 onSelectCategory={handleSelectCategory}
                 onEditCategory={handleEditCategory}
@@ -621,21 +705,58 @@ export default function FeatureCategoryManagement() {
                 transition: "all 0.2s ease"
               }}
             >
-              <span>📚 Quiz Topics</span>
+              <span>📚 Topics</span>
               <span style={{ fontSize: 12 }}>{expandedSections.topics ? "▼" : "▶"}</span>
             </div>
             {expandedSections.topics && (
               <TopicsList
                 topics={allTopics.filter(t => {
+                  if (!selectedCategoryId) return false; // Don't show topics until a category is selected
+                  
+                  // For Stories: show story topics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    if (t._collectionName !== "storyTopics") return false;
+                    const cat = categoryData.categories.find(c => c.id === t.categoryId);
+                    return cat && cat._collectionName === "storyCategories" && t.categoryId === selectedCategoryId;
+                  }
+                  
+                  // For others: show non-story topics
+                  if (t._collectionName === "storyTopics") return false;
                   const cat = categoryData.categories.find(c => c.id === t.categoryId);
-                  return cat && cat.featureType !== "puzzle";
+                  if (!cat || cat._collectionName === "storyCategories") return false;
+                  return t.categoryId === selectedCategoryId;
                 })}
                 selectedTopicId={selectedTopicId}
                 selectedCategoryId={selectedCategoryId}
-                categories={categoryData.categories.filter(c => c.featureType !== "puzzle")}
+                categories={categoryData.categories.filter(c => {
+                  if (!selectedFeatureId) return false;
+                  
+                  // For Stories: show story categories
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    return c._collectionName === "storyCategories";
+                  }
+                  
+                  // For others: show non-story categories
+                  return c._collectionName !== "storyCategories" && c.featureId === selectedFeatureId;
+                })}
                 subtopics={allSubtopics.filter(s => {
+                  if (!selectedCategoryId) return false;
+                  
+                  // For Stories: show story subtopics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    if (s._collectionName !== "storySubtopics") return false;
+                    const topic = allTopics.find(t => t.id === s.topicId);
+                    if (!topic || topic._collectionName !== "storyTopics") return false;
+                    return topic.categoryId === selectedCategoryId;
+                  }
+                  
+                  // For others: show non-story subtopics
+                  if (s._collectionName === "storySubtopics") return false;
                   const topic = allTopics.find(t => t.id === s.topicId);
-                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                  if (!topic || topic._collectionName === "storyTopics") return false;
+                  if (topic.categoryId !== selectedCategoryId) return false;
+                  const cat = categoryData.categories.find(c => c.id === topic.categoryId);
+                  return cat && cat.featureId === selectedFeatureId;
                 })}
                 onSelectTopic={handleSelectTopic}
                 onEditTopic={handleEditTopic}
@@ -665,175 +786,54 @@ export default function FeatureCategoryManagement() {
                 transition: "all 0.2s ease"
               }}
             >
-              <span>❓ Quiz SubTopics</span>
+              <span>❓ SubTopics</span>
               <span style={{ fontSize: 12 }}>{expandedSections.subtopics ? "▼" : "▶"}</span>
             </div>
             {expandedSections.subtopics && (
               <SubTopicsList
                 subtopics={allSubtopics.filter(s => {
+                  // Only show subtopics for the selected topic
+                  if (!selectedTopicId) {
+                    return false;
+                  }
+                  
+                  // For Stories: show story subtopics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    if (s._collectionName !== "storySubtopics") return false;
+                    const topic = allTopics.find(t => t.id === s.topicId);
+                    return topic && topic._collectionName === "storyTopics" && s.topicId === selectedTopicId;
+                  }
+                  
+                  // For others: show non-story subtopics
+                  if (s._collectionName === "storySubtopics") return false;
                   const topic = allTopics.find(t => t.id === s.topicId);
-                  return topic && categoryData.categories.find(c => c.id === topic.categoryId)?.featureType !== "puzzle";
+                  if (!topic || topic._collectionName === "storyTopics") return false;
+                  return s.topicId === selectedTopicId;
                 })}
                 selectedTopicId={selectedTopicId}
                 selectedCategoryId={selectedCategoryId}
                 topics={allTopics.filter(t => {
+                  // For Stories: show story topics
+                  if (selectedFeatureId === FEATURES.STORIES.id) {
+                    return t._collectionName === "storyTopics";
+                  }
+                  
+                  // For Puzzles: show puzzle topics (from unified topics collection with featureId: 'puzzles')
+                  if (selectedFeatureId === FEATURES.PUZZLES.id) {
+                    return t.featureId === selectedFeatureId && t._collectionName !== "storyTopics";
+                  }
+                  
+                  // For others: show non-story, non-puzzle topics
+                  if (t._collectionName === "storyTopics") return false;
                   const cat = categoryData.categories.find(c => c.id === t.categoryId);
-                  return cat && cat.featureType !== "puzzle";
+                  return cat && cat.featureId === selectedFeatureId;
                 })}
                 onEditSubtopic={handleEditSubtopic}
                 onDeleteSubtopic={handleDeleteSubtopic}
                 onToggleSubtopicPublish={handleToggleSubtopicPublish}
                 onAddSubtopic={handleAddSubtopic}
                 onAddQuestion={handleAddQuestion}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* PUZZLE MANAGEMENT SECTION - SEPARATE */}
-        <div style={{
-          marginTop: 48,
-          padding: 20,
-          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-          borderRadius: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-        }}>
-          <h2 style={{ 
-            fontSize: 20, 
-            fontWeight: 700, 
-            color: "white",
-            margin: 0
-          }}>
-            🧩 Puzzle Management
-          </h2>
-          <p style={{
-            fontSize: 14,
-            color: "white",
-            margin: "8px 0 0 0",
-            opacity: 0.95,
-            fontWeight: 500
-          }}>
-            Simplified: Category → Puzzle Type → Puzzles (No Subtopics)
-          </p>
-        </div>
-
-        <div className="fcm-main-grid" style={{ marginTop: 20 }}>
-          {/* Puzzle Features Section */}
-          <div className="fcm-features-section">
-            <div 
-              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleFeatures: !prev.puzzleFeatures }))}
-              style={{
-                padding: "12px 16px",
-                background: expandedSections.puzzleFeatures ? "#f5576c" : "#ffe5e5",
-                color: expandedSections.puzzleFeatures ? "white" : "#1e293b",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: 14,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: expandedSections.puzzleFeatures ? 12 : 0,
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span>✨ Puzzle Features</span>
-              <span style={{ fontSize: 12 }}>{expandedSections.puzzleFeatures ? "▼" : "▶"}</span>
-            </div>
-            {expandedSections.puzzleFeatures && (
-              <FeaturesList
-                features={featureData.features.filter(f => f.featureType === "puzzle")}
-                selectedFeatureId={selectedFeatureId}
-                categories={categoryData.categories}
-                onSelectFeature={handleSelectFeature}
-                onEditFeature={handleEditFeature}
-                onDeleteFeature={handleDeleteFeature}
-                onToggleFeaturePublish={handleToggleFeaturePublish}
-                onAddFeature={handleAddFeature}
-              />
-            )}
-          </div>
-
-          {/* Puzzle Categories Section */}
-          <div className="fcm-categories-section">
-            <div 
-              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleCategories: !prev.puzzleCategories }))}
-              style={{
-                padding: "12px 16px",
-                background: expandedSections.puzzleCategories ? "#f5576c" : "#ffe5e5",
-                color: expandedSections.puzzleCategories ? "white" : "#1e293b",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: 14,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: expandedSections.puzzleCategories ? 12 : 0,
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span>📁 Puzzle Categories</span>
-              <span style={{ fontSize: 12 }}>{expandedSections.puzzleCategories ? "▼" : "▶"}</span>
-            </div>
-            {expandedSections.puzzleCategories && (
-              <CategoriesList
-                categories={categoryData.categories.filter(c => c.featureType === "puzzle")}
-                selectedCategoryId={selectedCategoryId}
-                selectedFeatureId={selectedFeatureId}
-                features={featureData.features.filter(f => f.featureType === "puzzle")}
-                topics={allTopics.filter(t => {
-                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
-                  return cat && cat.featureType === "puzzle";
-                })}
-                subtopics={[]}
-                onSelectCategory={handleSelectCategory}
-                onEditCategory={handleEditCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onToggleCategoryPublish={handleToggleCategoryPublish}
-                onAddCategory={handleAddCategory}
-              />
-            )}
-          </div>
-
-          {/* Puzzle Types Section */}
-          <div className="fcm-topics-section">
-            <div 
-              onClick={() => setExpandedSections(prev => ({ ...prev, puzzleTypes: !prev.puzzleTypes }))}
-              style={{
-                padding: "12px 16px",
-                background: expandedSections.puzzleTypes ? "#f5576c" : "#ffe5e5",
-                color: expandedSections.puzzleTypes ? "white" : "#1e293b",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
-                fontSize: 14,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: expandedSections.puzzleTypes ? 12 : 0,
-                transition: "all 0.2s ease"
-              }}
-            >
-              <span>🎮 Puzzle Types</span>
-              <span style={{ fontSize: 12 }}>{expandedSections.puzzleTypes ? "▼" : "▶"}</span>
-            </div>
-            {expandedSections.puzzleTypes && (
-              <TopicsList
-                topics={allTopics.filter(t => {
-                  const cat = categoryData.categories.find(c => c.id === t.categoryId);
-                  return cat && cat.featureType === "puzzle";
-                })}
-                selectedTopicId={selectedTopicId}
-                selectedCategoryId={selectedCategoryId}
-                categories={categoryData.categories.filter(c => c.featureType === "puzzle")}
-                subtopics={[]}
-                onSelectTopic={handleSelectTopic}
-                onEditTopic={handleEditTopic}
-                onDeleteTopic={handleDeleteTopic}
-                onToggleTopicPublish={handleToggleTopicPublish}
-                onAddTopic={handleAddTopic}
-                onAddPuzzle={handleAddPuzzle}
+                onManageStories={handleManageStories}
               />
             )}
           </div>
@@ -946,6 +946,16 @@ export default function FeatureCategoryManagement() {
           visualizationLoadedRef.current = false;
           refreshVisualizationData();
         }}
+      />
+
+      {/* Manage Topic Stories Modal */}
+      <ManageTopicStoriesModal
+        isOpen={showStoriesModal}
+        onClose={closeModals}
+        subtopicId={storiesModalData?.subtopicId}
+        topicId={storiesModalData?.topicId}
+        categoryId={storiesModalData?.categoryId}
+        subtopic={storiesModalData?.subtopic}
       />
     </AdminLayout>
   );
