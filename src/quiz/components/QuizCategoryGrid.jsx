@@ -101,40 +101,51 @@ export default function QuizCategoryGrid() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
   const loadCategories = async () => {
     try {
-      // Load Quiz feature
-      const featuresSnap = await getDocs(collection(db, "features"));
-      const quizFeature = featuresSnap.docs.find(doc => {
-        const data = doc.data();
-        return data.type === 'quiz' || data.name?.toLowerCase() === 'quiz';
+      console.log("🔍 [QuizCategoryGrid] Starting to load categories...");
+      
+      // Load all categories from Firestore
+      const categoriesSnap = await getDocs(collection(db, "categories"));
+      console.log("📊 [QuizCategoryGrid] Firestore query returned:", {
+        total: categoriesSnap.docs.length,
+        empty: categoriesSnap.empty,
       });
-
-      if (!quizFeature) {
-        console.warn("Quiz feature not found, using fallback categories");
+      
+      if (categoriesSnap.empty) {
+        console.warn("⚠️ [QuizCategoryGrid] No categories found in Firestore, using fallback categories");
+        console.log("🎨 [QuizCategoryGrid] Fallback categories:", fallbackCategories.map(c => c.title));
         setCategories(fallbackCategories);
         setLoading(false);
         return;
       }
 
-      // Load categories for Quiz feature
-      const categoriesSnap = await getDocs(collection(db, "categories"));
+      // Log all categories found
+      console.log("📋 [QuizCategoryGrid] All categories in Firestore:");
+      categoriesSnap.docs.forEach((doc, idx) => {
+        console.log(`  ${idx + 1}. ID: ${doc.id}, Data:`, doc.data());
+      });
+
+      // Map Firestore categories to display format
       const quizCategories = categoriesSnap.docs
         .map(doc => {
           const data = doc.data();
-          if (data.featureId !== quizFeature.id || data.isPublished === false) {
+          
+          // Skip if explicitly not published
+          if (data.isPublished === false) {
+            console.log(`⏭️ [QuizCategoryGrid] Skipping ${doc.id} - not published`);
             return null;
           }
 
           // Find matching color scheme from fallback
           const fallback = fallbackCategories.find(f => f.key === doc.id);
           
-          return {
+          // Use category name or label for navigation (not doc.id)
+          const categoryName = data.name || data.label || doc.id;
+          
+          const result = {
             key: doc.id,
+            name: categoryName, // Use this for navigation
             title: data.label || data.name || doc.id,
             desc: data.description || fallback?.desc || "Quiz category",
             color: fallback?.color || ["#E0F2FE", "#BAE6FD"],
@@ -142,19 +153,34 @@ export default function QuizCategoryGrid() {
             quizCount: data.quizCount || 0,
             rating: generateRealisticRating(data.quizCount || 0, doc.id),
           };
+          
+          console.log(`✅ [QuizCategoryGrid] Mapped category:`, result);
+          return result;
         })
         .filter(Boolean);
 
+      console.log("🎯 [QuizCategoryGrid] Final categories to display:", {
+        count: quizCategories.length,
+        categories: quizCategories.map(c => ({ key: c.key, name: c.name, title: c.title })),
+      });
+      
       setCategories(quizCategories.length > 0 ? quizCategories : fallbackCategories);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      console.error("❌ [QuizCategoryGrid] Error loading categories:", error);
+      console.log("📌 [QuizCategoryGrid] Using fallback due to error");
       setCategories(fallbackCategories);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    console.log("🚀 [QuizCategoryGrid] Component mounted, starting load...");
+    loadCategories();
+  }, []);
+
   if (loading) {
+    console.log("⏳ [QuizCategoryGrid] Still loading categories...");
     return (
       <section className="section">
         <div className="container">
@@ -163,6 +189,12 @@ export default function QuizCategoryGrid() {
       </section>
     );
   }
+
+  console.log("📺 [QuizCategoryGrid] Render - Displaying categories:", {
+    count: categories.length,
+    items: categories.map(c => ({ key: c.key, name: c.name, title: c.title })),
+    isUsingFallback: categories.every(c => fallbackCategories.find(f => f.key === c.key)),
+  });
 
   return (
     <section className="section">
@@ -177,7 +209,25 @@ export default function QuizCategoryGrid() {
           {categories.map((c) => (
             <div
               key={c.key}
-              onClick={() => navigate(`/quiz/${c.key}`)}
+              onClick={() => {
+                console.log("🖱️ [QuizCategoryGrid] Click detected on category:", {
+                  key: c.key,
+                  name: c.name,
+                  title: c.title,
+                  encodedName: encodeURIComponent(c.name),
+                  navigationUrl: `/quiz/${encodeURIComponent(c.name)}`,
+                });
+                console.log("➡️ [QuizCategoryGrid] Navigating to:", `/quiz/${encodeURIComponent(c.name)}`);
+                navigate(`/quiz/${encodeURIComponent(c.name)}`);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  console.log("⌨️ [QuizCategoryGrid] Keyboard navigation on:", c.name);
+                  navigate(`/quiz/${encodeURIComponent(c.name)}`);
+                }
+              }}
+              role="button"
+              tabIndex={0}
               style={{
                 cursor: "pointer",
                 padding: 18,

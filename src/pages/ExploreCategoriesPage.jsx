@@ -1,27 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import SiteLayout from "../layouts/SiteLayout";
-import { db } from "../firebase/firebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { ResponsiveImage } from "../components/OptimizedImage";
-
-// Color schemes for cards
-const colorSchemes = [
-  { color: "from-rose-400 via-pink-300 to-rose-300" },
-  { color: "from-amber-400 via-orange-300 to-yellow-300" },
-  { color: "from-blue-400 via-cyan-300 to-blue-300" },
-  { color: "from-orange-400 via-amber-300 to-yellow-300" },
-  { color: "from-emerald-400 via-green-300 to-teal-300" },
-  { color: "from-cyan-400 via-teal-300 to-blue-300" },
-  { color: "from-red-400 via-orange-300 to-amber-300" },
-  { color: "from-purple-400 via-violet-300 to-pink-300" },
-];
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import SiteLayout from '../layouts/SiteLayout';
+import { useTheme } from '../context/ThemeContext';
+import { db } from '../firebase/firebaseConfig';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { ResponsiveImage } from '../components/OptimizedImage';
 
 function ExploreCategoriesPage() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [features, setFeatures] = useState([]);
   const [featureData, setFeatureData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -32,7 +23,7 @@ function ExploreCategoriesPage() {
       setLoading(true);
 
       // Fetch all features
-      const featuresSnapshot = await getDocs(collection(db, "features"));
+      const featuresSnapshot = await getDocs(collection(db, 'features'));
       const featuresData = featuresSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -48,49 +39,71 @@ function ExploreCategoriesPage() {
 
         // Fetch categories for this feature
         const categoriesSnapshot = await getDocs(
-          query(collection(db, "categories"), where("featureId", "==", feature.id))
+          query(
+            collection(db, 'categories'),
+            where('featureId', '==', feature.id),
+            where('status', '==', 'published'),
+            where('visibility', '!=', 'private')
+          )
         );
         const categories = categoriesSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })).sort((a, b) => {
+          // Featured first, then by name
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return (a.name || "").localeCompare(b.name || "");
+        });
 
         dataMap[feature.id].categories = categories;
 
         // Fetch topics for each category
         for (const category of categories) {
           const topicsSnapshot = await getDocs(
-            query(collection(db, "topics"), where("categoryId", "==", category.id))
+            query(
+              collection(db, 'topics'),
+              where('categoryId', '==', category.id),
+              where('status', '==', 'published'),
+              where('visibility', '!=', 'private')
+            )
           );
           const topics = topicsSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
-          }));
+          })).sort((a, b) => {
+            // Featured first, then by name
+            if (a.featured && !b.featured) return -1;
+            if (!a.featured && b.featured) return 1;
+            return (a.name || "").localeCompare(b.name || "");
+          });
           dataMap[feature.id].categoryTopics[category.id] = topics;
         }
       }
 
       setFeatures(featuresData);
       setFeatureData(dataMap);
+      if (featuresData.length > 0) {
+        setSelectedFeature(featuresData[0].id);
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getFeatureIcon = (featureType) => {
-    const icons = {
-      quiz: "🎯",
-      puzzle: "🧩",
-      game: "🎮",
-      challenge: "🏆",
-    };
-    return icons[featureType] || "✨";
-  };
+  const featureColors = [
+    theme.accentPrimary,
+    theme.accentSecondary,
+    theme.accentTertiary,
+    theme.accentAccent,
+  ];
+
+  const getFeatureColor = (index) => featureColors[index % featureColors.length];
 
   const handleTopicClick = (feature, category, topic) => {
-    if (feature.featureType === "puzzle") {
+    if (feature.featureType === 'puzzle') {
       navigate(
         `/puzzle/${encodeURIComponent(category.name || category.label)}/${encodeURIComponent(
           topic.name || topic.label
@@ -108,213 +121,279 @@ function ExploreCategoriesPage() {
   if (loading) {
     return (
       <SiteLayout>
-        <div className="max-w-7xl mx-auto px-4 py-16">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full animate-spin"></div>
-              </div>
-              <p className="text-gray-600">Loading content...</p>
-            </div>
+        <div style={{ background: theme.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: theme.textSecondary, fontSize: '16px' }}>Loading content...</p>
           </div>
         </div>
       </SiteLayout>
     );
   }
 
+  const currentFeature = features.find((f) => f.id === selectedFeature);
+  const categories = featureData[selectedFeature]?.categories || [];
+  const categoryTopics = featureData[selectedFeature]?.categoryTopics || {};
+
   return (
     <SiteLayout>
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Page Header */}
-        <div className="mb-16">
-          <div className="flex items-center gap-3 mb-4">
-            <h1 className="text-5xl font-bold text-gray-900">
-              Explore All Topics
-            </h1>
-          </div>
-          <p className="text-xl text-gray-600 max-w-3xl">
-            Browse all features, categories, and topics. Click on any topic to start playing!
+      <div style={{ background: theme.background, minHeight: '100vh', paddingTop: '40px' }}>
+        {/* Hero Section */}
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '40px 20px',
+            textAlign: 'center',
+          }}
+        >
+          <h1
+            style={{
+              fontSize: 'clamp(28px, 5vw, 48px)',
+              fontWeight: '800',
+              color: theme.textPrimary,
+              marginBottom: '16px',
+            }}
+          >
+            🔍 Explore & Browse
+          </h1>
+          <p
+            style={{
+              fontSize: '18px',
+              color: theme.textSecondary,
+              maxWidth: '600px',
+              margin: '0 auto 40px',
+              lineHeight: '1.6',
+            }}
+          >
+            Discover all available topics, categories, and content across different learning areas.
           </p>
         </div>
 
-        {/* Features Sections */}
-        {features.length > 0 ? (
-          <div className="space-y-24">
-            {features.map((feature) => {
-              const categories = featureData[feature.id]?.categories || [];
-              const categoryTopics = featureData[feature.id]?.categoryTopics || {};
-              const featureIcon = feature.icon || getFeatureIcon(feature.featureType);
-
-              return (
-                <section key={feature.id}>
-                  {/* Feature Title */}
-                  <div className="mb-12 flex items-center gap-4 pb-6 border-b-2 border-gray-200">
-                    <div className="text-5xl">{featureIcon}</div>
-                    <div>
-                      <h2 className="text-4xl font-bold text-gray-900">
-                        {feature.label || feature.name}
-                      </h2>
-                      {feature.description && (
-                        <p className="text-lg text-gray-600 mt-1">
-                          {feature.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Categories Section */}
-                  {categories.length > 0 ? (
-                    <div className="space-y-16">
-                      {categories.map((category, catIndex) => {
-                        const topics = categoryTopics[category.id] || [];
-                        const categoryColorScheme = colorSchemes[catIndex % colorSchemes.length];
-                        const hasImage = category.imageUrl || category.image;
-
-                        return (
-                          <div key={category.id}>
-                            {/* Category Header */}
-                            <div className="flex items-center gap-4 mb-8">
-                              <div className="flex-shrink-0">
-                                {hasImage ? (
-                                  <div className="w-20 h-20 rounded-lg overflow-hidden shadow-md">
-                                    <ResponsiveImage
-                                      src={category.imageUrl || category.image}
-                                      cloudinaryId={category.cloudinaryId}
-                                      alt={category.label || category.name}
-                                      fallbackIcon={category.icon || "📚"}
-                                      className="w-full h-full object-cover"
-                                      crop="fit"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div
-                                    className={`w-20 h-20 rounded-lg bg-gradient-to-br ${categoryColorScheme.color} flex items-center justify-center text-3xl shadow-md`}
-                                  >
-                                    {category.icon || "📚"}
-                                  </div>
-                                )}
-                              </div>
-                              <div>
-                                <h3 className="text-2xl font-bold text-gray-900">
-                                  {category.label || category.name}
-                                </h3>
-                                <p className="text-gray-600 mt-1">
-                                  {topics.length} {topics.length === 1 ? "Topic" : "Topics"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Topics Grid */}
-                            {topics.length > 0 ? (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-                                {topics.map((topic, topicIndex) => {
-                                  const topicColorScheme =
-                                    colorSchemes[(catIndex * 7 + topicIndex) % colorSchemes.length];
-                                  const hasTopicImage = topic.imageUrl || topic.image;
-
-                                  return (
-                                    <div
-                                      key={topic.id}
-                                      onClick={() => handleTopicClick(feature, category, topic)}
-                                      className="group cursor-pointer"
-                                    >
-                                      {/* Topic Card Image */}
-                                      <div className="h-40 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 mb-3 relative">
-                                        {hasTopicImage ? (
-                                          <ResponsiveImage
-                                            src={topic.imageUrl || topic.image}
-                                            cloudinaryId={topic.cloudinaryId}
-                                            alt={topic.label || topic.name}
-                                            fallbackIcon={topic.icon}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                            crop="fit"
-                                          />
-                                        ) : (
-                                          <div
-                                            className={`absolute inset-0 bg-gradient-to-br ${topicColorScheme.color} flex items-center justify-center text-5xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300`}
-                                          >
-                                            {topic.icon || "📚"}
-                                          </div>
-                                        )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                      </div>
-
-                                      {/* Topic Card Info */}
-                                      <div>
-                                        <h4 className="text-base font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors line-clamp-2">
-                                          {topic.label || topic.name}
-                                        </h4>
-                                        <p className="text-xs text-gray-600 mb-2">
-                                          {feature.featureType === "puzzle"
-                                            ? `${topic.puzzleCount || 0} Puzzles`
-                                            : `${topic.quizCount || 0} Quizzes`}
-                                        </p>
-
-                                        {/* Rating */}
-                                        <div className="flex items-center gap-1">
-                                          <div className="flex">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                              <span
-                                                key={star}
-                                                className={`text-sm ${
-                                                  star <= Math.floor(topic.rating || 4)
-                                                    ? "text-yellow-400"
-                                                    : "text-gray-300"
-                                                }`}
-                                              >
-                                                ★
-                                              </span>
-                                            ))}
-                                          </div>
-                                          <span className="text-xs text-gray-500">
-                                            {(topic.rating || 4.0).toFixed(1)}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <div className="bg-gray-50 rounded-lg p-8 text-center mb-8">
-                                <p className="text-gray-600">
-                                  No topics available for this category yet.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 rounded-lg p-12 text-center mb-8">
-                      <p className="text-gray-600">
-                        No categories available for {feature.label || feature.name} yet.
-                      </p>
-                    </div>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-16 text-center">
-            <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">No Content Available</h3>
-            <p className="text-gray-600 mb-6">
-              Content is being set up. Please check back soon!
-            </p>
+        {/* Feature Tabs */}
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 20px 40px',
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          {features.map((feature, idx) => (
             <button
-              onClick={() => navigate("/")}
-              className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:shadow-lg transition-shadow duration-300"
+              key={feature.id}
+              onClick={() => setSelectedFeature(feature.id)}
+              style={{
+                padding: '12px 24px',
+                border: selectedFeature === feature.id ? 'none' : `1px solid ${theme.border}`,
+                background: selectedFeature === feature.id ? getFeatureColor(idx) : 'transparent',
+                color: selectedFeature === feature.id ? theme.background : theme.textPrimary,
+                borderRadius: '24px',
+                cursor: 'pointer',
+                fontSize: '15px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (selectedFeature !== feature.id) {
+                  e.target.style.background = theme.surfaceSecondary;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedFeature !== feature.id) {
+                  e.target.style.background = 'transparent';
+                }
+              }}
             >
-              ← Back to Home
+              {feature.icon || '✨'} {feature.label || feature.name}
             </button>
-          </div>
-        )}
+          ))}
+        </div>
+
+        {/* Categories Grid */}
+        <div
+          style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0 20px 80px',
+          }}
+        >
+          {categories.length > 0 ? (
+            <>
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: theme.textPrimary,
+                  marginBottom: '32px',
+                  textAlign: 'center',
+                }}
+              >
+                {currentFeature?.label || currentFeature?.name} Categories
+              </h2>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '24px',
+                }}
+              >
+                {categories.map((category) => {
+                  const topics = categoryTopics[category.id] || [];
+                  const featureColor = getFeatureColor(features.indexOf(currentFeature));
+
+                  return (
+                    <div
+                      key={category.id}
+                      style={{
+                        padding: '24px',
+                        background: theme.surfacePrimary,
+                        border: `1px solid ${theme.border}`,
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = `0 16px 32px ${featureColor}20`;
+                        e.currentTarget.style.borderColor = featureColor;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.borderColor = theme.border;
+                      }}
+                    >
+                      {/* Decorative Background */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '-50%',
+                          right: '-50%',
+                          width: '200px',
+                          height: '200px',
+                          background: `radial-gradient(circle, ${featureColor}15, transparent)`,
+                          pointerEvents: 'none',
+                        }}
+                      />
+
+                      <div style={{ position: 'relative', zIndex: 1 }}>
+                        {/* Icon */}
+                        <div
+                          style={{
+                            fontSize: '40px',
+                            marginBottom: '16px',
+                          }}
+                        >
+                          {category.icon || '📚'}
+                        </div>
+
+                        {/* Title & Description */}
+                        <h3
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            color: theme.textPrimary,
+                            marginBottom: '8px',
+                          }}
+                        >
+                          {category.label || category.name}
+                        </h3>
+                        <p
+                          style={{
+                            fontSize: '13px',
+                            color: theme.textSecondary,
+                            marginBottom: '20px',
+                          }}
+                        >
+                          {topics.length} {topics.length === 1 ? 'Topic' : 'Topics'}
+                        </p>
+
+                        {/* Topics Preview */}
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '8px',
+                            marginBottom: '20px',
+                          }}
+                        >
+                          {topics.slice(0, 4).map((topic) => (
+                            <div
+                              key={topic.id}
+                              style={{
+                                padding: '8px 12px',
+                                background: `${featureColor}15`,
+                                border: `1px solid ${featureColor}30`,
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                color: featureColor,
+                                textAlign: 'center',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}
+                              title={topic.label || topic.name}
+                            >
+                              {topic.label || topic.name}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Explore Button */}
+                        <button
+                          onClick={() => navigate(`/category/${category.id}`)}
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            background: featureColor,
+                            color: theme.background,
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'opacity 0.2s',
+                          }}
+                          onMouseEnter={(e) => (e.target.style.opacity = '0.8')}
+                          onMouseLeave={(e) => (e.target.style.opacity = '1')}
+                        >
+                          Explore →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                padding: '60px 20px',
+                textAlign: 'center',
+                background: `linear-gradient(135deg, ${theme.accentPrimary}10, ${theme.accentSecondary}10)`,
+                borderRadius: '16px',
+                border: `1px solid ${theme.accentPrimary}30`,
+              }}
+            >
+              <p style={{ color: theme.textSecondary, fontSize: '16px' }}>
+                No categories available for {currentFeature?.label || currentFeature?.name} yet.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </SiteLayout>
   );
 }
 
 export default ExploreCategoriesPage;
+

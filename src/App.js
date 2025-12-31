@@ -12,13 +12,12 @@ import PuzzlePlayHierarchicalPage from "./puzzles/PuzzlePlayHierarchicalPage";
 import CreateOrderingPuzzlesFromTemplatesPage from "./admin/CreateOrderingPuzzlesFromTemplatesPage";
 // src/App.js
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import Navbar from "./components/Navbar"; // DEPRECATED: Functionality moved to TopNavBar
-import TopNavBar from "./components/navigation/TopNavBar";
+import ProfessionalNavBar from "./components/navigation/ProfessionalNavBar";
 
 /* PUBLIC */
-import HomePagePuzzleFreeExact from "./home/HomePagePuzzleFreeExact";
+import HomePageThemed from "./home/HomePageThemed";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import AllFeaturesPage from "./pages/AllFeaturesPage";
 import ExploreCategoriesPage from "./pages/ExploreCategoriesPage";
@@ -31,20 +30,48 @@ import StoriesTopicPage from "./story/pages/StoriesTopicPage";
 import StoriesSubtopicPage from "./story/pages/StoriesSubtopicPage";
 import CategoryPage from "./pages/CategoryPage";
 import FeaturePage from "./pages/FeaturePage";
+import CreatePage from "./pages/CreatePage";
+import CollectionsPage from "./pages/CollectionsPage";
 
 /* QUIZ */
-import QuizzesPage from "./quiz/QuizzesPage";
+import QuizzesPage from "./pages/QuizzesPage";
+import QuizzesMockPage from "./pages/QuizzesMockPage";
+import QuizPlayerPage from "./pages/QuizPlayerPage";
 import SubcategoryPage from "./quiz/SubcategoryPage";
 import TopicPage from "./quiz/TopicPage";
 import CategoryLevelsPage from "./quiz/CategoryLevelsPage";
 import QuizPage from "./quiz/QuizPage";
 
+/* PUZZLES */
+import PuzzlesPage from "./pages/PuzzlesPage";
+import PuzzlesMockPage from "./pages/PuzzlesMockPage";
+import PuzzlePlayerPage from "./pages/PuzzlePlayerPage";
+
+/* STORIES */
+import StoriesPage from "./pages/StoriesPage";
+
+/* NEW CONTENT TYPES */
+import ArtsPage from "./pages/ArtsPage";
+import DocumentsPage from "./pages/DocumentsPage";
+import StudiesPage from "./pages/StudiesPage";
+import WorksheetsPage from "./pages/WorksheetsPage";
+
 /* USER */
 import ProfilePage from "./pages/ProfilePage";
 import UserSettingsPage from "./pages/UserSettingsPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import SearchPage from "./pages/SearchPage";
+import PlayPage from "./pages/PlayPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import CategoryDetailsPage from "./pages/CategoryDetailsPage";
 
 /* ADMIN — GENERAL */
 import AdminDashboard from "./admin/AdminDashboard";
+import ModernAdminDashboard from "./admin/ModernAdminDashboard";
+import AdminQuizzesManager from "./admin/AdminQuizzesManager";
+import AdminPuzzlesManager from "./admin/AdminPuzzlesManager";
+import AdminStoriesManager from "./admin/AdminStoriesManager";
 import CategoriesPage from "./admin/CategoriesPage";
 import ImportQuestionsPage from "./admin/ImportQuestionsPage";
 import UiModeSettingsPage from "./admin/UiModeSettingsPage";
@@ -56,6 +83,7 @@ import InspectCollectionsPage from "./admin/InspectCollectionsPage";
 import CloudinaryImageManager from "./admin/CloudinaryImageManager";
 import ImageDeduplicationPanel from "./admin/ImageDeduplicationPanel";
 import ImageCropEditor from "./admin/ImageCropEditor";
+import PuzzleDuplicateDetector from "./admin/PuzzleDuplicateDetector";
 
 /* ADMIN — QUIZ */
 import AddQuestionPage from "./admin/AddQuestionPage";
@@ -105,12 +133,10 @@ import UnifiedPuzzlePage from "./puzzles/UnifiedPuzzlePage";
 function App() {
   return (
     <div className="app-bg">
-      <TopNavBar />
-      {/* DEPRECATED: Navbar component merged into TopNavBar to avoid duplicate panels */}
-      {/* <Navbar /> */}
+      <ProfessionalNavBar />
 
       <Routes>
-        <Route path="/" element={<HomePagePuzzleFreeExact />} />
+        <Route path="/" element={<HomePageThemed />} />
         <Route path="/categories" element={<AllFeaturesPage />} />
         <Route path="/explore" element={<ExploreCategoriesPage />} />
 
@@ -119,12 +145,23 @@ function App() {
         <Route path="/category/:id" element={<CategoryPage />} />
         <Route path="/category/:id/topic/:topicId" element={<CategoryPage />} />
 
+        {/* CREATE & COLLECTIONS */}
+        <Route path="/create" element={<CreatePage />} />
+        <Route path="/collections" element={<CollectionsPage />} />
+
         {/* QUIZ HUB */}
         <Route path="/quiz" element={<QuizzesPage />} />
+        <Route path="/quiz-mock" element={<QuizzesMockPage />} />
+        <Route path="/quiz-play/:quizId" element={<QuizPlayerPage />} />
         <Route path="/quiz/:categoryName" element={<SubcategoryPage />} />
         <Route path="/quiz/:categoryName/:topicName" element={<TopicPage />} />
         <Route path="/quiz/:categoryName/:topicName/:subtopicName/:difficulty" element={<CategoryLevelsPage />} />
         <Route path="/quiz/:categoryName/:topicName/:subtopicName/:difficulty/:level" element={<QuizPage />} />
+
+        {/* PUZZLE HUB */}
+        <Route path="/puzzle" element={<PuzzlesPage />} />
+        <Route path="/puzzle-mock" element={<PuzzlesMockPage />} />
+        <Route path="/play/puzzle/:id" element={<PuzzlePlayerPage />} />
 
         {/* LEADERBOARD */}
         <Route path="/leaderboard/:categoryId" element={<LeaderboardPage />} />
@@ -134,7 +171,7 @@ function App() {
         <Route path="/daily-challenge" element={<DailyChallengePage />} />
         
         {/* STORIES */}
-        <Route path="/stories" element={<StoryMapPage />} />
+        <Route path="/stories" element={<StoriesPage />} />
         <Route path="/stories/initialize" element={<InitializeStoriesPage />} />
         <Route path="/stories/category/:categoryName" element={<StoriesCategoryPage />} />
         <Route path="/stories/category/:categoryName/topic/:topicName" element={<StoriesTopicPage />} />
@@ -142,12 +179,37 @@ function App() {
         <Route path="/story/:storyId" element={<StoryDetailPage />} />
         <Route path="/stories/:storyId" element={<StoryDetailPage />} />
 
+        {/* NEW CONTENT TYPES */}
+        <Route path="/arts" element={<ArtsPage />} />
+        <Route path="/arts/:categoryName" element={<ArtsPage />} />
+        <Route path="/arts/:categoryName/:artId" element={<ArtsPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/documents/:categoryName" element={<DocumentsPage />} />
+        <Route path="/documents/:categoryName/:documentId" element={<DocumentsPage />} />
+        <Route path="/studies" element={<StudiesPage />} />
+        <Route path="/studies/:categoryName" element={<StudiesPage />} />
+        <Route path="/studies/:categoryName/:studyId" element={<StudiesPage />} />
+        <Route path="/worksheets" element={<WorksheetsPage />} />
+        <Route path="/worksheets/:categoryName" element={<WorksheetsPage />} />
+        <Route path="/worksheets/:categoryName/:worksheetId" element={<WorksheetsPage />} />
+
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<UserSettingsPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/play/:type/:id" element={<PlayPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/category/:categoryId/details" element={<CategoryDetailsPage />} />
 
         {/* ADMIN — GENERAL */}
+        <Route path="/admin" element={<Navigate to="/admin/modern-dashboard" replace />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/modern-dashboard" element={<ModernAdminDashboard />} />
+        <Route path="/admin/quizzes" element={<AdminQuizzesManager />} />
+        <Route path="/admin/puzzles" element={<AdminPuzzlesManager />} />
+        <Route path="/admin/stories" element={<AdminStoriesManager />} />
         <Route path="/admin/categories" element={<CategoriesPage />} />
         <Route path="/admin/import" element={<ImportQuestionsPage />} />
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
@@ -159,6 +221,7 @@ function App() {
         <Route path="/admin/cloudinary" element={<CloudinaryImageManager />} />
         <Route path="/admin/image-deduplication" element={<ImageDeduplicationPanel />} />
         <Route path="/admin/image-crop-editor" element={<ImageCropEditor />} />
+        <Route path="/admin/puzzle-duplicates" element={<PuzzleDuplicateDetector />} />
 
         {/* ADMIN — QUIZ */}
         <Route path="/admin/add-quiz-content" element={<AddQuestionPage />} />

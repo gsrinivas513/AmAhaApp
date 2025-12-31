@@ -39,13 +39,21 @@ function FeaturePage() {
         const q = query(
           collection(db, "categories"),
           where("featureId", "==", featureId),
-          where("isPublished", "==", true)
+          where("status", "==", "published"),
+          where("visibility", "!=", "private")
         );
         const snapshot = await getDocs(q);
         const categoriesData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        
+        // Sort with featured first
+        categoriesData.sort((a, b) => {
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return 0;
+        });
 
         setCategories(categoriesData);
       } catch (error) {

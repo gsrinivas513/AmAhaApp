@@ -143,8 +143,8 @@ const canSubmit = selected !== null && !submitted;
     reset, // ✅ ADD THIS
     transitioning,
     questionProps: {
-      question: current?.question,
-      options: current?.options || [],
+      question: current?.question || current?.text,
+      options: (Array.isArray(current?.options) ? current.options : []) || [],
       correctAnswer: current?.correctAnswer ?? "",
       selected,
       submitted,

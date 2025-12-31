@@ -42,12 +42,22 @@ function AllFeaturesPage() {
       const categoriesMap = {};
       for (const feature of featuresData) {
         const categoriesSnapshot = await getDocs(
-          query(collection(db, "categories"), where("featureId", "==", feature.id))
+          query(
+            collection(db, "categories"),
+            where("featureId", "==", feature.id),
+            where("status", "==", "published"),
+            where("visibility", "!=", "private")
+          )
         );
         categoriesMap[feature.id] = categoriesSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })).sort((a, b) => {
+          // Featured first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return (a.name || "").localeCompare(b.name || "");
+        });
       }
 
       setFeatures(featuresData);

@@ -60,12 +60,19 @@ export default function StoriesSubtopicPage() {
       const storiesQuery = query(
         collection(db, "stories"),
         where("storySubtopic", "==", subtopicData.id),
-        where("published", "==", true)
+        where("status", "==", "published"),
+        where("visibility", "!=", "private")
       );
       const storiesSnap = await getDocs(storiesQuery);
       const storiesData = storiesSnap.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+        .sort((a, b) => {
+          // Featured items first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          // Then by title
+          return (a.title || "").localeCompare(b.title || "");
+        });
 
       console.log("✅ Stories found:", storiesData.length);
       setStories(storiesData);

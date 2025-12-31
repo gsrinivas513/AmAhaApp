@@ -183,12 +183,16 @@ class SocialContentEngine {
         q = query(
           collection(db, 'questions'),
           where('categoryId', '==', categoryId),
+          where('status', '==', 'published'),
+          where('visibility', '!=', 'private'),
           orderBy('createdAt', 'desc'),
           limit(limit_)
         );
       } else {
         q = query(
           collection(db, 'questions'),
+          where('status', '==', 'published'),
+          where('visibility', '!=', 'private'),
           orderBy('createdAt', 'desc'),
           limit(limit_)
         );
@@ -216,12 +220,16 @@ class SocialContentEngine {
         q = query(
           collection(db, 'puzzles'),
           where('category', '==', categoryId),
+          where('status', '==', 'published'),
+          where('visibility', '!=', 'private'),
           orderBy('createdAt', 'desc'),
           limit(limit_)
         );
       } else {
         q = query(
           collection(db, 'puzzles'),
+          where('status', '==', 'published'),
+          where('visibility', '!=', 'private'),
           orderBy('createdAt', 'desc'),
           limit(limit_)
         );

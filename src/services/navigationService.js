@@ -173,7 +173,9 @@ export async function fetchCategoriesByFeature(featureId, feature = null) {
       const q_uiMode = query(
         collection(db, "categories"),
         where("uiMode", "==", singularForm),
-        where("isPublished", "==", true),
+        where("status", "==", "published"),
+        where("visibility", "!=", "private"),
+        orderBy("featured", "desc"),
         orderBy("order", "asc"),
         limit(100)
       );
@@ -204,7 +206,9 @@ export async function fetchCategoriesByFeature(featureId, feature = null) {
       const q1 = query(
         collection(db, "categories"),
         where("featureId", "==", normalizedFeatureId),
-        where("isPublished", "==", true),
+        where("status", "==", "published"),
+        where("visibility", "!=", "private"),
+        orderBy("featured", "desc"),
         orderBy("order", "asc"),
         limit(100)
       );

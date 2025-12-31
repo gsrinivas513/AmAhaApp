@@ -54,13 +54,20 @@ export default function StoriesCategoryPage() {
       // Load topics for this category
       const topicsQuery = query(
         collection(db, "storyTopics"),
-        where("categoryId", "==", categoryData.id)
+        where("categoryId", "==", categoryData.id),
+        where("status", "==", "published"),
+        where("visibility", "!=", "private")
       );
       const topicsSnap = await getDocs(topicsQuery);
       const topicsData = topicsSnap.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((topic) => topic.isPublished !== false)
-        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        .sort((a, b) => {
+          // Featured items first
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          // Then by name
+          return (a.name || "").localeCompare(b.name || "");
+        });
 
       console.log("✅ Topics found:", topicsData.length);
       setTopics(topicsData);

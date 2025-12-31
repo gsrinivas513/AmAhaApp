@@ -1,23 +1,26 @@
 // src/puzzles/OrderingPuzzle.jsx
-// Ordering puzzle UI with attractive design
+// Ordering puzzle UI with attractive design and level selection
 import React, { useState, useMemo } from "react";
 import SiteLayout from "../layouts/SiteLayout";
 
 export default function OrderingPuzzle({ puzzle, onComplete, isInline = false }) {
   // Parse items and correctOrder from various data formats
-  const { initialItems, correctOrder } = useMemo(() => {
+  const { initialItems, correctOrder, allLevels } = useMemo(() => {
     let items = [];
     let correct = [];
+    let levels = [];
     
     // Format 1: puzzle.data.items (legacy)
     if (puzzle.data?.items && Array.isArray(puzzle.data.items)) {
       items = puzzle.data.items;
       correct = puzzle.data.correctOrder || [...items].sort();
+      levels = puzzle.data.levels || puzzle.data.numberRanges || [];
     }
     // Format 2: puzzle.items and puzzle.correctOrder (new format from InitializePuzzleFeature)
     else if (puzzle.items && Array.isArray(puzzle.items)) {
       items = puzzle.items;
       correct = puzzle.correctOrder || [...items].sort();
+      levels = puzzle.levels || [];
     }
     // Format 3: Parse from correctAnswer string: "3,1,2" or similar
     else if (puzzle.correctAnswer && typeof puzzle.correctAnswer === "string") {
@@ -25,15 +28,61 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
       correct = [...items].sort();
     }
     
-    return { initialItems: items, correctOrder: correct };
+    return { initialItems: items, correctOrder: correct, allLevels: levels };
   }, [puzzle]);
 
-  const [order, setOrder] = useState(initialItems);
+  // Level selection state
+  const [selectedLevel, setSelectedLevel] = useState(0);
+  
+  // Filter items for current level
+  const getItemsForLevel = (items, level) => {
+    if (!allLevels || allLevels.length === 0) {
+      return items; // No levels defined, return all items
+    }
+    
+    if (level >= allLevels.length) {
+      return items; // Invalid level, return all items
+    }
+    
+    const levelConfig = allLevels[level];
+    if (!levelConfig) return items;
+    
+    // Filter items based on range (start and end)
+    return items.filter(item => {
+      const itemDisplay = String(item);
+      const itemNum = parseInt(itemDisplay);
+      
+      if (isNaN(itemNum)) return false;
+      
+      const start = levelConfig.start || levelConfig.min;
+      const end = levelConfig.end || levelConfig.max;
+      return itemNum >= start && itemNum <= end;
+    });
+  };
+
+  const levelItems = useMemo(() => {
+    return getItemsForLevel(initialItems, selectedLevel);
+  }, [initialItems, selectedLevel, allLevels]);
+
+  const levelCorrectOrder = useMemo(() => {
+    return getItemsForLevel(correctOrder, selectedLevel);
+  }, [correctOrder, selectedLevel, allLevels]);
+
+  const [order, setOrder] = useState(levelItems);
   const [done, setDone] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
   const [moves, setMoves] = useState(0);
   const [draggedIndex, setDraggedIndex] = useState(null);
+
+  // Update order when level changes
+  React.useEffect(() => {
+    setOrder(levelItems);
+    setDone(false);
+    setIsCorrect(false);
+    setMoves(0);
+    setDraggedIndex(null);
+  }, [selectedLevel, levelItems]);
 
   function move(idx, dir) {
     const newOrder = [...order];
@@ -58,8 +107,8 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
   }
 
   function check() {
-    // Check if current order matches correct order
-    const correct = order.every((item, idx) => item === correctOrder[idx]);
+    // Check if current order matches correct order for current level
+    const correct = order.every((item, idx) => item === levelCorrectOrder[idx]);
     setIsCorrect(correct);
     setDone(true);
     if (correct) {
@@ -70,7 +119,7 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
   function reset() {
     setDone(false);
     setIsCorrect(false);
-    setOrder(initialItems);
+    setOrder(levelItems);
     setMoves(0);
     setDraggedIndex(null);
   }
@@ -130,6 +179,31 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
             <p className="text-gray-600">{puzzle.description}</p>
           </div>
 
+          {/* Level Selection - Only show if levels are defined */}
+          {allLevels && allLevels.length > 0 && (
+            <div className="mb-8 bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">📚 Select Level</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {allLevels.map((level, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedLevel(index)}
+                    className={`p-4 rounded-lg font-bold transition text-center ${
+                      selectedLevel === index
+                        ? 'bg-gradient-to-r from-orange-500 to-teal-500 text-white shadow-lg scale-105'
+                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                    }`}
+                  >
+                    <div className="text-xl font-bold">Level {index + 1}</div>
+                    <div className="text-xs mt-1 opacity-90">
+                      {level.start || level.min}-{level.end || level.max}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-lg shadow p-4 text-center">
@@ -168,7 +242,24 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center font-bold text-sm">
                     {idx + 1}
                   </div>
-                  <span className="flex-1 text-lg font-semibold text-gray-800">{item}</span>
+                  <div className="flex-1 flex items-center gap-3">
+                    {typeof item === 'object' && item.image && (
+                      <img 
+                        src={item.image} 
+                        alt={item.label} 
+                        className="w-10 h-10 object-cover rounded" 
+                      />
+                    )}
+                    {typeof item === 'object' && item.color && !item.image && (
+                      <div 
+                        className="w-6 h-6 rounded" 
+                        style={{ backgroundColor: item.color }}
+                      />
+                    )}
+                    <span className="text-lg font-semibold text-gray-800">
+                      {typeof item === 'object' ? item.label : item}
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => move(idx, -1)}

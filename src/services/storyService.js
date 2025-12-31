@@ -60,14 +60,16 @@ export async function getStory(storyId) {
 
 /**
  * Get all published stories
- * Uses simple where clause to avoid Firestore index errors
+ * Filters by status=published and visibility=public
+ * Featured stories appear first
  */
 export async function getAllStories(filters = {}) {
   try {
-    // Try to fetch with published filter (no orderBy to avoid index requirement)
+    // Fetch with status and visibility filters
     const q = query(
       collection(db, 'stories'),
-      where('published', '==', true)
+      where('status', '==', 'published'),
+      where('visibility', 'in', ['public', 'comingSoon'])
     );
 
     const querySnapshot = await getDocs(q);
@@ -82,8 +84,13 @@ export async function getAllStories(filters = {}) {
 
     console.log('[storyService] getAllStories() found', stories.length, 'published stories');
     
-    // Sort by createdAt in JavaScript (avoids index requirement)
+    // Sort in JavaScript: featured first, then by date
     stories.sort((a, b) => {
+      // Featured items first
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      
+      // Then by createdAt (newest first)
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return dateB - dateA; // descending order

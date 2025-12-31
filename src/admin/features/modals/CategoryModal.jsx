@@ -127,6 +127,77 @@ export default function CategoryModal({ show, editingId, form, setForm, onSave, 
           onChange={(e) => setForm({ ...form, description: e.target.value })}
           placeholder="Category description"
         />
+
+        {/* Admin Enhancement Fields */}
+        <div style={{ borderTop: "2px solid #e2e8f0", paddingTop: 16, marginTop: 8 }}>
+          <h4 style={{ margin: "0 0 12px 0", color: "#1f2937", fontSize: 14 }}>Publishing & Visibility</h4>
+          
+          {/* Status */}
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 14 }}>
+              Status
+            </label>
+            <select
+              value={form.status || 'published'}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: 6,
+                border: "1px solid #d1d5db",
+                fontFamily: "inherit",
+                fontSize: 14,
+              }}
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="comingSoon">Coming Soon</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          {/* Visibility */}
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 14 }}>
+              Visibility
+            </label>
+            <div style={{ display: "flex", gap: 12 }}>
+              {['public', 'private', 'comingSoon'].map(visibility => (
+                <label key={visibility} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                  <input
+                    type="radio"
+                    name="visibility"
+                    value={visibility}
+                    checked={(form.visibility || 'public') === visibility}
+                    onChange={(e) => setForm({ ...form, visibility: e.target.value })}
+                  />
+                  <span style={{ fontSize: 13, textTransform: "capitalize" }}>{visibility}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured & Home Page Toggle */}
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 8 }}>
+            <input
+              type="checkbox"
+              checked={form.featured || false}
+              onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+              style={{ width: 16, height: 16 }}
+            />
+            <span style={{ fontSize: 14 }}>⭐ Featured</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 12 }}>
+            <input
+              type="checkbox"
+              checked={form.showInHome !== false}
+              onChange={(e) => setForm({ ...form, showInHome: e.target.checked })}
+              style={{ width: 16, height: 16 }}
+            />
+            <span style={{ fontSize: 14 }}>🏠 Show in Home</span>
+          </label>
+        </div>
+        
         <div>
           <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: 14 }}>
             UI Style/Mode

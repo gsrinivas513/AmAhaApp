@@ -19,6 +19,10 @@ export const INITIAL_FEATURE_FORM = {
   imageOffsetY: 0,
   enabled: true,
   featureType: "quiz",
+  // Admin Enhancement Fields
+  status: "published",
+  visibility: "public",
+  featured: false,
 };
 
 export const INITIAL_CATEGORY_FORM = {
@@ -35,6 +39,11 @@ export const INITIAL_CATEGORY_FORM = {
   description: "",
   featureId: "",
   defaultUiMode: "playful",
+  // Admin Enhancement Fields
+  status: "published",
+  visibility: "public",
+  featured: false,
+  showInHome: true,
 };
 
 export const INITIAL_TOPIC_FORM = {
@@ -51,6 +60,10 @@ export const INITIAL_TOPIC_FORM = {
   sortOrder: 0,
   categoryId: "",
   isPublished: true,
+  // Admin Enhancement Fields
+  status: "published",
+  visibility: "public",
+  featured: false,
 };
 
 export const INITIAL_SUBTOPIC_FORM = {
@@ -68,4 +81,8 @@ export const INITIAL_SUBTOPIC_FORM = {
   topicId: "",
   featureId: "",
   color: "#0284c7",
+  // Admin Enhancement Fields
+  status: "published",
+  visibility: "public",
+  featured: false,
 };

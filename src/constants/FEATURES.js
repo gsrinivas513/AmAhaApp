@@ -114,6 +114,86 @@ export const FEATURES = {
     },
     color: "#F59E0B",
     featureName: "Games"
+  },
+
+  ARTS: {
+    id: "arts",
+    name: "Arts",
+    label: "Arts",
+    icon: "🎨",
+    imageUrl: "", // Add arts feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
+    type: "art",
+    order: 5,
+    description: "Explore art techniques and creative expression",
+    baseRoute: "/arts",
+    routes: {
+      home: "/arts",
+      category: "/arts/:categoryName",
+      detail: "/arts/:categoryName/:artId"
+    },
+    color: "#EC4899",
+    featureName: "Arts"
+  },
+
+  DOCUMENTS: {
+    id: "documents",
+    name: "Documents",
+    label: "Documents",
+    icon: "📄",
+    imageUrl: "", // Add documents feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
+    type: "document",
+    order: 6,
+    description: "Browse and learn from educational documents",
+    baseRoute: "/documents",
+    routes: {
+      home: "/documents",
+      category: "/documents/:categoryName",
+      detail: "/documents/:categoryName/:documentId"
+    },
+    color: "#3B82F6",
+    featureName: "Documents"
+  },
+
+  STUDIES: {
+    id: "studies",
+    name: "Studies",
+    label: "Studies",
+    icon: "📚",
+    imageUrl: "", // Add studies feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
+    type: "study",
+    order: 7,
+    description: "Study materials and learning guides",
+    baseRoute: "/studies",
+    routes: {
+      home: "/studies",
+      category: "/studies/:categoryName",
+      detail: "/studies/:categoryName/:studyId"
+    },
+    color: "#10B981",
+    featureName: "Studies"
+  },
+
+  WORKSHEETS: {
+    id: "worksheets",
+    name: "Worksheets",
+    label: "Worksheets",
+    icon: "📋",
+    imageUrl: "", // Add worksheets feature image URL from Cloudinary
+    cloudinaryId: "", // Add cloudinary public ID if available
+    type: "worksheet",
+    order: 8,
+    description: "Practice with interactive worksheets",
+    baseRoute: "/worksheets",
+    routes: {
+      home: "/worksheets",
+      category: "/worksheets/:categoryName",
+      detail: "/worksheets/:categoryName/:worksheetId"
+    },
+    color: "#F59E0B",
+    featureName: "Worksheets"
   }
 };
 
@@ -139,7 +219,11 @@ export const FEATURE_IDS = {
   QUIZZES: FEATURES.QUIZZES.id,
   PUZZLES: FEATURES.PUZZLES.id,
   STORIES: FEATURES.STORIES.id,
-  GAMES: FEATURES.GAMES.id
+  GAMES: FEATURES.GAMES.id,
+  ARTS: FEATURES.ARTS.id,
+  DOCUMENTS: FEATURES.DOCUMENTS.id,
+  STUDIES: FEATURES.STUDIES.id,
+  WORKSHEETS: FEATURES.WORKSHEETS.id
 };
 
 /**
