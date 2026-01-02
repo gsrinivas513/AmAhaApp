@@ -1,24 +1,180 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SiteLayout from '../layouts/SiteLayout';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import PictureWordEditor from './puzzle-editors/PictureWordEditor';
+import SpotDifferenceEditor from './puzzle-editors/SpotDifferenceEditor';
+import FindPairEditor from './puzzle-editors/FindPairEditor';
+import PictureShadowEditor from './puzzle-editors/PictureShadowEditor';
+import OrderingEditor from './puzzle-editors/OrderingEditor';
+import WordSearchEditor from './puzzle-editors/WordSearchEditor';
+import JigsawEditor from './puzzle-editors/JigsawEditor';
 import { db } from '../firebase/firebaseConfig';
-import { collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, deleteDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { createVisualPuzzle } from '../quiz/services/visualPuzzleService';
 import QuizEditModal from './modals/QuizEditModal';
 import PuzzleEditModal from './modals/PuzzleEditModal';
 import StoryEditModal from './modals/StoryEditModal';
 import QuizDetailsModal from './modals/QuizDetailsModal';
 import PuzzleDetailsModal from './modals/PuzzleDetailsModal';
 import StoryDetailsModal from './modals/StoryDetailsModal';
-import QuestionsManager from './modals/QuestionsManager';
+// QuestionsManager import removed (unused)
 import BulkImport from './modals/BulkImport';
 import PuzzleTemplateModal from './modals/PuzzleTemplateModal';
+import AdminTemplatePreviewModal from './components/AdminTemplatePreviewModal';
+import TemplateInputForm from './components/TemplateInputForm';
+import { sanitizeTemplateForEditor } from './utils/templateGuards';
+import { runTemplate } from './utils/templateExecutor';
 import SearchFilterBar from './components/SearchFilterBar';
 import ImprovedFeaturesHierarchyManager from './components/ImprovedFeaturesHierarchyManager';
 import StatusBadge from '../components/badges/StatusBadge';
 import VisibilityBadge from '../components/badges/VisibilityBadge';
 import FeaturedBadge from '../components/badges/FeaturedBadge';
 import AdminStatusFilter from './components/AdminStatusFilter';
+
+// ===== BASE PUZZLE TEMPLATES (Reusable, Generic) =====
+const BASE_PUZZLE_TEMPLATES = [
+  {
+    name: 'Find Pairs (Generic)',
+    typeKey: 'findPairs',
+    category: 'logic-puzzles',
+    description: 'Generic pair-matching template. Replace pairs with any content (words, images, numbers).',
+    schema: {
+      pairs: [
+        { left: 'A', right: 'a' },
+        { left: 'B', right: 'b' },
+      ],
+      mediaSupport: true,
+    },
+  },
+  {
+    name: 'Lateral Thinking (Generic)',
+    typeKey: 'lateralThinking',
+    category: 'logic-puzzles',
+    description: 'Prompt + solution template. Replace questions/answers freely.',
+    schema: {
+      questions: [
+        { prompt: 'A riddle goes here...', answer: 'Solution' },
+      ],
+    },
+  },
+  {
+    name: 'Ordering (Generic Items)',
+    typeKey: 'ordering',
+    category: 'logic-puzzles',
+    description: 'Ordering template with free-form items. Replace items and order as needed.',
+    schema: {
+      items: ['Item 1', 'Item 2', 'Item 3'],
+      correctOrder: [0, 1, 2],
+    },
+  },
+  {
+    name: 'Picture Shadow (Generic)',
+    typeKey: 'pictureShadow',
+    category: 'logic-puzzles',
+    description: 'Match pictures to their shadows. Replace URLs.',
+    schema: {
+      imagePairs: [
+        { imageUrl: 'https://example.com/image1.png', shadowUrl: 'https://example.com/shadow1.png' },
+      ],
+    },
+  },
+  {
+    name: 'Picture Word Matching (Generic)',
+    typeKey: 'pictureWordMatching',
+    category: 'logic-puzzles',
+    description: 'Match images to words. Replace URLs and labels.',
+    schema: {
+      pairs: [
+        { imageUrl: 'https://example.com/apple.png', word: 'Apple' },
+      ],
+    },
+  },
+  {
+    name: 'Spot Difference (Generic)',
+    typeKey: 'spotDifference',
+    category: 'logic-puzzles',
+    description: 'Provide two images and mark difference points or a difference count.',
+    schema: {
+      baseImageUrl: 'https://example.com/base.png',
+      alteredImageUrl: 'https://example.com/altered.png',
+      differencePoints: [ { x: 10, y: 25 }, { x: 120, y: 88 } ],
+      differenceCount: 5,
+    },
+  },
+  {
+    name: 'Sudoku Style (Generic)',
+    typeKey: 'sudokuStyle',
+    category: 'logic-puzzles',
+    description: 'Grid-based number puzzle. Adjust size and presets.',
+    schema: {
+      gridSize: 9,
+      presets: [ { r: 0, c: 0, value: 5 }, { r: 4, c: 4, value: 7 } ],
+    },
+  },
+  {
+    name: 'Sequence Completion (Generic)',
+    typeKey: 'sequenceCompletion',
+    category: 'pattern-puzzles',
+    description: 'Fill the next element(s) in the sequence.',
+    schema: {
+      sequence: [1, 2, 3, null],
+      solutions: [4],
+    },
+  },
+  {
+    name: 'Visual Patterns (Generic)',
+    typeKey: 'visualPatterns',
+    category: 'pattern-puzzles',
+    description: 'Image-based pattern sequence. Replace image URLs.',
+    schema: {
+      images: [
+        'https://example.com/pattern1.png',
+        'https://example.com/pattern2.png',
+        'https://example.com/pattern3.png',
+        '',
+      ],
+      solutions: [ 'https://example.com/pattern4.png' ],
+    },
+  },
+  {
+    name: 'Jigsaw Puzzles (Generic)',
+    typeKey: 'jigsaw',
+    category: 'traditional-puzzles',
+    description: 'Jigsaw with adjustable piece count.',
+    schema: {
+      imageUrl: 'https://example.com/jigsaw.png',
+      pieces: 16,
+    },
+  },
+  {
+    name: 'Matching Pairs (Generic)',
+    typeKey: 'matchingPairs',
+    category: 'traditional-puzzles',
+    description: 'Classic matching pairs. Replace labels or images.',
+    schema: {
+      pairs: [
+        { left: 'Dog', right: '🐶' },
+        { left: 'Cat', right: '🐱' },
+      ],
+    },
+  },
+  {
+    name: 'Word Search (Generic)',
+    typeKey: 'wordSearch',
+    category: 'traditional-puzzles',
+    description: 'Word search grid with word list.',
+    schema: {
+      gridRows: [
+        'CATS',
+        'DOGS',
+        'BIRD',
+        'FISH',
+      ],
+      words: ['CAT', 'DOG', 'BIRD', 'FISH'],
+    },
+  },
+];
 
 export default function ModernAdminDashboard() {
   const { theme } = useTheme();
@@ -47,7 +203,6 @@ export default function ModernAdminDashboard() {
   const [filteredQuizzes, setFilteredQuizzes] = useState([]);
   const [filteredPuzzles, setFilteredPuzzles] = useState([]);
   const [filteredStories, setFilteredStories] = useState([]);
-  const [managingQuestions, setManagingQuestions] = useState(null);
   const [showBulkImport, setShowBulkImport] = useState(null); // 'quiz', 'puzzle', 'story', or null
   const [filterCategory, setFilterCategory] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -59,12 +214,165 @@ export default function ModernAdminDashboard() {
   const [setupError, setSetupError] = useState('');
   const [addingSampleQuizzes, setAddingSampleQuizzes] = useState(false);
   const [puzzleDuplicateWarning, setPuzzleDuplicateWarning] = useState(null);
-  const [puzzleDuplicateCheckLoading, setPuzzleDuplicateCheckLoading] = useState(false);
-  useEffect(() => {
-    fetchExistingData();
+  const [quickCreateType, setQuickCreateType] = useState(null);
+  const [quickCreateData, setQuickCreateData] = useState({});
+  const [quickTemplates, setQuickTemplates] = useState([]);
+  const [quickTemplatesLoading, setQuickTemplatesLoading] = useState(false);
+  const [selectedQuickTemplateId, setSelectedQuickTemplateId] = useState('');
+  const [showQuickPreview, setShowQuickPreview] = useState(false);
+  // Jigsaw params moved to appear only after template apply in CN flow
+  const [showQuickDetails, setShowQuickDetails] = useState(false);
+
+  // Create New Puzzle (form) template-driven states (visual puzzle types unified)
+  const [cnTemplates, setCnTemplates] = useState([]);
+  const [cnTemplatesLoading, setCnTemplatesLoading] = useState(false);
+  const [cnSelectedTemplateId, setCnSelectedTemplateId] = useState('');
+  const [cnShowPreview, setCnShowPreview] = useState(false);
+  const [cnVisualType, setCnVisualType] = useState('');
+  const [cnShowInputForm, setCnShowInputForm] = useState(false);
+  const [cnTemplateInputs, setCnTemplateInputs] = useState(null);
+  const [cnExecutionResult, setCnExecutionResult] = useState(null);
+  const [cnExecutionLoading, setCnExecutionLoading] = useState(false);
+  const [cnExecutionError, setCnExecutionError] = useState('');
+  const [cnEditorData, setCnEditorData] = useState(null);
+  const [qcTitle, setQcTitle] = useState('');
+  const [qcDescription, setQcDescription] = useState('');
+  const [qcDifficulty, setQcDifficulty] = useState('easy');
+  const [qcAgeGroup, setQcAgeGroup] = useState('6-8');
+  const [qcCategoryId, setQcCategoryId] = useState('');
+  const [qcCategoryName, setQcCategoryName] = useState('');
+  const [qcTopicId, setQcTopicId] = useState('');
+  const [qcTopicName, setQcTopicName] = useState('');
+  const [qcSubtopicId, setQcSubtopicId] = useState('');
+  const [qcSubtopicName, setQcSubtopicName] = useState('');
+  const [qcIsPublished, setQcIsPublished] = useState(false);
+  const [qcXpReward, setQcXpReward] = useState(10);
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [topicsList, setTopicsList] = useState([]);
+  const [subtopicsList, setSubtopicsList] = useState([]);
+
+  const resetQuickCreate = () => {
+    setQuickCreateType(null);
+    setQuickCreateData({});
+    setQuickTemplates([]);
+    setQuickTemplatesLoading(false);
+    setSelectedQuickTemplateId('');
+    setShowQuickPreview(false);
+    setShowQuickDetails(false);
+    setQcTitle('');
+    setQcDescription('');
+    setQcDifficulty('easy');
+    setQcAgeGroup('6-8');
+    setQcCategoryId('');
+    setQcCategoryName('');
+    setQcTopicId('');
+    setQcTopicName('');
+    setQcSubtopicId('');
+    setQcSubtopicName('');
+    setQcIsPublished(false);
+    setQcXpReward(10);
+    setTopicsList([]);
+    setSubtopicsList([]);
+  };
+
+  const loadCategories = useCallback(async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'categories'));
+      const cats = snapshot.docs.map(d => ({ id: d.id, name: d.data().name || d.data().label || 'Untitled' }));
+      setCategoriesList(cats);
+    } catch (e) {
+      console.warn('Failed to load categories', e);
+    }
   }, []);
 
-  const fetchExistingData = async () => {
+  const loadTopicsForCategory = useCallback(async (categoryId) => {
+    try {
+      const q = query(collection(db, 'topics'), where('categoryId', '==', categoryId));
+      const snapshot = await getDocs(q);
+      const t = snapshot.docs.map(d => ({ id: d.id, name: d.data().name || d.data().label || 'Untitled' }));
+      setTopicsList(t);
+    } catch (e) {
+      console.warn('Failed to load topics', e);
+    }
+  }, []);
+
+  const loadSubtopicsForTopic = useCallback(async (topicId) => {
+    try {
+      const q = query(collection(db, 'subtopics'), where('topicId', '==', topicId));
+      const snapshot = await getDocs(q);
+      const s = snapshot.docs.map(d => ({ id: d.id, name: d.data().name || d.data().label || 'Untitled' }));
+      setSubtopicsList(s);
+    } catch (e) {
+      console.warn('Failed to load subtopics', e);
+    }
+  }, []);
+  // Load templates for Create New Puzzle when a visual type is chosen
+  useEffect(() => {
+    const run = async () => {
+      if (!cnVisualType) { setCnTemplates([]); setCnSelectedTemplateId(''); return; }
+      try {
+        setCnTemplatesLoading(true);
+        const tk = typeKeyFor(cnVisualType);
+        if (!tk) { setCnTemplates([]); return; }
+        const qT = query(collection(db, 'puzzleTemplates'), where('typeKey', '==', tk));
+        const snap = await getDocs(qT);
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setCnTemplates(list);
+        if (list.length > 0 && !cnSelectedTemplateId) {
+          setCnSelectedTemplateId(list[0].id);
+          setCnShowInputForm(true);
+        }
+      } catch (e) {
+        console.warn('Failed to load templates', e);
+        setCnTemplates([]);
+      } finally {
+        setCnTemplatesLoading(false);
+      }
+    };
+    run();
+  }, [cnVisualType, cnSelectedTemplateId]);
+
+  useEffect(() => {
+    if (quickCreateType) {
+      loadCategories();
+    }
+  }, [quickCreateType, loadCategories]);
+
+  const typeKeyFor = (editorType) => ({
+    'find-pair': 'findPairs',
+    'picture-word': 'pictureWordMatching',
+    'picture-shadow': 'pictureShadow',
+    'word-search': 'wordSearch',
+    'spot-difference': 'spotDifference',
+    'ordering': 'ordering',
+    'jigsaw': 'jigsaw',
+  }[editorType] || '');
+
+  useEffect(() => {
+    const loadQuickTemplates = async () => {
+      if (!quickCreateType) return;
+      try {
+        setQuickTemplatesLoading(true);
+        const tk = typeKeyFor(quickCreateType);
+        if (!tk) { setQuickTemplates([]); return; }
+        const q = query(collection(db, 'puzzleTemplates'), where('typeKey', '==', tk));
+        const snap = await getDocs(q);
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setQuickTemplates(list);
+        if (quickCreateType === 'jigsaw' && list.length > 0 && !selectedQuickTemplateId) {
+          setSelectedQuickTemplateId(list[0].id);
+        }
+      } catch (e) {
+        console.warn('Failed to load templates', e);
+        setQuickTemplates([]);
+      } finally {
+        setQuickTemplatesLoading(false);
+      }
+    };
+    loadQuickTemplates();
+  }, [quickCreateType, selectedQuickTemplateId]);
+
+  const fetchExistingData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -160,7 +468,12 @@ export default function ModernAdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Kick off initial data load after function is defined
+  useEffect(() => {
+    fetchExistingData();
+  }, [fetchExistingData]);
 
   // ===== SLUG GENERATION HELPER =====
   const generateSlug = (text) => {
@@ -171,6 +484,57 @@ export default function ModernAdminDashboard() {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-'); // Remove multiple hyphens
   };
+
+  // BASE_PUZZLE_TEMPLATES defined at module scope
+
+  const seedBasePuzzleTemplates = useCallback(async () => {
+    const results = { created: 0, errors: [] };
+    try {
+      const snapshot = await getDocs(collection(db, 'puzzleTemplates'));
+      const existing = snapshot.docs.map(d => d.data().name);
+      const toCreate = BASE_PUZZLE_TEMPLATES.filter(t => !existing.includes(t.name));
+      for (const t of toCreate) {
+        try {
+          await addDoc(collection(db, 'puzzleTemplates'), {
+            name: t.name,
+            typeKey: t.typeKey,
+            category: t.category,
+            description: t.description,
+            schema: t.schema,
+            createdAt: new Date(),
+          });
+          results.created += 1;
+        } catch (err) {
+          console.error('Seed error for template', t.name, err);
+          results.errors.push({ name: t.name, message: err.message });
+        }
+      }
+      if (results.errors.length === 0) {
+        alert(`✅ Seeded ${results.created} template(s).`);
+      } else {
+        const errText = results.errors.map(e => `• ${e.name}: ${e.message}`).join('\n');
+        alert(`⚠️ Seed completed with errors. Created: ${results.created}.\n\nIssues:\n${errText}`);
+      }
+    } catch (e) {
+      console.error('Error seeding templates', e);
+      alert('❌ Failed to seed templates: ' + e.message);
+    }
+  }, []);
+
+  // Auto-seed templates on first load if none exist
+  useEffect(() => {
+    const ensureTemplates = async () => {
+      try {
+        const tSnap = await getDocs(collection(db, 'puzzleTemplates'));
+        if (tSnap.empty) {
+          await seedBasePuzzleTemplates();
+        }
+      } catch (e) {
+        console.error('Template seed check failed', e);
+      }
+    };
+    ensureTemplates();
+  }, [seedBasePuzzleTemplates]);
 
   // ===== PUZZLE DEDUPLICATION HELPERS =====
   
@@ -245,7 +609,6 @@ export default function ModernAdminDashboard() {
         ...doc.data(),
       }));
 
-      const normalizedInput = normalizeTitle(title);
       const similars = [];
 
       existingPuzzles.forEach(puzzle => {
@@ -311,7 +674,7 @@ export default function ModernAdminDashboard() {
   };
 
   // Apply filters to quizzes, puzzles, stories
-  const applyFilters = (items) => {
+  const applyFilters = useCallback((items) => {
     return items.filter((item) => {
       if (statusFilter !== 'all' && item.status !== statusFilter) {
         return false;
@@ -324,14 +687,14 @@ export default function ModernAdminDashboard() {
       }
       return true;
     });
-  };
+  }, [statusFilter, visibilityFilter, featuredFilter]);
 
   // Apply filters whenever filter states change
   useEffect(() => {
     setFilteredQuizzes(applyFilters(quizzes));
     setFilteredPuzzles(applyFilters(puzzles));
     setFilteredStories(applyFilters(stories));
-  }, [quizzes, puzzles, stories, statusFilter, visibilityFilter, featuredFilter]);
+  }, [quizzes, puzzles, stories, applyFilters]);
 
   // Add sample quizzes for testing
   const addSampleQuizzes = async () => {
@@ -424,7 +787,7 @@ export default function ModernAdminDashboard() {
           { id: 'q1', text: 'What is the capital of France?', options: ['Lyon', 'Paris', 'Marseille', 'Nice'], correctAnswer: 1, explanation: 'Paris is the capital.' },
           { id: 'q2', text: 'Which is the largest ocean?', options: ['Atlantic', 'Indian', 'Arctic', 'Pacific'], correctAnswer: 3, explanation: 'Pacific Ocean is largest.' },
           { id: 'q3', text: 'What is the capital of Japan?', options: ['Osaka', 'Tokyo', 'Kyoto', 'Yokohama'], correctAnswer: 1, explanation: 'Tokyo is the capital.' },
-          { id: 'q4', text: 'Which continent is the \"Dark Continent\"?', options: ['Asia', 'Africa', 'South America', 'Antarctica'], correctAnswer: 1, explanation: 'Africa was called the Dark Continent.' },
+          { id: 'q4', text: 'Which continent is the "Dark Continent"?', options: ['Asia', 'Africa', 'South America', 'Antarctica'], correctAnswer: 1, explanation: 'Africa was called the Dark Continent.' },
           { id: 'q5', text: 'What is the longest river?', options: ['Amazon', 'Yangtze', 'Nile', 'Mississippi'], correctAnswer: 2, explanation: 'Nile is the longest.' }
         ]
       },
@@ -439,10 +802,10 @@ export default function ModernAdminDashboard() {
         plays: 198,
         totalQuestions: 4,
         questions: [
-          { id: 'q1', text: 'Who wrote \"Pride and Prejudice\"?', options: ['Charlotte Brontë', 'Jane Austen', 'Emily Dickinson', 'George Eliot'], correctAnswer: 1, explanation: 'Jane Austen wrote it.' },
-          { id: 'q2', text: 'What is the main theme of \"1984\"?', options: ['Love', 'Totalitarianism', 'Adventure', 'Mystery'], correctAnswer: 1, explanation: 'Totalitarianism and control.' },
-          { id: 'q3', text: 'Who wrote \"The Great Gatsby\"?', options: ['Ernest Hemingway', 'F. Scott Fitzgerald', 'John Steinbeck', 'William Faulkner'], correctAnswer: 1, explanation: 'F. Scott Fitzgerald.' },
-          { id: 'q4', text: 'Who is the main character in \"To Kill a Mockingbird\"?', options: ['Atticus Finch', 'Scout Finch', 'Boo Radley', 'Mayella Ewell'], correctAnswer: 1, explanation: 'Scout Finch is the narrator.' }
+          { id: 'q1', text: 'Who wrote "Pride and Prejudice"?', options: ['Charlotte Brontë', 'Jane Austen', 'Emily Dickinson', 'George Eliot'], correctAnswer: 1, explanation: 'Jane Austen wrote it.' },
+          { id: 'q2', text: 'What is the main theme of "1984"?', options: ['Love', 'Totalitarianism', 'Adventure', 'Mystery'], correctAnswer: 1, explanation: 'Totalitarianism and control.' },
+          { id: 'q3', text: 'Who wrote "The Great Gatsby"?', options: ['Ernest Hemingway', 'F. Scott Fitzgerald', 'John Steinbeck', 'William Faulkner'], correctAnswer: 1, explanation: 'F. Scott Fitzgerald.' },
+          { id: 'q4', text: 'Who is the main character in "To Kill a Mockingbird"?', options: ['Atticus Finch', 'Scout Finch', 'Boo Radley', 'Mayella Ewell'], correctAnswer: 1, explanation: 'Scout Finch is the narrator.' }
         ]
       },
       {
@@ -500,7 +863,7 @@ export default function ModernAdminDashboard() {
     }
   };
 
-  const CATEGORIES = ['Science', 'Math', 'History', 'Geography', 'Literature', 'Technology'];
+  const CATEGORIES = React.useMemo(() => ['Science', 'Math', 'History', 'Geography', 'Literature', 'Technology'], []);
   const AUDIENCES = ['All Users', 'Kids 5-12', 'Students 13-18', 'Professionals', 'Programmers'];
   const DIFFICULTIES = ['Easy', 'Medium', 'Hard', 'Expert'];
   const PUZZLE_TYPES = ['Jigsaw', 'Sudoku', 'Crossword', 'Logic', 'Matching', 'Pattern'];
@@ -773,18 +1136,23 @@ export default function ModernAdminDashboard() {
   };
 
   const handleAddPuzzle = async () => {
-    if (puzzleFormData.title && puzzleFormData.type && puzzleFormData.audience) {
-      // Check for EXACT duplicates before saving (only block these)
-      if (puzzleDuplicateWarning && puzzleDuplicateWarning.duplicates.length > 0) {
-        alert('❌ Cannot create puzzle!\n\nAn exact match already exists:\n' + 
-              puzzleDuplicateWarning.duplicates.map(d => `"${d.title}"`).join(', ') + 
-              '\n\nPlease choose a different title.');
+    // Accept either displayLabel or title (Manage Puzzles form uses title)
+    const effectiveLabel = (puzzleFormData.displayLabel || puzzleFormData.title || '').trim();
+    if (effectiveLabel && puzzleFormData.type && puzzleFormData.audience) {
+      const finalName = puzzleFormData.name || generateSlug(effectiveLabel);
+      // Block if unique name exists
+      const nameDuplicate = await checkPuzzleNameDuplicate(finalName);
+      if (nameDuplicate) {
+        alert(`❌ Cannot create puzzle!\n\nA puzzle with the unique name "${finalName}" already exists.\nPlease choose a different label.`);
         return;
       }
 
       try {
         const newPuzzle = {
-          title: puzzleFormData.title,
+          // Keep backward-compatible title while introducing displayLabel + name
+          title: effectiveLabel,
+          displayLabel: effectiveLabel,
+          name: finalName,
           type: puzzleFormData.type,
           audience: puzzleFormData.audience,
           pieces: parseInt(puzzleFormData.pieces) || 0,
@@ -795,12 +1163,12 @@ export default function ModernAdminDashboard() {
           published: false,
         };
         
-        // Save to Firestore (similar puzzles are allowed - admin saw the warning)
+        // Save to Firestore
         const docRef = await addDoc(collection(db, 'puzzles'), newPuzzle);
         
         // Add to local state
         setPuzzles([{ id: docRef.id, ...newPuzzle }, ...puzzles]);
-        setPuzzleFormData({ title: '', type: '', audience: '', pieces: '', difficulty: '' });
+        setPuzzleFormData({ title: '', displayLabel: '', name: '', type: '', audience: '', pieces: '', difficulty: '' });
         setPuzzleDuplicateWarning(null);
         setShowAddPuzzleForm(false);
       } catch (error) {
@@ -1554,34 +1922,80 @@ export default function ModernAdminDashboard() {
                     gap: '16px',
                     marginBottom: '24px',
                   }}>
-                    <input
-                      type="text"
-                      placeholder="Puzzle Title"
-                      value={puzzleFormData.title}
-                      onChange={async (e) => {
-                        const newTitle = e.target.value;
-                        setPuzzleFormData({ ...puzzleFormData, title: newTitle });
-                        
-                        // Check for duplicates when title is typed
-                        if (newTitle.trim()) {
-                          setPuzzleDuplicateCheckLoading(true);
-                          const result = await checkPuzzleDuplicates(newTitle);
-                          setPuzzleDuplicateWarning(result);
-                          setPuzzleDuplicateCheckLoading(false);
-                        } else {
-                          setPuzzleDuplicateWarning(null);
-                        }
-                      }}
-                      style={{
-                        padding: '12px 16px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: `8px`,
-                        color: theme.textPrimary,
-                        fontSize: '14px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
+                    {/* Display Label - Editable */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: theme.textSecondary,
+                        marginBottom: '6px',
+                      }}>
+                        Display Label (e.g., "Programming World")
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Programming World"
+                        value={puzzleFormData.displayLabel}
+                        onChange={async (e) => {
+                          const newLabel = e.target.value;
+                          const newName = generateSlug(newLabel);
+                          setPuzzleFormData({ ...puzzleFormData, displayLabel: newLabel, name: newName });
+                          
+                          // Check for unique name duplicates
+                          if (newName) {
+                            const isDuplicate = await checkPuzzleNameDuplicate(newName);
+                            setPuzzleDuplicateWarning(prev => ({ ...(prev || {}), hasDuplicateName: !!isDuplicate, name: newName }));
+                          } else {
+                            setPuzzleDuplicateWarning(null);
+                          }
+                          
+                          // Also check for similar labels (FYI only)
+                          if (newLabel.trim()) {
+                            const similarResult = await checkPuzzleDuplicates(newLabel);
+                            setPuzzleDuplicateWarning(prev => ({ ...(prev || {}), ...similarResult }));
+                          }
+                        }}
+                        style={{
+                          padding: '12px 16px',
+                          background: theme.background,
+                          border: `2px solid ${theme.border}`,
+                          borderRadius: `8px`,
+                          color: theme.textPrimary,
+                          fontSize: '14px',
+                          fontFamily: 'inherit',
+                        }}
+                      />
+                    </div>
+                    {/* Unique Name - Auto-generated, Read-only */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        color: theme.textSecondary,
+                        marginBottom: '6px',
+                      }}>
+                        Unique Name (auto-generated from label)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Auto-generated from label"
+                        value={puzzleFormData.name}
+                        readOnly
+                        style={{
+                          padding: '12px 16px',
+                          background: theme.background,
+                          border: `2px solid ${theme.border}`,
+                          borderRadius: `8px`,
+                          color: theme.textSecondary,
+                          fontSize: '14px',
+                          fontFamily: 'inherit',
+                          opacity: '0.6',
+                          cursor: 'not-allowed',
+                        }}
+                      />
+                    </div>
                     <select
                       value={puzzleFormData.type}
                       onChange={(e) => setPuzzleFormData({ ...puzzleFormData, type: e.target.value })}
@@ -1654,15 +2068,15 @@ export default function ModernAdminDashboard() {
                   </div>
 
                   {/* Duplicate Warning Display */}
-                  {puzzleDuplicateWarning && (puzzleDuplicateWarning.duplicates.length > 0 || puzzleDuplicateWarning.similars.length > 0) && (
+                  {puzzleDuplicateWarning && ((puzzleDuplicateWarning.hasDuplicateName) || (puzzleDuplicateWarning.similars && puzzleDuplicateWarning.similars.length > 0)) && (
                     <div style={{
                       marginBottom: '24px',
                       borderRadius: '12px',
                       padding: '16px',
-                      background: puzzleDuplicateWarning.duplicates.length > 0 ? '#FEE2E2' : '#FFFBEB',
-                      borderLeft: `4px solid ${puzzleDuplicateWarning.duplicates.length > 0 ? '#DC2626' : '#F59E0B'}`,
+                      background: puzzleDuplicateWarning.hasDuplicateName ? '#FEE2E2' : '#FFFBEB',
+                      borderLeft: `4px solid ${puzzleDuplicateWarning.hasDuplicateName ? '#DC2626' : '#F59E0B'}`,
                     }}>
-                      {puzzleDuplicateWarning.duplicates.length > 0 && (
+                      {puzzleDuplicateWarning.hasDuplicateName && (
                         <div style={{ marginBottom: '12px' }}>
                           <div style={{
                             color: '#DC2626',
@@ -1670,24 +2084,19 @@ export default function ModernAdminDashboard() {
                             fontSize: '14px',
                             marginBottom: '8px',
                           }}>
-                            ⛔ EXACT DUPLICATE DETECTED
+                            ⛔ NAME ALREADY EXISTS (UNIQUE)
                           </div>
                           <div style={{
                             color: '#991B1B',
                             fontSize: '13px',
                             lineHeight: '1.5',
                           }}>
-                            The puzzle <strong>"{normalizeTitle(puzzleFormData.title)}"</strong> already exists:
-                            {puzzleDuplicateWarning.duplicates.map((dup, idx) => (
-                              <div key={idx} style={{ marginTop: '4px' }}>
-                                • "{dup.title}" (ID: {dup.id})
-                              </div>
-                            ))}
+                            A puzzle with the unique name <strong>"{puzzleDuplicateWarning.name}"</strong> already exists. Please choose a different label.
                           </div>
                         </div>
                       )}
                       
-                      {puzzleDuplicateWarning.similars.length > 0 && (
+                      {puzzleDuplicateWarning.similars && puzzleDuplicateWarning.similars.length > 0 && (
                         <div>
                           <div style={{
                             color: '#D97706',
@@ -1721,10 +2130,10 @@ export default function ModernAdminDashboard() {
                   }}>
                     <button
                       onClick={handleAddPuzzle}
-                      disabled={puzzleDuplicateWarning && puzzleDuplicateWarning.duplicates.length > 0}
+                      disabled={puzzleDuplicateWarning && puzzleDuplicateWarning.hasDuplicateName}
                       style={{
                         padding: '12px 32px',
-                        background: (puzzleDuplicateWarning && puzzleDuplicateWarning.duplicates.length > 0) 
+                        background: (puzzleDuplicateWarning && puzzleDuplicateWarning.hasDuplicateName) 
                           ? '#CCCCCC'
                           : `linear-gradient(135deg, #FFE66D, #FF85A2)`,
                         color: '#fff',
@@ -1732,10 +2141,10 @@ export default function ModernAdminDashboard() {
                         borderRadius: '10px',
                         fontSize: '15px',
                         fontWeight: '600',
-                        cursor: (puzzleDuplicateWarning && puzzleDuplicateWarning.duplicates.length > 0) 
+                        cursor: (puzzleDuplicateWarning && puzzleDuplicateWarning.hasDuplicateName) 
                           ? 'not-allowed'
                           : 'pointer',
-                        opacity: (puzzleDuplicateWarning && puzzleDuplicateWarning.duplicates.length > 0) 
+                        opacity: (puzzleDuplicateWarning && puzzleDuplicateWarning.hasDuplicateName) 
                           ? '0.6'
                           : '1',
                       }}
@@ -1745,7 +2154,7 @@ export default function ModernAdminDashboard() {
                     <button
                       onClick={() => {
                         setShowAddPuzzleForm(false);
-                        setPuzzleFormData({ title: '', type: '', audience: '', pieces: '', difficulty: '' });
+                        setPuzzleFormData({ displayLabel: '', name: '', type: '', audience: '', pieces: '', difficulty: '' });
                       }}
                       style={{
                         padding: '12px 32px',
@@ -2401,6 +2810,22 @@ export default function ModernAdminDashboard() {
                   📋 Puzzle Templates
                 </button>
                 <button
+                  onClick={seedBasePuzzleTemplates}
+                  style={{
+                    padding: '12px 24px',
+                    background: `transparent`,
+                    color: '#2FA84F',
+                    border: '2px solid #2FA84F',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                  title="Create missing generic templates for all puzzle types"
+                >
+                  🌱 Seed Base Templates
+                </button>
+                <button
                   onClick={() => navigate('/admin/puzzle-duplicates')}
                   style={{
                     padding: '12px 24px',
@@ -2415,6 +2840,279 @@ export default function ModernAdminDashboard() {
                 >
                   🔍 Find Duplicates
                 </button>
+              </div>
+
+              {/* Quick Create (Modern) */}
+              <div style={{
+                marginBottom: '24px',
+                background: theme.surfacePrimary,
+                border: `2px solid ${theme.border}`,
+                borderRadius: '16px',
+                padding: '24px',
+              }}>
+                <h3 style={{
+                  color: theme.textPrimary,
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  margin: '0 0 16px 0',
+                }}>
+                  🧩 Template-Driven Create
+                </h3>
+                <p style={{ color: theme.textSecondary, margin: '0 0 16px 0' }}>
+                  Step 1: Choose a type, select a template, and preview/apply its content into the editor. Step 2: Add puzzle details and save.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                  {[
+                    { label: 'Find Pairs', icon: '🔍', type: 'find-pair' },
+                    { label: 'Ordering', icon: '🔢', type: 'ordering' },
+                    { label: 'Picture Shadow', icon: '🌙', type: 'picture-shadow' },
+                    { label: 'Picture Word Matching', icon: '🖼️', type: 'picture-word' },
+                    { label: 'Spot Difference', icon: '🔎', type: 'spot-difference' },
+                    { label: 'Word Search', icon: '🔤', type: 'word-search' },
+                    { label: 'Jigsaw Puzzles', icon: '🧩', type: 'jigsaw' },
+                  ].map(item => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        setQuickCreateType(item.type);
+                        // Initialize with basic schema
+                        if (item.type === 'jigsaw') {
+                          setQuickCreateData({ imageUrl: '', rows: 3, cols: 4, variants: [ { label: 'Easy', rows: 3, cols: 4 }, { label: 'Medium', rows: 4, cols: 6 }, { label: 'Hard', rows: 6, cols: 8 } ] });
+                        } else if (item.type === 'find-pair') {
+                          setQuickCreateData({ pairs: [ { left: 'A', right: 'a' }, { left: 'B', right: 'b' } ] });
+                        } else if (item.type === 'ordering') {
+                          setQuickCreateData({ items: ['Item 1', 'Item 2', 'Item 3'] });
+                        } else if (item.type === 'picture-shadow') {
+                          setQuickCreateData({ imagePairs: [ { imageUrl: '', shadowUrl: '' } ] });
+                        } else if (item.type === 'picture-word') {
+                          setQuickCreateData({ pairs: [ { imageUrl: '', word: '' } ] });
+                        } else if (item.type === 'spot-difference') {
+                          setQuickCreateData({ baseImageUrl: '', alteredImageUrl: '', differencePoints: [] });
+                        } else if (item.type === 'word-search') {
+                          setQuickCreateData({ gridRows: [], words: [] });
+                        }
+                      }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+                        background: theme.background, border: `2px solid ${theme.border}`, borderRadius: 10,
+                        color: theme.textPrimary, fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {quickCreateType && (
+                    <div style={{ marginTop: 16, background: theme.surfacePrimary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                      {showQuickDetails && (<h4 style={{ margin: 0, color: theme.textPrimary }}>Inline Editor: {quickCreateType}</h4>)}
+                      <button type="button" onClick={resetQuickCreate} style={{ padding: '8px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfaceSecondary, color: theme.textPrimary, cursor: 'pointer' }}>Close</button>
+                    </div>
+
+                    {/* Template selection + preview */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <label style={{ fontWeight: 600, color: theme.textSecondary }}>Template</label>
+                        <select
+                          value={selectedQuickTemplateId}
+                          onChange={(e) => setSelectedQuickTemplateId(e.target.value)}
+                          disabled={quickTemplatesLoading || quickTemplates.length === 0}
+                          style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, minWidth: 240 }}
+                        >
+                          <option value="">{quickTemplatesLoading ? 'Loading…' : 'Choose a template'}</option>
+                          {quickTemplates.map(t => (
+                            <option key={t.id} value={t.id}>{t.name}</option>
+                          ))}
+                        </select>
+                        {/* Jigsaw configuration moved to appear after template apply (within details/editor) */}
+                        <button type="button" onClick={() => setShowQuickPreview(true)} disabled={!selectedQuickTemplateId} style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfaceSecondary, color: theme.textPrimary, cursor: !selectedQuickTemplateId ? 'not-allowed' : 'pointer' }}>Preview</button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const tpl = quickTemplates.find(t => t.id === selectedQuickTemplateId);
+                            if (!tpl) return;
+                            const editorKind = quickCreateType;
+                            const sanitized = sanitizeTemplateForEditor(tpl, editorKind);
+                            // Map sanitized content into editor data shape
+                            if (editorKind === 'picture-word') {
+                              const newPairs = (sanitized.pairs || []).map((p, idx) => ({ id: `pair-${Date.now()}-${idx}`, image: p.imageUrl || '', word: p.word || '' }));
+                              setQuickCreateData({ pairs: newPairs, layout: 'grid-2x2' });
+                            } else if (editorKind === 'picture-shadow') {
+                              const newPairs = (sanitized.pairs || []).map((p, idx) => ({ id: `pair-${Date.now()}-${idx}`, imageUrl: p.imageUrl || '', shadowUrl: p.shadowUrl || '' }));
+                              setQuickCreateData({ pairs: newPairs });
+                            } else if (editorKind === 'find-pair') {
+                              const newPairs = (sanitized.pairs || []).map((p) => ({ left: p.left || '', right: p.right || '', leftImageUrl: p.leftImageUrl || '', rightImageUrl: p.rightImageUrl || '' }));
+                              setQuickCreateData({ pairs: newPairs });
+                            } else if (editorKind === 'word-search') {
+                              setQuickCreateData({ gridRows: sanitized.gridRows || [], words: sanitized.words || [] });
+                            } else if (editorKind === 'spot-difference') {
+                              setQuickCreateData({ baseImageUrl: sanitized.baseImageUrl || '', alteredImageUrl: sanitized.alteredImageUrl || '', differencePoints: sanitized.differencePoints || [] });
+                            } else if (editorKind === 'ordering') {
+                              setQuickCreateData({ items: (sanitized.items || []).map(it => (typeof it === 'string' ? it : (it.label || ''))) });
+                            } else if (editorKind === 'jigsaw') {
+                              const rows = sanitized.rows || 3;
+                              const cols = sanitized.cols || 4;
+                              const imageUrl = sanitized.imageUrl || '';
+                              setQuickCreateData({ imageUrl, rows, cols, variants: [ { label: 'Default', rows, cols } ] });
+                            }
+                            setShowQuickDetails(true);
+                          }}
+                          disabled={!selectedQuickTemplateId}
+                          style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, cursor: !selectedQuickTemplateId ? 'not-allowed' : 'pointer', fontWeight: 700 }}
+                        >
+                          Apply to Editor
+                        </button>
+                      </div>
+                    </div>
+                    {showQuickDetails && quickCreateType === 'picture-word' && (
+                      <PictureWordEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'spot-difference' && (
+                      <SpotDifferenceEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'find-pair' && (
+                      <FindPairEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'picture-shadow' && (
+                      <PictureShadowEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'ordering' && (
+                      <OrderingEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'word-search' && (
+                      <WordSearchEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+                    {showQuickDetails && quickCreateType === 'jigsaw' && (
+                      <JigsawEditor data={quickCreateData} onChange={setQuickCreateData} />
+                    )}
+
+                    {/* Preview Modal for selected template */}
+                    <AdminTemplatePreviewModal
+                      open={showQuickPreview}
+                      onClose={() => setShowQuickPreview(false)}
+                      template={quickTemplates.find(t => t.id === selectedQuickTemplateId)}
+                      editorKind={quickCreateType}
+                      currentData={quickCreateData}
+                    />
+
+                    {/* Puzzle Details (shown after template applied) */}
+                    {showQuickDetails && (
+                    <div style={{ marginTop: 16, background: theme.background, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 12 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Title *</label>
+                          <input value={qcTitle} onChange={(e) => setQcTitle(e.target.value)} placeholder="e.g., Panda Patrol Jigsaw" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Difficulty</label>
+                          <select value={qcDifficulty} onChange={(e) => setQcDifficulty(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
+                            {['easy','medium','hard'].map(d => (<option key={d} value={d}>{d}</option>))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Age Group</label>
+                          <select value={qcAgeGroup} onChange={(e) => setQcAgeGroup(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
+                            {['4-5','5-6','6-7','6-8','7-8','8-9'].map(a => (<option key={a} value={a}>{a} years</option>))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Category *</label>
+                          <select value={qcCategoryId} onChange={(e) => { setQcCategoryId(e.target.value); const cat = categoriesList.find(c => c.id === e.target.value); setQcCategoryName(cat?.name || ''); setQcTopicId(''); setQcTopicName(''); setQcSubtopicId(''); setQcSubtopicName(''); loadTopicsForCategory(e.target.value); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
+                            <option value="">Select Category</option>
+                            {categoriesList.map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Topic *</label>
+                          <select value={qcTopicId} disabled={!qcCategoryId} onChange={(e) => { setQcTopicId(e.target.value); const t = topicsList.find(t => t.id === e.target.value); setQcTopicName(t?.name || ''); setQcSubtopicId(''); setQcSubtopicName(''); loadSubtopicsForTopic(e.target.value); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
+                            <option value="">Select Topic</option>
+                            {topicsList.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Subtopic *</label>
+                          <select value={qcSubtopicId} disabled={!qcTopicId} onChange={(e) => { setQcSubtopicId(e.target.value); const s = subtopicsList.find(s => s.id === e.target.value); setQcSubtopicName(s?.name || ''); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
+                            <option value="">Select Subtopic</option>
+                            {subtopicsList.map(s => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: theme.textPrimary }}>
+                          <input type="checkbox" checked={qcIsPublished} onChange={(e) => setQcIsPublished(e.target.checked)} />
+                          Publish
+                        </label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ color: theme.textSecondary }}>XP</span>
+                          <input type="number" min={1} max={100} value={qcXpReward} onChange={(e) => setQcXpReward(Number(e.target.value) || 10)} style={{ width: 90, padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }} />
+                        </div>
+
+                        <button type="button" onClick={async () => {
+                          // Basic validation
+                          if (!qcTitle.trim() || !qcCategoryId || !qcTopicId || !qcSubtopicId) {
+                            alert('Please fill Title, Category, Topic, and Subtopic');
+                            return;
+                          }
+                          try {
+                            if (['find-pair','picture-word','spot-difference','picture-shadow','ordering','word-search'].includes(quickCreateType)) {
+                              const payload = {
+                                title: qcTitle,
+                                description: qcDescription,
+                                type: quickCreateType,
+                                difficulty: qcDifficulty,
+                                ageGroup: qcAgeGroup,
+                                categoryId: qcCategoryId,
+                                categoryName: qcCategoryName,
+                                topicId: qcTopicId,
+                                topicName: qcTopicName,
+                                subtopicId: qcSubtopicId,
+                                subtopicName: qcSubtopicName,
+                                xpReward: qcXpReward,
+                                isPublished: qcIsPublished,
+                                data: quickCreateData,
+                              };
+                              await createVisualPuzzle(payload);
+                            } else if (quickCreateType === 'jigsaw') {
+                              await addDoc(collection(db, 'puzzles'), {
+                                title: qcTitle,
+                                description: qcDescription,
+                                type: 'jigsaw',
+                                puzzleType: 'traditional',
+                                difficulty: qcDifficulty,
+                                ageGroup: qcAgeGroup,
+                                categoryId: qcCategoryId,
+                                categoryName: qcCategoryName,
+                                topicId: qcTopicId,
+                                topicName: qcTopicName,
+                                subtopicId: qcSubtopicId,
+                                subtopicName: qcSubtopicName,
+                                xpReward: qcXpReward,
+                                isPublished: qcIsPublished || false,
+                                data: quickCreateData,
+                                featureId: 'puzzles',
+                                createdAt: serverTimestamp(),
+                                updatedAt: serverTimestamp(),
+                              });
+                            }
+                            resetQuickCreate();
+                            alert('✅ Puzzle created successfully');
+                          } catch (err) {
+                            console.error('Save error', err);
+                            alert('❌ Error saving puzzle: ' + (err.message || 'Unknown error'));
+                          }
+                        }} style={{ marginLeft: 'auto', padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, cursor: 'pointer', fontWeight: 700 }}>Save Puzzle</button>
+                      </div>
+                    </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Add Puzzle Form */}
@@ -2456,24 +3154,6 @@ export default function ModernAdminDashboard() {
                       }}
                     />
                     <select
-                      value={puzzleFormData.type}
-                      onChange={(e) => setPuzzleFormData({ ...puzzleFormData, type: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Type</option>
-                      {PUZZLE_TYPES.map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                    <select
                       value={puzzleFormData.audience}
                       onChange={(e) => setPuzzleFormData({ ...puzzleFormData, audience: e.target.value })}
                       style={{
@@ -2491,39 +3171,332 @@ export default function ModernAdminDashboard() {
                         <option key={aud} value={aud}>{aud}</option>
                       ))}
                     </select>
-                    <input
-                      type="number"
-                      placeholder="Pieces"
-                      value={puzzleFormData.pieces}
-                      onChange={(e) => setPuzzleFormData({ ...puzzleFormData, pieces: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                    <select
-                      value={puzzleFormData.difficulty}
-                      onChange={(e) => setPuzzleFormData({ ...puzzleFormData, difficulty: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Difficulty</option>
-                      {DIFFICULTIES.map(diff => (
-                        <option key={diff} value={diff}>{diff}</option>
-                      ))}
-                    </select>
+
+                  </div>
+                  {/* Unified Template-First (Visual) for Create New Puzzle */}
+                  <div style={{ marginTop: 12, background: theme.surfaceSecondary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 12 }}>
+                    <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>📋 Puzzle Creation (Template-Driven)</h4>
+
+                    {/* Step 1: Select Visual Type & Template */}
+                    {!cnEditorData && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, alignItems: 'start' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, color: theme.textSecondary, marginBottom: 6 }}>Visual Type</div>
+                          <select
+                            value={cnVisualType}
+                            onChange={(e) => {
+                              setCnVisualType(e.target.value);
+                              setCnSelectedTemplateId('');
+                              setCnShowInputForm(false);
+                              setCnTemplateInputs(null);
+                              setCnExecutionResult(null);
+                              setCnEditorData(null);
+                            }}
+                            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}
+                          >
+                            <option value="">Choose visual type</option>
+                            <option value="find-pair">Find Pairs</option>
+                            <option value="ordering">Ordering</option>
+                            <option value="picture-shadow">Picture Shadow</option>
+                            <option value="picture-word">Picture Word Matching</option>
+                            <option value="spot-difference">Spot Difference</option>
+                            <option value="word-search">Word Search</option>
+                            <option value="jigsaw">Jigsaw</option>
+                          </select>
+                        </div>
+
+                        {cnVisualType && (
+                          <div>
+                            <div style={{ fontWeight: 600, color: theme.textSecondary, marginBottom: 6 }}>Template</div>
+                            <select
+                              value={cnSelectedTemplateId}
+                              onChange={(e) => {
+                                setCnSelectedTemplateId(e.target.value);
+                                setCnShowInputForm(true);
+                                setCnTemplateInputs(null);
+                                setCnExecutionResult(null);
+                              }}
+                              disabled={cnTemplatesLoading || cnTemplates.length === 0}
+                              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}
+                            >
+                              <option value="">{cnTemplatesLoading ? 'Loading…' : 'Choose a template'}</option>
+                              {cnTemplates.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Step 2: Show Input Form (based on template schema) */}
+                    {cnShowInputForm && cnSelectedTemplateId && (
+                      <>
+                        <TemplateInputForm
+                          template={cnTemplates.find(t => t.id === cnSelectedTemplateId)}
+                          typeKey={cnVisualType}
+                          onInputsReady={async (inputs) => {
+                            setCnTemplateInputs(inputs);
+                            setCnExecutionLoading(true);
+                            setCnExecutionError('');
+                            try {
+                              const tpl = cnTemplates.find(t => t.id === cnSelectedTemplateId);
+                              const result = await runTemplate(cnVisualType, tpl.schema, inputs);
+                              if (!result.ok) {
+                                setCnExecutionError(result.error || 'Template execution failed');
+                                return;
+                              }
+                              setCnExecutionResult(result.result);
+                            } catch (e) {
+                              setCnExecutionError(e.message || 'Execution error');
+                            } finally {
+                              setCnExecutionLoading(false);
+                            }
+                          }}
+                          onLoading={(loading) => setCnExecutionLoading(loading)}
+                        />
+                      </>
+                    )}
+
+                    {/* Step 3: Show Execution Preview */}
+                    {cnExecutionResult && (
+                      <div style={{ background: theme.surfacePrimary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 16, marginTop: 12 }}>
+                        <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>✓ Template Executed</h4>
+                        <p style={{ margin: '0 0 16px 0', color: theme.textSecondary }}>Preview all difficulty variants:</p>
+
+                        {cnVisualType === 'jigsaw' && cnExecutionResult && cnExecutionResult.variants && (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
+                            {cnExecutionResult.variants.map((variant, vidx) => (
+                              <div key={vidx} style={{
+                                background: theme.surfaceSecondary,
+                                border: `2px solid ${theme.border}`,
+                                borderRadius: 10,
+                                padding: 12,
+                              }}>
+                                <h5 style={{ margin: '0 0 8px 0', color: theme.textPrimary }}>
+                                  {variant.label} ({variant.rows} × {variant.cols} = {variant.rows * variant.cols} pieces)
+                                </h5>
+                                {!variant.error && variant.imageUrl && (
+                                  <div style={{ position: 'relative', width: '100%', paddingTop: '66%', background: '#f1f5f9', borderRadius: 8, overflow: 'hidden', border: `1px solid ${theme.border}` }}>
+                                    {/* Full image with GRID overlay showing interlocking piece boundaries */}
+                                    <img src={variant.imageUrl} alt={`variant-${variant.label}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    
+                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+                                      {/* Grid overlay with interlocking puzzle piece boundaries */}
+                                      {Array.from({ length: variant.rows }).map((_, row) =>
+                                        Array.from({ length: variant.cols }).map((_, col) => {
+                                          const pieceWidth = 400 / variant.cols;
+                                          const pieceHeight = 300 / variant.rows;
+                                          const tabDepth = Math.min(pieceWidth, pieceHeight) * 0.5;
+                                          const x0 = col * pieceWidth;
+                                          const y0 = row * pieceHeight;
+                                          const x1 = (col + 1) * pieceWidth;
+                                          const y1 = (row + 1) * pieceHeight;
+                                          
+                                          let path = `M ${x0} ${y0}`;
+                                          
+                                          // Top
+                                          if (row === 0) {
+                                            path += ` L ${x1} ${y0}`;
+                                          } else {
+                                            path += ` L ${x0 + pieceWidth * 0.1} ${y0}`;
+                                            if ((col + row) % 2 === 0) {
+                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y0 - tabDepth}, ${x0 + pieceWidth * 0.9} ${y0}`;
+                                            } else {
+                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y0 + tabDepth}, ${x0 + pieceWidth * 0.9} ${y0}`;
+                                            }
+                                            path += ` L ${x1} ${y0}`;
+                                          }
+                                          
+                                          // Right
+                                          if (col === variant.cols - 1) {
+                                            path += ` L ${x1} ${y1}`;
+                                          } else {
+                                            path += ` L ${x1} ${y0 + pieceHeight * 0.1}`;
+                                            if ((col + row + 1) % 2 === 0) {
+                                              path += ` Q ${x1 + tabDepth} ${y0 + pieceHeight * 0.5}, ${x1} ${y0 + pieceHeight * 0.9}`;
+                                            } else {
+                                              path += ` Q ${x1 - tabDepth} ${y0 + pieceHeight * 0.5}, ${x1} ${y0 + pieceHeight * 0.9}`;
+                                            }
+                                            path += ` L ${x1} ${y1}`;
+                                          }
+                                          
+                                          // Bottom
+                                          if (row === variant.rows - 1) {
+                                            path += ` L ${x0} ${y1}`;
+                                          } else {
+                                            path += ` L ${x0 + pieceWidth * 0.9} ${y1}`;
+                                            if ((col + row) % 2 === 0) {
+                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y1 + tabDepth}, ${x0 + pieceWidth * 0.1} ${y1}`;
+                                            } else {
+                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y1 - tabDepth}, ${x0 + pieceWidth * 0.1} ${y1}`;
+                                            }
+                                            path += ` L ${x0} ${y1}`;
+                                          }
+                                          
+                                          // Left
+                                          if (col === 0) {
+                                            path += ` L ${x0} ${y0}`;
+                                          } else {
+                                            path += ` L ${x0} ${y0 + pieceHeight * 0.9}`;
+                                            if ((col + row + 1) % 2 === 0) {
+                                              path += ` Q ${x0 - tabDepth} ${y0 + pieceHeight * 0.5}, ${x0} ${y0 + pieceHeight * 0.1}`;
+                                            } else {
+                                              path += ` Q ${x0 + tabDepth} ${y0 + pieceHeight * 0.5}, ${x0} ${y0 + pieceHeight * 0.1}`;
+                                            }
+                                            path += ` L ${x0} ${y0}`;
+                                          }
+                                          
+                                          return (
+                                            <path
+                                              key={`grid-${row}-${col}`}
+                                              d={path}
+                                              fill="none"
+                                              stroke="#1a1a2e"
+                                              strokeWidth="0.8"
+                                              opacity="0.8"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                            />
+                                          );
+                                        })
+                                      )}
+                                    </svg>
+                                  </div>
+                                )}
+                                {variant.error && (
+                                  <p style={{ margin: 0, color: '#991b1b', fontSize: 12 }}>⚠️ {variant.error}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Proceed to editor - use first variant as base
+                              if (cnVisualType === 'jigsaw' && cnExecutionResult.variants && cnExecutionResult.variants.length > 0) {
+                                const firstVariant = cnExecutionResult.variants[0];
+                                setCnEditorData({
+                                  imageUrl: cnExecutionResult.imageUrl,
+                                  rows: firstVariant.rows,
+                                  cols: firstVariant.cols,
+                                  variants: cnExecutionResult.variants.map(v => ({
+                                    label: v.label,
+                                    rows: v.rows,
+                                    cols: v.cols,
+                                  })),
+                                });
+                              }
+                            }}
+                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            ✓ Continue to Editor
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCnShowInputForm(false);
+                              setCnTemplateInputs(null);
+                              setCnExecutionResult(null);
+                              setCnExecutionError('');
+                            }}
+                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, cursor: 'pointer' }}
+                          >
+                            ← Back
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {cnExecutionError && (
+                      <div style={{ background: '#fee2e2', border: '2px solid #fca5a5', borderRadius: 12, padding: 12, marginTop: 12, color: '#991b1b' }}>
+                        ⚠️ {cnExecutionError}
+                      </div>
+                    )}
+
+                    {/* Step 4: Editor & Save */}
+                    {cnEditorData && (
+                      <div style={{ marginTop: 12 }}>
+                        <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>🎨 Edit Puzzle</h4>
+                        {cnVisualType === 'picture-word' && (
+                          <PictureWordEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'spot-difference' && (
+                          <SpotDifferenceEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'find-pair' && (
+                          <FindPairEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'picture-shadow' && (
+                          <PictureShadowEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'ordering' && (
+                          <OrderingEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'word-search' && (
+                          <WordSearchEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+                        {cnVisualType === 'jigsaw' && (
+                          <JigsawEditor data={cnEditorData} onChange={setCnEditorData} />
+                        )}
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+                          <button
+                            onClick={() => {
+                              setCnVisualType('');
+                              setCnSelectedTemplateId('');
+                              setCnShowInputForm(false);
+                              setCnTemplateInputs(null);
+                              setCnExecutionResult(null);
+                              setCnEditorData(null);
+                            }}
+                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, cursor: 'pointer' }}
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!qcTitle?.trim()) { alert('Please enter Title'); return; }
+                              try {
+                                const puzzleDoc = {
+                                  title: qcTitle,
+                                  description: qcDescription,
+                                  type: cnVisualType,
+                                  difficulty: qcDifficulty,
+                                  ageGroup: qcAgeGroup,
+                                  content: cnEditorData,
+                                  // For Jigsaw, store the image URL and all variants
+                                  imageUrl: cnVisualType === 'jigsaw' ? cnEditorData?.imageUrl : undefined,
+                                  variants: cnVisualType === 'jigsaw' && cnEditorData?.variants ? cnEditorData.variants : undefined,
+                                  categoryId: qcCategoryId,
+                                  topicId: qcTopicId,
+                                  subtopicId: qcSubtopicId,
+                                  isPublished: qcIsPublished,
+                                  xpReward: Number(qcXpReward) || 10,
+                                  createdAt: serverTimestamp(),
+                                };
+                                await addDoc(collection(db, 'puzzles'), puzzleDoc);
+                                alert('✓ Puzzle saved!');
+                                setCnVisualType('');
+                                setCnSelectedTemplateId('');
+                                setCnShowInputForm(false);
+                                setCnTemplateInputs(null);
+                                setCnExecutionResult(null);
+                                setCnEditorData(null);
+                                setQcTitle('');
+                                setQcDescription('');
+                              } catch (e) {
+                                alert('Save error: ' + e.message);
+                              }
+                            }}
+                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            💾 Save Puzzle
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div style={{
                     display: 'flex',
