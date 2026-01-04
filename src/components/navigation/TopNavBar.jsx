@@ -35,6 +35,8 @@ function TopNavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredFeatureCategories, setHoveredFeatureCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const menuTimeoutRef = useRef(null);
   const loadingTimeoutRef = useRef(null);
 
@@ -107,6 +109,20 @@ function TopNavBar() {
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    if (profileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [profileMenuOpen]);
 
   if (loading) {
     return (
@@ -323,6 +339,9 @@ function TopNavBar() {
             {/* Achievements Badge */}
             {user && <AchievementsBadge userId={user.uid} />}
 
+            {/* Dark/Light Mode Toggle */}
+            <ThemeSwitcher />
+
             {/* Auth Section */}
             {user ? (
               <div
@@ -330,47 +349,188 @@ function TopNavBar() {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
+                  position: "relative"
                 }}
+                ref={profileMenuRef}
               >
-                <Avatar 
-                  name={user.displayName || user.email} 
-                  src={user.photoURL}
-                  size="sm"
-                />
-                <div style={{ fontSize: "13px" }}>
-                  <p style={{ margin: "0", fontWeight: "600", color: "#f1f5f9" }}>
-                    {user.displayName || user.email?.split("@")[0]}
-                  </p>
-                </div>
-                <ThemeSwitcher />
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   style={{
-                    padding: "8px 14px",
-                    background: "transparent",
-                    color: "#b0b0c8",
-                    border: "1px solid #2d2d44",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "6px 12px",
+                    background: profileMenuOpen ? "#6366f1" : "transparent",
+                    border: "1px solid #3d3d54",
                     borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: 600,
                     cursor: "pointer",
-                    transition: "all 150ms ease"
+                    transition: "all 150ms ease",
+                    color: "#b0b0c8"
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.color = "#ffffff";
-                    e.target.style.borderColor = "#6366f1";
+                    if (!profileMenuOpen) {
+                      e.currentTarget.style.background = "#2d2d44";
+                      e.currentTarget.style.color = "#ffffff";
+                    }
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.color = "#b0b0c8";
-                    e.target.style.borderColor = "#2d2d44";
+                    if (!profileMenuOpen) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#b0b0c8";
+                    }
                   }}
                 >
-                  Sign out
+                  <Avatar 
+                    name={user.displayName || user.email} 
+                    src={user.photoURL}
+                    size="sm"
+                  />
+                  <span style={{ fontSize: "13px", fontWeight: "600" }}>
+                    {user.displayName || user.email?.split("@")[0]}
+                  </span>
+                  <span style={{ fontSize: "12px" }}>▼</span>
                 </button>
+
+                {/* Profile Dropdown Menu */}
+                {profileMenuOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      right: 0,
+                      marginTop: "8px",
+                      background: "#2d2d44",
+                      border: "1px solid #3d3d54",
+                      borderRadius: "8px",
+                      minWidth: "200px",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.4)",
+                      zIndex: 1000,
+                      overflow: "hidden"
+                    }}
+                  >
+                    {/* Profile Header */}
+                    <div style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid #3d3d54",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px"
+                    }}>
+                      <Avatar 
+                        name={user.displayName || user.email} 
+                        src={user.photoURL}
+                        size="sm"
+                      />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: "0", fontWeight: "600", color: "#ffffff", fontSize: "13px" }}>
+                          {user.displayName || "User"}
+                        </p>
+                        <p style={{ margin: "0", color: "#888", fontSize: "12px" }}>
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div style={{ padding: "8px 0" }}>
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setProfileMenuOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 16px",
+                          background: "transparent",
+                          border: "none",
+                          textAlign: "left",
+                          color: "#b0b0c8",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          transition: "all 150ms ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#3d3d54";
+                          e.currentTarget.style.color = "#ffffff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "#b0b0c8";
+                        }}
+                      >
+                        👤 Profile
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          navigate("/settings");
+                          setProfileMenuOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 16px",
+                          background: "transparent",
+                          border: "none",
+                          textAlign: "left",
+                          color: "#b0b0c8",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          transition: "all 150ms ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#3d3d54";
+                          e.currentTarget.style.color = "#ffffff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "#b0b0c8";
+                        }}
+                      >
+                        ⚙️ Settings
+                      </button>
+
+                      <div style={{ margin: "8px 0", borderBottom: "1px solid #3d3d54" }} />
+
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setProfileMenuOpen(false);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 16px",
+                          background: "transparent",
+                          border: "none",
+                          textAlign: "left",
+                          color: "#ff6b6b",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                          transition: "all 150ms ease",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#3d3d54";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
+                      >
+                        🚪 Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <ThemeSwitcher />
                 <button
                   onClick={() => signInWithGoogle()}
                   style={{

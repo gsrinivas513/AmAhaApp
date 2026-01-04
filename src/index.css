@@ -191,8 +191,12 @@ button {
     radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
     linear-gradient(135deg, #f5f7fc 0%, #f0f4ff 50%, #fef6f5 100%);
-  min-height: 100vh;
-  background-attachment: fixed;
+  background-attachment: scroll;
+  padding-top: 70px;
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* ===============================

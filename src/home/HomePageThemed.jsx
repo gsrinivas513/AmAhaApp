@@ -11,7 +11,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import Footer from '../components/common/Footer';
 
 // HERO SECTION - ENHANCED
 function HeroSection() {
@@ -1191,7 +1190,7 @@ function CTASection() {
     <section
       style={{
         background: theme.gradientBg,
-        padding: '80px 20px',
+        padding: '80px 20px 40px 20px',
         textAlign: 'center',
       }}
     >
@@ -1263,7 +1262,6 @@ export default function HomePagePuzzleFreeEnhanced() {
       <TestimonialsSection />
       <FAQSection />
       <CTASection />
-      <Footer />
 
       <style>{`
         @keyframes slideDown {

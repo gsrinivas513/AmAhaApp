@@ -15,6 +15,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import ProfessionalNavBar from "./components/navigation/ProfessionalNavBar";
+import Footer from "./components/common/Footer";
 
 /* PUBLIC */
 import HomePageThemed from "./home/HomePageThemed";
@@ -56,6 +57,7 @@ import ArtsPage from "./pages/ArtsPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import StudiesPage from "./pages/StudiesPage";
 import WorksheetsPage from "./pages/WorksheetsPage";
+import GamesPage from "./pages/GamesPage";
 
 /* ARTS COMPONENTS */
 import ArtsHome from "./arts/ArtsHome";
@@ -199,6 +201,7 @@ function App() {
         <Route path="/worksheets" element={<WorksheetsPage />} />
         <Route path="/worksheets/:categoryName" element={<WorksheetsPage />} />
         <Route path="/worksheets/:categoryName/:worksheetId" element={<WorksheetsPage />} />
+        <Route path="/games" element={<GamesPage />} />
 
         {/* USER */}
         <Route path="/profile" element={<ProfilePage />} />
@@ -297,6 +300,8 @@ function App() {
         {/* DIRECT PLAY - Skip navigation, go straight to puzzle - Must be AFTER /play/puzzle/:id for proper matching */}
         <Route path="/play/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
+
+      <Footer />
     </div>
   );
 }

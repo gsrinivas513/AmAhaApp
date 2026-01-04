@@ -3,28 +3,13 @@ import React from "react";
 
 export default function SiteLayout({ children }) {
   return (
-    <div
+    <main
       style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "transparent",
-        color: "#111",
-        paddingTop: "64px", // Account for fixed navbar
+        width: "100%",
+        boxSizing: "border-box",
       }}
     >
-      {/* Main content area */}
-      <main
-        style={{
-          flex: 1,
-          width: "100%",
-          margin: "0 auto",
-          padding: "0 16px",
-          boxSizing: "border-box",
-        }}
-      >
-        {children}
-      </main>
-    </div>
+      {children}
+    </main>
   );
 }

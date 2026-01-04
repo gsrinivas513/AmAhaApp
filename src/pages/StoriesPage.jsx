@@ -186,7 +186,6 @@ export default function StoriesPage() {
     <SiteLayout>
       <div style={{
         background: theme.background,
-        minHeight: '100vh',
         padding: '40px 20px',
       }}>
         <div style={{
