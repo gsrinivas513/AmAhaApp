@@ -27,6 +27,8 @@ import './StoryEditor.css';
 export default function StoryEditor() {
   const location = useLocation();
   const navigationState = location.state;
+  const queryParams = new URLSearchParams(location.search);
+  const storyIdFromQuery = queryParams.get('storyId');
   
   // Mode: "create" or "edit", passed from SubTopicsList
   const [mode, setMode] = useState(navigationState?.mode || "browse"); // browse, create, edit
@@ -63,6 +65,18 @@ export default function StoryEditor() {
   useEffect(() => {
     loadStories();
   }, []);
+
+  useEffect(() => {
+    // If storyId is in query params, find and select that story for editing
+    if (storyIdFromQuery && stories.length > 0) {
+      const storyToEdit = stories.find(s => s.id === storyIdFromQuery);
+      if (storyToEdit) {
+        setSelectedStory(storyToEdit);
+        setMode('edit');
+        setCurrentStep(2); // Jump to chapter editing
+      }
+    }
+  }, [storyIdFromQuery, stories]);
 
   const loadStories = async () => {
     try {

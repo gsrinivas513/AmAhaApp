@@ -1,0 +1,330 @@
+[
+  {
+    "id": "draw-cat",
+    "type": "guided-drawing",
+    "icon": "🐱",
+    "title": "Draw a Cat",
+    "level": "Beginner",
+    "category": "Animals",
+    "description": "Learn to draw a cute cat face step by step!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a large circle in the center. This will be the cat's head.",
+        "tip": "Use light strokes so you can erase if needed.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Circle"
+      },
+      {
+        "number": 2,
+        "instruction": "Add two small triangles on top of the circle for ears.",
+        "tip": "Make them pointy but not too sharp.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Ears"
+      },
+      {
+        "number": 3,
+        "instruction": "Draw two circles for the eyes. Leave a small white circle inside each eye.",
+        "tip": "Eyes should be spaced apart evenly.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Eyes"
+      },
+      {
+        "number": 4,
+        "instruction": "Add a small triangular nose between the eyes.",
+        "tip": "Make it pink or red!",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Nose"
+      },
+      {
+        "number": 5,
+        "instruction": "Draw a curved mouth below the nose. Add whiskers with small lines.",
+        "tip": "Make it smile and look happy!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Mouth"
+      }
+    ]
+  },
+  {
+    "id": "draw-house",
+    "type": "guided-drawing",
+    "icon": "🏠",
+    "title": "Draw a House",
+    "level": "Beginner",
+    "category": "Objects",
+    "description": "Create a cozy little house with a colorful design!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a square for the house body.",
+        "tip": "Make sure all corners are clean and straight.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Square"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw a triangle on top of the square for the roof.",
+        "tip": "The triangle should cover the top of the square.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Roof"
+      },
+      {
+        "number": 3,
+        "instruction": "Draw a rectangle in the center for the door.",
+        "tip": "Make it tall but not too wide.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Door"
+      },
+      {
+        "number": 4,
+        "instruction": "Draw two small squares for windows on each side of the door.",
+        "tip": "Make them the same size.",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Windows"
+      },
+      {
+        "number": 5,
+        "instruction": "Add details: a small circle for a doorknob and lines in the windows.",
+        "tip": "Color it in with your favorite colors!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Details"
+      }
+    ]
+  },
+  {
+    "id": "draw-tree",
+    "type": "guided-drawing",
+    "icon": "🌳",
+    "title": "Draw a Tree",
+    "level": "Beginner",
+    "category": "Nature",
+    "description": "Draw a beautiful tree with leaves and branches!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a rectangle for the tree trunk.",
+        "tip": "Make it straight and sturdy.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Trunk"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw a large circle or cloud shape above the trunk for the canopy (top part).",
+        "tip": "Make it big and fluffy!",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Canopy"
+      },
+      {
+        "number": 3,
+        "instruction": "Add bumpy edges to the canopy to look more leafy.",
+        "tip": "Make small bumps all around the circle.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Texture"
+      },
+      {
+        "number": 4,
+        "instruction": "Draw some branches sticking out from the trunk.",
+        "tip": "They should look like arms reaching up.",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Branches"
+      },
+      {
+        "number": 5,
+        "instruction": "Add small circles or lines to represent leaves and details.",
+        "tip": "Use green and brown colors!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Leaves"
+      }
+    ]
+  },
+  {
+    "id": "draw-butterfly",
+    "type": "guided-drawing",
+    "icon": "🦋",
+    "title": "Draw a Butterfly",
+    "level": "Beginner",
+    "category": "Animals",
+    "description": "Create a colorful butterfly with beautiful wings!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw an oval shape for the butterfly's body in the center.",
+        "tip": "Make it vertical and thin.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Body"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw two large circles on the left side of the body for the left wings.",
+        "tip": "Make one larger (top) and one smaller (bottom).",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Left+Wings"
+      },
+      {
+        "number": 3,
+        "instruction": "Draw two circles on the right side to match the left wings.",
+        "tip": "Make them the same size as the left wings.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Right+Wings"
+      },
+      {
+        "number": 4,
+        "instruction": "Add two long antennae (lines with small circles at the tips) on the head.",
+        "tip": "Make them curved and elegant!",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Antennae"
+      },
+      {
+        "number": 5,
+        "instruction": "Add patterns and colors to the wings - stripes, dots, or shapes!",
+        "tip": "Be creative with colors!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Patterns"
+      }
+    ]
+  },
+  {
+    "id": "draw-flower",
+    "type": "guided-drawing",
+    "icon": "🌸",
+    "title": "Draw a Flower",
+    "level": "Beginner",
+    "category": "Nature",
+    "description": "Draw a beautiful flower with petals and a stem!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a circle in the center for the flower's center.",
+        "tip": "This is the heart of the flower!",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Center"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw 5-6 rounded petals around the center circle.",
+        "tip": "Make them look like hearts or ovals pointing outward.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Petals"
+      },
+      {
+        "number": 3,
+        "instruction": "Draw a long curved line from the bottom of the flower for the stem.",
+        "tip": "Make it wavy and natural-looking.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Stem"
+      },
+      {
+        "number": 4,
+        "instruction": "Add two oval shapes on the stem for leaves.",
+        "tip": "Put one on each side of the stem.",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Leaves"
+      },
+      {
+        "number": 5,
+        "instruction": "Color the flower! Use pink or yellow for petals, and green for the stem and leaves.",
+        "tip": "Add small details like veins on the leaves!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Color+Flower"
+      }
+    ]
+  },
+  {
+    "id": "draw-sun",
+    "type": "guided-drawing",
+    "icon": "☀️",
+    "title": "Draw a Sun",
+    "level": "Beginner",
+    "category": "Nature",
+    "description": "Draw a bright, happy sun with rays!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a circle in the center for the sun's body.",
+        "tip": "Make it nice and round!",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Circle"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw 8-12 lines radiating out from the circle in all directions.",
+        "tip": "These are the sun's rays! Space them evenly.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Rays"
+      },
+      {
+        "number": 3,
+        "instruction": "Add a happy face to the sun - two dots for eyes and a smile.",
+        "tip": "Make it friendly and cheerful!",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Face"
+      },
+      {
+        "number": 4,
+        "instruction": "Optional: Add small triangles at the end of each ray.",
+        "tip": "This makes the rays look pointy and cool!",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Triangle+Tips"
+      },
+      {
+        "number": 5,
+        "instruction": "Color it yellow and add shading for depth.",
+        "tip": "Use orange for shadows to make it look 3D!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Color+Sun"
+      }
+    ]
+  },
+  {
+    "id": "draw-fish",
+    "type": "guided-drawing",
+    "icon": "🐠",
+    "title": "Draw a Fish",
+    "level": "Beginner",
+    "category": "Animals",
+    "description": "Create a cute little fish swimming in the water!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Draw a horizontal oval shape for the fish's body.",
+        "tip": "Make it wider in the middle and pointy at one end.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Body"
+      },
+      {
+        "number": 2,
+        "instruction": "Draw a triangle at the right end for the tail fin.",
+        "tip": "Make it point backwards like it's swimming.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Tail"
+      },
+      {
+        "number": 3,
+        "instruction": "Add two small triangles on top and bottom for the fins.",
+        "tip": "These help the fish balance and swim!",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Fins"
+      },
+      {
+        "number": 4,
+        "instruction": "Draw a small circle on the left side for the eye.",
+        "tip": "Add a tiny dot inside the eye to make it shine!",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Eye"
+      },
+      {
+        "number": 5,
+        "instruction": "Color the fish with bright colors - orange, pink, blue, or any color you like!",
+        "tip": "Add stripes or spots to make it unique!",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Color+Fish"
+      }
+    ]
+  },
+  {
+    "id": "draw-star",
+    "type": "guided-drawing",
+    "icon": "⭐",
+    "title": "Draw a Star",
+    "level": "Beginner",
+    "category": "Objects",
+    "description": "Draw a classic five-pointed star!",
+    "steps": [
+      {
+        "number": 1,
+        "instruction": "Imagine a point at the top center. Draw a line going down to the bottom right.",
+        "tip": "Use light strokes, we'll connect them all.",
+        "image": "https://via.placeholder.com/300?text=Step+1:+First+Line"
+      },
+      {
+        "number": 2,
+        "instruction": "From the bottom right, draw a line to the upper left.",
+        "tip": "Keep the angle consistent.",
+        "image": "https://via.placeholder.com/300?text=Step+2:+Second+Line"
+      },
+      {
+        "number": 3,
+        "instruction": "From the upper left, draw a line across to the right side.",
+        "tip": "This creates the middle of the star.",
+        "image": "https://via.placeholder.com/300?text=Step+3:+Third+Line"
+      },
+      {
+        "number": 4,
+        "instruction": "From the right side, draw a line down to the bottom left.",
+        "tip": "Almost there!",
+        "image": "https://via.placeholder.com/300?text=Step+4:+Fourth+Line"
+      },
+      {
+        "number": 5,
+        "instruction": "From the bottom left, draw the final line back to the top point to complete your star!",
+        "tip": "Color it in - maybe yellow or gold?",
+        "image": "https://via.placeholder.com/300?text=Step+5:+Complete+Star"
+      }
+    ]
+  }
+]

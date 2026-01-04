@@ -9,12 +9,26 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/common/Footer';
 
 // HERO SECTION - ENHANCED
 function HeroSection() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
+  
+  const handleBrowseClick = () => {
+    // Scroll to the "Explore 14+ Categories" section
+    const element = document.querySelector('section');
+    if (element) {
+      const sections = document.querySelectorAll('section');
+      // ContentTypesSection is after HeroSection, WhySection, CommunityStatsSection, PopularContentSection, HowItWorksSection
+      if (sections.length > 5) {
+        sections[5].scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
   
   return (
     <section
@@ -94,6 +108,7 @@ function HeroSection() {
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '40px' }}>
           <button
+            onClick={() => navigate('/explore')}
             style={{
               background: `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
               color: '#ffffff',
@@ -119,6 +134,7 @@ function HeroSection() {
           </button>
 
           <button
+            onClick={handleBrowseClick}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(10px)',
@@ -402,32 +418,33 @@ function HowItWorksSection() {
 // CONTENT TYPES SECTION - ENHANCED WITH TABS
 function ContentTypesSection() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = React.useState('all');
   
   const allCategories = {
     puzzles: [
-      { title: 'Jigsaw', icon: '🧩', color: '#6366f1' },
-      { title: 'Logic', icon: '🧠', color: '#8b5cf6' },
-      { title: 'Word', icon: '📝', color: '#ec4899' },
-      { title: 'Riddles', icon: '🎭', color: '#f59e0b' },
+      { title: 'Jigsaw', icon: '🧩', color: '#6366f1', path: '/puzzle' },
+      { title: 'Logic', icon: '🧠', color: '#8b5cf6', path: '/puzzle' },
+      { title: 'Word', icon: '📝', color: '#ec4899', path: '/puzzle' },
+      { title: 'Riddles', icon: '🎭', color: '#f59e0b', path: '/puzzle' },
     ],
     learning: [
-      { title: 'Quizzes', icon: '❓', color: '#06b6d4' },
-      { title: 'Trivia', icon: '🏆', color: '#10b981' },
-      { title: 'Studies', icon: '📚', color: '#3b82f6' },
-      { title: 'Lessons', icon: '📖', color: '#8b5cf6' },
+      { title: 'Quizzes', icon: '❓', color: '#06b6d4', path: '/quiz' },
+      { title: 'Trivia', icon: '🏆', color: '#10b981', path: '/quiz' },
+      { title: 'Studies', icon: '📚', color: '#3b82f6', path: '/studies' },
+      { title: 'Lessons', icon: '📖', color: '#8b5cf6', path: '/quiz' },
     ],
     creative: [
-      { title: 'Stories', icon: '📖', color: '#ec4899' },
-      { title: 'Arts', icon: '🎨', color: '#f97316' },
-      { title: 'Music', icon: '🎵', color: '#6366f1' },
-      { title: 'Design', icon: '✨', color: '#06b6d4' },
+      { title: 'Stories', icon: '📖', color: '#ec4899', path: '/stories' },
+      { title: 'Arts', icon: '🎨', color: '#f97316', path: '/arts' },
+      { title: 'Music', icon: '🎵', color: '#6366f1', path: '/documents' },
+      { title: 'Design', icon: '✨', color: '#06b6d4', path: '/arts/digital' },
     ],
     practice: [
-      { title: 'Math', icon: '🔢', color: '#10b981' },
-      { title: 'Worksheets', icon: '📋', color: '#f59e0b' },
-      { title: 'Games', icon: '🎮', color: '#ec4899' },
-      { title: 'Challenges', icon: '⚡', color: '#6366f1' },
+      { title: 'Math', icon: '🔢', color: '#10b981', path: '/quiz' },
+      { title: 'Worksheets', icon: '📋', color: '#f59e0b', path: '/worksheets' },
+      { title: 'Games', icon: '🎮', color: '#ec4899', path: '/puzzle' },
+      { title: 'Challenges', icon: '⚡', color: '#6366f1', path: '/puzzle' },
     ],
   };
 
@@ -530,6 +547,7 @@ function ContentTypesSection() {
           {categories.map((type, idx) => (
             <div
               key={idx}
+              onClick={() => type.path && navigate(type.path)}
               style={{
                 background: `linear-gradient(135deg, ${type.color}15, ${type.color}05)`,
                 border: `2px solid ${theme.border}`,

@@ -221,7 +221,7 @@ export default function PuzzleTemplateModal({ isOpen, onClose }) {
     setFormData({
       name: template.name,
       description: template.description,
-      items: [...template.items],
+      items: [...(template.items || [])],
       itemInput: '',
     });
     setShowAddForm(true);
@@ -707,7 +707,7 @@ export default function PuzzleTemplateModal({ isOpen, onClose }) {
                       {template.description}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                      {template.items.slice(0, 8).map((item, idx) => (
+                      {(template.items || []).slice(0, 8).map((item, idx) => (
                         <div
                           key={idx}
                           style={{
@@ -742,14 +742,14 @@ export default function PuzzleTemplateModal({ isOpen, onClose }) {
                           <span>{item.label || item}</span>
                         </div>
                       ))}
-                      {template.items.length > 8 && (
+                      {(template.items || []).length > 8 && (
                         <span style={{
                           color: theme.textSecondary,
                           fontSize: '11px',
                           fontWeight: '600',
                           padding: '3px 8px',
                         }}>
-                          +{template.items.length - 8} more
+                          +{(template.items || []).length - 8} more
                         </span>
                       )}
                     </div>

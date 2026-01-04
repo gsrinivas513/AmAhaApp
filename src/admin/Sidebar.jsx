@@ -246,7 +246,6 @@ function Sidebar() {
     quiz: false,
     puzzles: false,
     createVisual: false,
-    stories: false,
     devtools: false,
   });
 
@@ -372,15 +371,6 @@ function Sidebar() {
           <Item icon="🔧" label="Create Puzzle Records" path="/admin/puzzle-record-creator" active={isActive("/admin/puzzle-record-creator")} />
         </Section>
 
-      {/* ================= STORIES ================= */}
-        <Section
-          title="Stories"
-          open={open.stories}
-          onToggle={() => toggle("stories")}
-        >
-          <Item icon={<DocumentIcon />} label="Stories" path="/admin/stories" active={isActive("/admin/stories")} />
-          <DisabledItem icon={<GearIcon />} label="More (Coming soon)" />
-        </Section>
 
         {/* ================= DEVELOPMENT TOOLS ================= */}
         <Section

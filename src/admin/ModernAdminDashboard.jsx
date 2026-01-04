@@ -185,6 +185,8 @@ export default function ModernAdminDashboard() {
   const [showAddPuzzleForm, setShowAddPuzzleForm] = useState(false);
   const [showAddStoryForm, setShowAddStoryForm] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showCreateTemplateModal, setShowCreateTemplateModal] = useState(false);
+  const [newTemplateData, setNewTemplateData] = useState({ title: '', description: '', targetAudience: '', chapters: [{ title: '', description: '' }] });
   const [quizzes, setQuizzes] = useState([]);
   const [puzzles, setPuzzles] = useState([]);
   const [stories, setStories] = useState([]);
@@ -192,7 +194,57 @@ export default function ModernAdminDashboard() {
   const [dbStats, setDbStats] = useState(null);
   const [quizFormData, setQuizFormData] = useState({ title: '', category: '', audience: '', questions: '', difficulty: '' });
   const [puzzleFormData, setPuzzleFormData] = useState({ displayLabel: '', name: '', type: '', audience: '', pieces: '', difficulty: '' });
-  const [storyFormData, setStoryFormData] = useState({ title: '', category: '', audience: '', chapters: '' });
+  const [storyFormData, setStoryFormData] = useState({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
+
+  // Enhanced Story Templates with full chapter details
+  const STORY_TEMPLATES = [
+    {
+      id: 'kids-3-chapter-adventure',
+      title: 'Kids Adventure',
+      description: 'Wholesome 3-part journey',
+      fullDescription: 'Wholesome 3-part journey with simple language and visuals.',
+      chapters: 3,
+      targetAudience: 'kids',
+      color: '#8b5cf6',
+      chapterDetails: [
+        { title: 'The Beginning', description: 'Meet the hero and the goal.' },
+        { title: 'The Challenge', description: 'Overcome an obstacle with help.' },
+        { title: 'Happy Ending', description: 'Celebrate the win and a lesson.' },
+      ],
+    },
+    {
+      id: 'general-5-chapter-guide',
+      title: 'General Guide',
+      description: 'Structured 5-chapter format',
+      fullDescription: 'Structured guide format ideal for learning topics.',
+      chapters: 5,
+      targetAudience: 'general',
+      color: '#10b981',
+      chapterDetails: [
+        { title: 'Overview', description: 'Scope and goals.' },
+        { title: 'Fundamentals', description: 'Core concepts explained.' },
+        { title: 'Examples', description: 'Illustrative examples.' },
+        { title: 'Practice', description: 'Exercises or reflections.' },
+        { title: 'Summary', description: 'Key takeaways and next steps.' },
+      ],
+    },
+    {
+      id: 'programmer-4-part-tutorial',
+      title: 'Programmer Tutorial',
+      description: 'Hands-on 4-part tutorial',
+      fullDescription: 'Hands-on tutorial with steps and checkpoints.',
+      chapters: 4,
+      targetAudience: 'programmers',
+      color: '#2563eb',
+      chapterDetails: [
+        { title: 'Setup', description: 'Environment and prerequisites.' },
+        { title: 'Build', description: 'Implement the feature step-by-step.' },
+        { title: 'Test', description: 'Validate with examples and edge cases.' },
+        { title: 'Ship', description: 'Polish, deploy, and monitor.' },
+      ],
+    },
+  ];
+
   const [loading, setLoading] = useState(true);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [editingPuzzle, setEditingPuzzle] = useState(null);
@@ -1196,7 +1248,7 @@ export default function ModernAdminDashboard() {
         
         // Add to local state
         setStories([{ id: docRef.id, ...newStory }, ...stories]);
-        setStoryFormData({ title: '', category: '', audience: '', chapters: '' });
+        setStoryFormData({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
         setShowAddStoryForm(false);
       } catch (error) {
         console.error('Error adding story:', error);
@@ -1252,6 +1304,32 @@ export default function ModernAdminDashboard() {
     setEditingStory(null);
   };
 
+  const handleCreateTemplate = async () => {
+    if (!newTemplateData.title.trim()) {
+      alert('Please enter a template title');
+      return;
+    }
+    if (newTemplateData.chapters.length === 0 || newTemplateData.chapters.some(c => !c.title.trim())) {
+      alert('Please enter titles for all chapters');
+      return;
+    }
+    try {
+      // Save to Firestore storyTemplates collection
+      const docRef = await addDoc(collection(db, 'storyTemplates'), {
+        ...newTemplateData,
+        createdAt: serverTimestamp(),
+      });
+      
+      // Show success message
+      alert('Template created successfully!');
+      setShowCreateTemplateModal(false);
+      setNewTemplateData({ title: '', description: '', targetAudience: '', chapters: [{ title: '', description: '' }] });
+    } catch (error) {
+      console.error('Error creating template:', error);
+      alert('Error creating template: ' + error.message);
+    }
+  };
+
   return (
     <SiteLayout>
       <QuizEditModal
@@ -1276,6 +1354,254 @@ export default function ModernAdminDashboard() {
         onClose={() => setEditingStory(null)}
         onSave={handleEditStorySave}
       />
+
+      {/* Create Story Template Modal */}
+      {showCreateTemplateModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1003,
+        }} onClick={() => setShowCreateTemplateModal(false)}>
+          <div style={{
+            background: theme.surfacePrimary,
+            border: `2px solid ${theme.border}`,
+            borderRadius: '16px',
+            width: '95%',
+            maxWidth: '600px',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            padding: '24px',
+            boxShadow: '0 20px 80px rgba(0,0,0,0.4)',
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ margin: 0, color: theme.textPrimary, fontSize: '20px', fontWeight: '800' }}>
+                ➕ Create New Story Template
+              </h2>
+              <button
+                onClick={() => setShowCreateTemplateModal(false)}
+                style={{ background: 'transparent', border: 'none', color: theme.textSecondary, fontSize: '24px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ color: theme.textPrimary, fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                Template Title *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Science Experiment Journey"
+                value={newTemplateData.title}
+                onChange={(e) => setNewTemplateData({ ...newTemplateData, title: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: theme.background,
+                  border: `2px solid ${theme.border}`,
+                  borderRadius: '6px',
+                  color: theme.textPrimary,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ color: theme.textPrimary, fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                Description
+              </label>
+              <input
+                type="text"
+                placeholder="Describe this template..."
+                value={newTemplateData.description}
+                onChange={(e) => setNewTemplateData({ ...newTemplateData, description: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: theme.background,
+                  border: `2px solid ${theme.border}`,
+                  borderRadius: '6px',
+                  color: theme.textPrimary,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ color: theme.textPrimary, fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                Target Audience
+              </label>
+              <select
+                value={newTemplateData.targetAudience}
+                onChange={(e) => setNewTemplateData({ ...newTemplateData, targetAudience: e.target.value })}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: theme.background,
+                  border: `2px solid ${theme.border}`,
+                  borderRadius: '6px',
+                  color: theme.textPrimary,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <option value="">Select audience</option>
+                <option value="kids">Kids</option>
+                <option value="general">General</option>
+                <option value="programmers">Programmers</option>
+                <option value="students">Students</option>
+                <option value="professionals">Professionals</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <label style={{ color: theme.textPrimary, fontSize: '12px', fontWeight: '600' }}>
+                  Chapters *
+                </label>
+                <button
+                  onClick={() => setNewTemplateData({
+                    ...newTemplateData,
+                    chapters: [...newTemplateData.chapters, { title: '', description: '' }]
+                  })}
+                  style={{
+                    padding: '4px 8px',
+                    background: theme.accentPrimary,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  + Add Chapter
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {newTemplateData.chapters.map((chapter, idx) => (
+                  <div key={idx} style={{
+                    padding: '12px',
+                    background: theme.background,
+                    border: `2px solid ${theme.border}`,
+                    borderRadius: '6px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ color: theme.textSecondary, fontSize: '11px', fontWeight: '600' }}>Chapter {idx + 1}</span>
+                      {newTemplateData.chapters.length > 1 && (
+                        <button
+                          onClick={() => setNewTemplateData({
+                            ...newTemplateData,
+                            chapters: newTemplateData.chapters.filter((_, i) => i !== idx)
+                          })}
+                          style={{
+                            padding: '2px 6px',
+                            background: '#FF6B6B',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '3px',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Chapter title"
+                      value={chapter.title}
+                      onChange={(e) => {
+                        const updated = [...newTemplateData.chapters];
+                        updated[idx].title = e.target.value;
+                        setNewTemplateData({ ...newTemplateData, chapters: updated });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        background: theme.surfaceSecondary,
+                        border: `1px solid ${theme.border}`,
+                        borderRadius: '4px',
+                        color: theme.textPrimary,
+                        fontSize: '12px',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                        marginBottom: '6px',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Chapter description"
+                      value={chapter.description}
+                      onChange={(e) => {
+                        const updated = [...newTemplateData.chapters];
+                        updated[idx].description = e.target.value;
+                        setNewTemplateData({ ...newTemplateData, chapters: updated });
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        background: theme.surfaceSecondary,
+                        border: `1px solid ${theme.border}`,
+                        borderRadius: '4px',
+                        color: theme.textPrimary,
+                        fontSize: '12px',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={handleCreateTemplate}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  background: `linear-gradient(135deg, #f093fb, #f5576c)`,
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Create Template
+              </button>
+              <button
+                onClick={() => setShowCreateTemplateModal(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  background: 'transparent',
+                  color: theme.textPrimary,
+                  border: `2px solid ${theme.border}`,
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <QuizDetailsModal
         quiz={viewingQuiz}
@@ -2286,7 +2612,7 @@ export default function ModernAdminDashboard() {
                     <button
                       onClick={() => {
                         setShowAddStoryForm(false);
-                        setStoryFormData({ title: '', category: '', audience: '', chapters: '' });
+                        setStoryFormData({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
                       }}
                       style={{
                         padding: '12px 32px',
@@ -3239,13 +3565,17 @@ export default function ModernAdminDashboard() {
                             setCnExecutionError('');
                             try {
                               const tpl = cnTemplates.find(t => t.id === cnSelectedTemplateId);
+                              console.log('🎯 [TemplateExecute] Running template with inputs:', inputs);
                               const result = await runTemplate(cnVisualType, tpl.schema, inputs);
+                              console.log('🎯 [TemplateExecute] Template result:', result);
                               if (!result.ok) {
                                 setCnExecutionError(result.error || 'Template execution failed');
                                 return;
                               }
+                              console.log('✅ [TemplateExecute] Execution successful, result:', result.result);
                               setCnExecutionResult(result.result);
                             } catch (e) {
+                              console.error('❌ [TemplateExecute] Error:', e);
                               setCnExecutionError(e.message || 'Execution error');
                             } finally {
                               setCnExecutionLoading(false);
@@ -3373,25 +3703,66 @@ export default function ModernAdminDashboard() {
                         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                           <button
                             type="button"
-                            onClick={() => {
-                              // Proceed to editor - use first variant as base
-                              if (cnVisualType === 'jigsaw' && cnExecutionResult.variants && cnExecutionResult.variants.length > 0) {
-                                const firstVariant = cnExecutionResult.variants[0];
-                                setCnEditorData({
-                                  imageUrl: cnExecutionResult.imageUrl,
-                                  rows: firstVariant.rows,
-                                  cols: firstVariant.cols,
-                                  variants: cnExecutionResult.variants.map(v => ({
+                            onClick={async () => {
+                              if (!puzzleFormData.title?.trim()) { alert('Please enter Title'); return; }
+                              try {
+                                // For Jigsaw, ONLY save: imageUrl and minimal variant config
+                                let contentToSave = null;
+                                let variantsToSave = null;
+                                
+                                console.log('💾 [SavePuzzle] cnExecutionResult:', cnExecutionResult);
+                                console.log('💾 [SavePuzzle] cnVisualType:', cnVisualType);
+                                
+                                if (cnVisualType === 'jigsaw' && cnExecutionResult?.variants) {
+                                  // Extract ONLY label, rows, cols from each variant
+                                  variantsToSave = cnExecutionResult.variants.map(v => ({
                                     label: v.label,
                                     rows: v.rows,
                                     cols: v.cols,
-                                  })),
-                                });
+                                  }));
+                                  contentToSave = {
+                                    imageUrl: cnExecutionResult.imageUrl,
+                                    variants: variantsToSave,
+                                  };
+                                } else {
+                                  contentToSave = cnExecutionResult;
+                                }
+
+                                const puzzleDoc = {
+                                  title: puzzleFormData.title,
+                                  description: puzzleFormData.description || '',
+                                  type: cnVisualType,
+                                  difficulty: puzzleFormData.difficulty || 'Easy',
+                                  ageGroup: puzzleFormData.ageGroup || '',
+                                  audience: puzzleFormData.audience || 'all',
+                                  content: contentToSave,
+                                  // For Jigsaw, also store at top level
+                                  imageUrl: cnVisualType === 'jigsaw' ? cnExecutionResult?.imageUrl : undefined,
+                                  variants: variantsToSave || undefined,
+                                  categoryId: puzzleFormData.categoryId || '',
+                                  topicId: puzzleFormData.topicId || '',
+                                  subtopicId: puzzleFormData.subtopicId || '',
+                                  isPublished: puzzleFormData.isPublished || false,
+                                  xpReward: Number(puzzleFormData.xpReward) || 10,
+                                  createdAt: serverTimestamp(),
+                                };
+                                await addDoc(collection(db, 'puzzles'), puzzleDoc);
+                                alert('✓ Puzzle saved!');
+                                // Reset form
+                                setPuzzleFormData({ title: '', type: '', audience: '', pieces: '', difficulty: '' });
+                                setCnVisualType('');
+                                setCnSelectedTemplateId('');
+                                setCnShowInputForm(false);
+                                setCnTemplateInputs(null);
+                                setCnExecutionResult(null);
+                              } catch (e) {
+                                console.error('Save error details:', e);
+                                alert('Save error: ' + e.message);
                               }
                             }}
                             style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, fontWeight: 700, cursor: 'pointer' }}
                           >
-                            ✓ Continue to Editor
+                            💾 Save Puzzle
                           </button>
                           <button
                             type="button"
@@ -3412,89 +3783,6 @@ export default function ModernAdminDashboard() {
                     {cnExecutionError && (
                       <div style={{ background: '#fee2e2', border: '2px solid #fca5a5', borderRadius: 12, padding: 12, marginTop: 12, color: '#991b1b' }}>
                         ⚠️ {cnExecutionError}
-                      </div>
-                    )}
-
-                    {/* Step 4: Editor & Save */}
-                    {cnEditorData && (
-                      <div style={{ marginTop: 12 }}>
-                        <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>🎨 Edit Puzzle</h4>
-                        {cnVisualType === 'picture-word' && (
-                          <PictureWordEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'spot-difference' && (
-                          <SpotDifferenceEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'find-pair' && (
-                          <FindPairEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'picture-shadow' && (
-                          <PictureShadowEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'ordering' && (
-                          <OrderingEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'word-search' && (
-                          <WordSearchEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-                        {cnVisualType === 'jigsaw' && (
-                          <JigsawEditor data={cnEditorData} onChange={setCnEditorData} />
-                        )}
-
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-                          <button
-                            onClick={() => {
-                              setCnVisualType('');
-                              setCnSelectedTemplateId('');
-                              setCnShowInputForm(false);
-                              setCnTemplateInputs(null);
-                              setCnExecutionResult(null);
-                              setCnEditorData(null);
-                            }}
-                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, cursor: 'pointer' }}
-                          >
-                            Reset
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (!qcTitle?.trim()) { alert('Please enter Title'); return; }
-                              try {
-                                const puzzleDoc = {
-                                  title: qcTitle,
-                                  description: qcDescription,
-                                  type: cnVisualType,
-                                  difficulty: qcDifficulty,
-                                  ageGroup: qcAgeGroup,
-                                  content: cnEditorData,
-                                  // For Jigsaw, store the image URL and all variants
-                                  imageUrl: cnVisualType === 'jigsaw' ? cnEditorData?.imageUrl : undefined,
-                                  variants: cnVisualType === 'jigsaw' && cnEditorData?.variants ? cnEditorData.variants : undefined,
-                                  categoryId: qcCategoryId,
-                                  topicId: qcTopicId,
-                                  subtopicId: qcSubtopicId,
-                                  isPublished: qcIsPublished,
-                                  xpReward: Number(qcXpReward) || 10,
-                                  createdAt: serverTimestamp(),
-                                };
-                                await addDoc(collection(db, 'puzzles'), puzzleDoc);
-                                alert('✓ Puzzle saved!');
-                                setCnVisualType('');
-                                setCnSelectedTemplateId('');
-                                setCnShowInputForm(false);
-                                setCnTemplateInputs(null);
-                                setCnExecutionResult(null);
-                                setCnEditorData(null);
-                                setQcTitle('');
-                                setQcDescription('');
-                              } catch (e) {
-                                alert('Save error: ' + e.message);
-                              }
-                            }}
-                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, fontWeight: 700, cursor: 'pointer' }}
-                          >
-                            💾 Save Puzzle
-                          </button>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -3782,11 +4070,13 @@ export default function ModernAdminDashboard() {
                   }}>
                     Create New Story
                   </h3>
+
+                  {/* Basic Form Fields */}
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                     gap: '12px',
-                    marginBottom: '16px',
+                    marginBottom: '24px',
                   }}>
                     <input
                       type="text"
@@ -3839,22 +4129,256 @@ export default function ModernAdminDashboard() {
                         <option key={aud} value={aud}>{aud}</option>
                       ))}
                     </select>
-                    <input
-                      type="number"
-                      placeholder="Chapters"
-                      value={storyFormData.chapters}
-                      onChange={(e) => setStoryFormData({ ...storyFormData, chapters: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
+                  </div>
+
+                  {/* Template Selection Section */}
+                  <div style={{
+                    marginBottom: '24px',
+                    paddingTop: '16px',
+                    borderTop: `2px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}>
+                      <h4 style={{
+                        color: theme.textPrimary,
+                        fontSize: '14px',
+                        fontWeight: '700',
+                        margin: 0,
+                      }}>
+                        📋 Select a Story Template
+                      </h4>
+                      <button
+                        onClick={() => setShowCreateTemplateModal(true)}
+                        style={{
+                          padding: '6px 12px',
+                          background: theme.accentSecondary,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ➕ Create New Template
+                      </button>
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}>
+                      {STORY_TEMPLATES.map((template) => (
+                        <div
+                          key={template.id}
+                          onClick={() => setStoryFormData({ ...storyFormData, selectedTemplate: template.id, chapters: template.chapters })}
+                          style={{
+                            padding: '14px',
+                            background: theme.background,
+                            border: storyFormData.selectedTemplate === template.id ? `3px solid ${template.color}` : `2px solid ${theme.border}`,
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            opacity: storyFormData.selectedTemplate === template.id ? 1 : 0.7,
+                            boxShadow: storyFormData.selectedTemplate === template.id ? `0 0 12px ${template.color}40` : 'none',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: template.color }} />
+                            <span style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700' }}>{template.title}</span>
+                          </div>
+                          <div style={{ color: theme.textSecondary, fontSize: '12px', marginBottom: '8px' }}>
+                            {template.description}
+                          </div>
+                          <div style={{ color: theme.accentPrimary, fontSize: '11px', fontWeight: '600' }}>
+                            📖 {template.chapters} chapters
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Template Preview Section */}
+                    {storyFormData.selectedTemplate && (
+                      <div style={{
                         background: theme.background,
                         border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
+                        borderRadius: '10px',
+                        padding: '16px',
+                        marginTop: '16px',
+                      }}>
+                        {(() => {
+                          const selectedTemplate = STORY_TEMPLATES.find(t => t.id === storyFormData.selectedTemplate);
+                          if (!selectedTemplate) return null;
+                          return (
+                            <>
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                marginBottom: '12px',
+                              }}>
+                                <div style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '3px',
+                                  background: selectedTemplate.color,
+                                }} />
+                                <h5 style={{
+                                  color: theme.textPrimary,
+                                  fontSize: '14px',
+                                  fontWeight: '700',
+                                  margin: 0,
+                                }}>
+                                  Template Preview: {selectedTemplate.title}
+                                </h5>
+                              </div>
+                              <div style={{
+                                color: theme.textSecondary,
+                                fontSize: '12px',
+                                marginBottom: '12px',
+                                lineHeight: '1.5',
+                              }}>
+                                {selectedTemplate.fullDescription}
+                              </div>
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '8px',
+                              }}>
+                                <div style={{
+                                  padding: '8px',
+                                  background: theme.surfaceSecondary,
+                                  borderRadius: '6px',
+                                  borderLeft: `4px solid ${selectedTemplate.color}`,
+                                }}>
+                                  <div style={{ color: theme.textSecondary, fontSize: '11px', fontWeight: '600' }}>TARGET AUDIENCE</div>
+                                  <div style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700', marginTop: '4px' }}>
+                                    {selectedTemplate.targetAudience}
+                                  </div>
+                                </div>
+                                <div style={{
+                                  padding: '8px',
+                                  background: theme.surfaceSecondary,
+                                  borderRadius: '6px',
+                                  borderLeft: `4px solid ${selectedTemplate.color}`,
+                                }}>
+                                  <div style={{ color: theme.textSecondary, fontSize: '11px', fontWeight: '600' }}>TOTAL CHAPTERS</div>
+                                  <div style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700', marginTop: '4px' }}>
+                                    {selectedTemplate.chapters}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ marginTop: '12px' }}>
+                                <div style={{
+                                  color: theme.textSecondary,
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  marginBottom: '8px',
+                                }}>
+                                  CHAPTER STRUCTURE:
+                                </div>
+                                <div style={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '6px',
+                                }}>
+                                  {selectedTemplate.chapterDetails.map((chapter, idx) => (
+                                    <div key={idx} style={{
+                                      padding: '8px',
+                                      background: theme.surfaceSecondary,
+                                      borderRadius: '6px',
+                                      paddingLeft: '10px',
+                                      borderLeft: `3px solid ${selectedTemplate.color}`,
+                                    }}>
+                                      <div style={{
+                                        color: theme.textPrimary,
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                      }}>
+                                        Ch. {idx + 1}: {chapter.title}
+                                      </div>
+                                      <div style={{
+                                        color: theme.textSecondary,
+                                        fontSize: '11px',
+                                        marginTop: '3px',
+                                      }}>
+                                        {chapter.description}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Next Steps Information Panel */}
+                    <div style={{
+                      background: `${theme.accentPrimary}15`,
+                      border: `2px solid ${theme.accentPrimary}40`,
+                      borderRadius: '10px',
+                      padding: '16px',
+                      marginTop: '16px',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                      }}>
+                        <span style={{ fontSize: '24px' }}>💡</span>
+                        <div>
+                          <h5 style={{
+                            color: theme.textPrimary,
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            margin: '0 0 8px 0',
+                          }}>
+                            After Creating Your Story
+                          </h5>
+                          <div style={{
+                            color: theme.textSecondary,
+                            fontSize: '12px',
+                            lineHeight: '1.6',
+                          }}>
+                            <p style={{ margin: '0 0 8px 0' }}>
+                              Once you click "Save", the story structure will be created. You'll then need to:
+                            </p>
+                            <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                              <li style={{ marginBottom: '4px' }}>
+                                <strong>Edit the story</strong> to add chapter content, images, and text
+                              </li>
+                              <li style={{ marginBottom: '4px' }}>
+                                <strong>Add images</strong> using Cloudinary image URLs in each chapter
+                              </li>
+                              <li style={{ marginBottom: '4px' }}>
+                                <strong>Link quizzes/puzzles</strong> to chapters as assessments (optional)
+                              </li>
+                              <li>
+                                <strong>Publish</strong> when ready to make it visible to users
+                              </li>
+                            </ul>
+                            <div style={{
+                              marginTop: '12px',
+                              padding: '8px 12px',
+                              background: theme.surfaceSecondary,
+                              borderRadius: '6px',
+                              borderLeft: `3px solid ${theme.accentPrimary}`,
+                            }}>
+                              <strong>📝 Tip:</strong> After saving, click the "✏️ Edit" button next to your story to open the Chapter Editor where you can add all content, images, and quizzes.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
                   <div style={{
                     display: 'flex',
                     gap: '8px',
@@ -3877,7 +4401,7 @@ export default function ModernAdminDashboard() {
                     <button
                       onClick={() => {
                         setShowAddStoryForm(false);
-                        setStoryFormData({ title: '', category: '', audience: '', chapters: '' });
+                        setStoryFormData({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
                       }}
                       style={{
                         padding: '10px 20px',
@@ -3986,16 +4510,16 @@ export default function ModernAdminDashboard() {
                         onClick={() => setEditingStory(story)}
                         style={{
                           padding: '6px 12px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          border: `1px solid ${theme.accentPrimary}`,
+                          background: `linear-gradient(135deg, #f093fb, #f5576c)`,
+                          color: '#fff',
+                          border: 'none',
                           borderRadius: '4px',
                           fontSize: '12px',
                           fontWeight: '600',
                           cursor: 'pointer',
                         }}
                       >
-                        ✏️ Edit
+                        ✏️ Edit Story
                       </button>
                       <button
                         onClick={() => setViewingStory(story)}
@@ -4102,6 +4626,358 @@ export default function ModernAdminDashboard() {
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎨</div>
                 <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Arts Management Coming Soon</p>
                 <p>This section will allow you to manage all arts content including drawings, paintings, and digital art</p>
+              </div>
+            </div>
+          )}
+
+          {/* Arts Tab */}
+          {activeTab === 'arts' && (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
+                flexWrap: 'wrap',
+                gap: '16px',
+              }}>
+                <div>
+                  <h2 style={{
+                    color: theme.textPrimary,
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    margin: '0 0 8px 0',
+                  }}>
+                    🎨 Manage Arts
+                  </h2>
+                  <p style={{
+                    color: theme.textSecondary,
+                    margin: '0',
+                  }}>
+                    Create and manage drawing, painting, and digital art lessons
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.href = '/arts'}
+                  style={{
+                    padding: '12px 24px',
+                    background: `linear-gradient(135deg, #FFB366, #FF85A2)`,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 181, 102, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  🎨 Open Arts Studio
+                </button>
+              </div>
+
+              {/* Arts Overview */}
+              <div style={{
+                background: theme.surfacePrimary,
+                border: `2px solid ${theme.border}`,
+                borderRadius: '12px',
+                padding: '24px',
+                marginBottom: '24px',
+              }}>
+                <h3 style={{
+                  color: theme.textPrimary,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  margin: '0 0 16px 0',
+                }}>
+                  📚 Arts Features
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                  gap: '12px',
+                }}>
+                  <div style={{
+                    padding: '16px',
+                    background: theme.background,
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '8px',
+                    }}>
+                      ✏️
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                    }}>
+                      Drawing Tool
+                    </p>
+                    <p style={{
+                      color: theme.textSecondary,
+                      fontSize: '12px',
+                      margin: 0,
+                    }}>
+                      Pencil & brush drawing
+                    </p>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: theme.background,
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '8px',
+                    }}>
+                      🎨
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                    }}>
+                      Painting Tool
+                    </p>
+                    <p style={{
+                      color: theme.textSecondary,
+                      fontSize: '12px',
+                      margin: 0,
+                    }}>
+                      Coloring & painting
+                    </p>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: theme.background,
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '8px',
+                    }}>
+                      📚
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                    }}>
+                      Guided Lessons
+                    </p>
+                    <p style={{
+                      color: theme.textSecondary,
+                      fontSize: '12px',
+                      margin: 0,
+                    }}>
+                      Step-by-step tutorials
+                    </p>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: theme.background,
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '8px',
+                    }}>
+                      🌈
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                    }}>
+                      Digital Art
+                    </p>
+                    <p style={{
+                      color: theme.textSecondary,
+                      fontSize: '12px',
+                      margin: 0,
+                    }}>
+                      Sticker composition
+                    </p>
+                  </div>
+                  <div style={{
+                    padding: '16px',
+                    background: theme.background,
+                    borderRadius: '8px',
+                    border: `1px solid ${theme.border}`,
+                  }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '8px',
+                    }}>
+                      🖼️
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      margin: '0 0 4px 0',
+                    }}>
+                      Gallery
+                    </p>
+                    <p style={{
+                      color: theme.textSecondary,
+                      fontSize: '12px',
+                      margin: 0,
+                    }}>
+                      View saved artwork
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div style={{
+                background: theme.surfacePrimary,
+                border: `2px solid ${theme.border}`,
+                borderRadius: '12px',
+                padding: '24px',
+              }}>
+                <h3 style={{
+                  color: theme.textPrimary,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  margin: '0 0 16px 0',
+                }}>
+                  🔗 Quick Links
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '12px',
+                }}>
+                  <button
+                    onClick={() => window.location.href = '/arts/draw'}
+                    style={{
+                      padding: '12px 16px',
+                      background: theme.background,
+                      border: `2px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme.accentPrimary + '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme.background;
+                    }}
+                  >
+                    ✏️ Drawing Studio
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/arts/paint'}
+                    style={{
+                      padding: '12px 16px',
+                      background: theme.background,
+                      border: `2px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme.accentPrimary + '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme.background;
+                    }}
+                  >
+                    🎨 Painting Studio
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/arts/guided'}
+                    style={{
+                      padding: '12px 16px',
+                      background: theme.background,
+                      border: `2px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme.accentPrimary + '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme.background;
+                    }}
+                  >
+                    📚 Lessons
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/arts/digital'}
+                    style={{
+                      padding: '12px 16px',
+                      background: theme.background,
+                      border: `2px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme.accentPrimary + '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme.background;
+                    }}
+                  >
+                    🌈 Digital Art
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/arts/gallery'}
+                    style={{
+                      padding: '12px 16px',
+                      background: theme.background,
+                      border: `2px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = theme.accentPrimary + '20';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = theme.background;
+                    }}
+                  >
+                    🖼️ Gallery
+                  </button>
+                </div>
               </div>
             </div>
           )}

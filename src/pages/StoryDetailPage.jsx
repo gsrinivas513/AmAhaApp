@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthProvider';
+import { useTheme } from '../context/ThemeContext';
 import SiteLayout from '../layouts/SiteLayout';
 import {
   getStory,
@@ -21,6 +22,7 @@ export default function StoryDetailPage() {
   const { storyId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme } = useTheme();
   
   // Debug logging
   useEffect(() => {
@@ -466,10 +468,23 @@ export default function StoryDetailPage() {
   if (loading) {
     return (
       <SiteLayout>
-        <div className="story-detail-page">
-          <div className="loading-state">
-            <div className="spinner">🔄</div>
-            <p>Loading your adventure...</p>
+        <div style={{
+          background: theme.background,
+          minHeight: '100vh',
+          padding: '40px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>📖</div>
+            <p style={{
+              color: theme.textPrimary,
+              fontSize: '18px',
+              fontWeight: '600',
+            }}>
+              Loading your adventure...
+            </p>
           </div>
         </div>
       </SiteLayout>
@@ -479,16 +494,53 @@ export default function StoryDetailPage() {
   if (error || !story) {
     return (
       <SiteLayout>
-        <div className="story-detail-page">
-          <div className="error-state">
-            <h2>Oops! {error || 'Story not found'}</h2>
-            <button onClick={() => navigate('/stories')}>← Back to Stories</button>
+        <div style={{
+          background: theme.background,
+          minHeight: '100vh',
+          padding: '40px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '600px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '16px' }}>❌</div>
+            <p style={{
+              color: theme.textPrimary,
+              fontSize: '20px',
+              fontWeight: '600',
+              marginBottom: '16px',
+            }}>
+              {error || 'Story not found'}
+            </p>
+            <button
+              onClick={() => navigate('/stories')}
+              style={{
+                padding: '12px 32px',
+                background: `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
+                color: '#fff',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+              }}
+            >
+              ← Back to Stories
+            </button>
           </div>
         </div>
       </SiteLayout>
     );
   }
 
+  // Calculate progress and completion states
   const completedCount = progress?.completedChapters?.length || 0;
   const progressPercent = chapters.length > 0 ? (completedCount / chapters.length) * 100 : 0;
   const isChapterCompleted = progress?.completedChapters?.includes(selectedChapter?.id);
@@ -496,260 +548,218 @@ export default function StoryDetailPage() {
 
   return (
     <SiteLayout>
-      <div className="story-detail-wrapper">
-        {/* Celebration animation */}
-        {showCelebration && (
-          <div className="celebration">
-            <div className="confetti">🎉</div>
-            <div className="confetti">✨</div>
-            <div className="confetti">🌟</div>
-            <div className="confetti">🎊</div>
-            <p className="celebration-text">Awesome Story Completed! 🎉</p>
+      <div style={{
+        background: theme.background,
+        minHeight: '100vh',
+        padding: '20px',
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+        }}>
+          {/* Breadcrumb Navigation */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '24px',
+            color: theme.textSecondary,
+            fontSize: '14px',
+          }}>
+            <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: theme.accentPrimary, cursor: 'pointer', fontWeight: '600' }}>Home</button>
+            <span>›</span>
+            <button onClick={() => navigate('/stories')} style={{ background: 'none', border: 'none', color: theme.accentPrimary, cursor: 'pointer', fontWeight: '600' }}>Stories</button>
+            <span>›</span>
+            <span style={{ color: theme.textPrimary, fontWeight: '600' }}>{story.title}</span>
           </div>
-        )}
 
-        {/* Back button - OUTSIDE the card, top-left */}
-        <button className="story-back-button" onClick={() => navigate('/stories')}>
-          ← Back to Stories
-        </button>
-
-        <div className="story-detail-page">
-          {/* Story intro section */}
-          <div className="story-intro-section">
-            <div className="story-intro-content">
-              <h1 className="story-title">{story.title}</h1>
-              <p className="story-description">{story.description}</p>
+          {/* Hero Section with Story Info */}
+          <div style={{
+            background: `linear-gradient(135deg, ${theme.accentPrimary}20, ${theme.accentSecondary}20)`,
+            border: `2px solid ${theme.border}`,
+            borderRadius: '16px',
+            padding: '32px 24px',
+            marginBottom: '32px',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <h1 style={{
+              color: theme.accentPrimary,
+              fontSize: '32px',
+              fontWeight: '800',
+              margin: '0 0 12px 0',
+            }}>
+              📖 {story.title}
+            </h1>
+            <p style={{
+              color: theme.textSecondary,
+              fontSize: '16px',
+              margin: '0 0 16px 0',
+              lineHeight: '1.6',
+            }}>
+              {story.description}
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '20px',
+              marginTop: '16px',
+              flexWrap: 'wrap',
+            }}>
+              <div>
+                <p style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 4px 0', fontWeight: '600' }}>Chapters</p>
+                <p style={{ color: theme.textPrimary, fontSize: '18px', fontWeight: '700', margin: '0' }}>{chapters.length}</p>
+              </div>
+              <div>
+                <p style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 4px 0', fontWeight: '600' }}>Progress</p>
+                <p style={{ color: theme.textPrimary, fontSize: '18px', fontWeight: '700', margin: '0' }}>{progressPercent.toFixed(0)}%</p>
+              </div>
             </div>
           </div>
 
-          {/* Chapters tabs */}
-          <div className="chapters-tabs">
-            <div className="tabs-wrapper">
+          {/* Main content grid: Chapters + Content */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '280px 1fr',
+            gap: '24px',
+          }}>
+            {/* Left: Chapters Sidebar */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}>
               {chapters.map((chapter, index) => {
                 const isCompleted = progress?.completedChapters?.includes(chapter.id);
                 const isSelected = selectedChapterId === chapter.id;
-
+                
                 return (
                   <button
                     key={chapter.id}
-                    className={`tab-item ${isSelected ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
                     onClick={() => handleChapterSelect(chapter)}
-                    title={chapter.title}
+                    style={{
+                      padding: '12px 16px',
+                      background: isSelected ? `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})` : theme.surfacePrimary,
+                      color: isSelected ? '#fff' : theme.textPrimary,
+                      border: `2px solid ${isSelected ? 'transparent' : theme.border}`,
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.target.style.borderColor = theme.accentPrimary;
+                        e.target.style.background = `${theme.accentPrimary}15`;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.target.style.borderColor = theme.border;
+                        e.target.style.background = theme.surfacePrimary;
+                      }
+                    }}
                   >
-                    <span className="tab-label">Chapter {index + 1}</span>
-                    {isCompleted && <span className="tab-badge">✓</span>}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>Ch {index + 1}</span>
+                      {isCompleted && <span>✓</span>}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}>{chapter.title}</div>
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Main content area */}
-          <div className="story-content">
-            {/* Chapter content */}
-            <div className="chapter-content">
-              {selectedChapter ? (
+            {/* Right: Chapter Content */}
+            <div style={{
+              background: theme.surfacePrimary,
+              border: `1px solid ${theme.border}`,
+              borderRadius: '12px',
+              padding: '32px',
+              minHeight: '500px',
+            }}>
+              {selectedChapter && (
                 <>
-                  <div className="chapter-header">
-                    <h2 className="chapter-title">{selectedChapter.title}</h2>
+                  <h2 style={{
+                    color: theme.textPrimary,
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    margin: '0 0 16px 0',
+                  }}>
+                    {selectedChapter.title}
+                  </h2>
+                  <div style={{
+                    color: theme.textPrimary,
+                    fontSize: '16px',
+                    lineHeight: '1.8',
+                    marginBottom: '32px',
+                  }}>
+                    {selectedChapter.content}
                   </div>
-
-                  <div className="chapter-body">
-                    {selectedChapter.characterImage && (
-                      <div className="character-display">
-                        <div className="character-icon">{selectedChapter.characterImage}</div>
-                      </div>
+                  
+                  {/* Action buttons */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    marginTop: '32px',
+                    paddingTop: '32px',
+                    borderTop: `1px solid ${theme.border}`,
+                  }}>
+                    {!isChapterCompleted && (
+                      <button
+                        onClick={markChapterComplete}
+                        style={{
+                          padding: '12px 24px',
+                          background: `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        ✓ Mark Complete
+                      </button>
                     )}
-                    <div className="chapter-text-container">
-                      <p className="chapter-text">
-                        {selectedChapter.content || selectedChapter.description || '📖 Chapter content not available'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Action buttons - only show Next button */}
-                  <div className="chapter-actions">
-                    {chapters.findIndex(c => c.id === selectedChapter.id) < chapters.length - 1 ? (
-                      <button 
-                        className="next-button"
+                    
+                    {chapters.findIndex(c => c.id === selectedChapter.id) < chapters.length - 1 && (
+                      <button
                         onClick={handleNextChapter}
-                        title="Read the next chapter"
+                        style={{
+                          padding: '12px 24px',
+                          background: theme.surfaceSecondary,
+                          color: theme.textPrimary,
+                          border: `2px solid ${theme.border}`,
+                          borderRadius: '8px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.borderColor = theme.accentPrimary;
+                          e.target.style.background = `${theme.accentPrimary}15`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.borderColor = theme.border;
+                          e.target.style.background = theme.surfaceSecondary;
+                        }}
                       >
                         Next Chapter →
                       </button>
-                    ) : (
-                      <button 
-                        className="quiz-button"
-                        onClick={handleNextChapter}
-                        title="Take the quiz for this story"
-                      >
-                        📝 Take the Quiz →
-                      </button>
                     )}
                   </div>
-
-                  {/* Quiz Confirmation Modal */}
-                  {showQuizPrompt && (
-                    <div className="quiz-prompt-overlay">
-                      <div className="quiz-prompt-modal">
-                        <h3>🎯 Ready for the Quiz?</h3>
-                        <p>You've finished all the chapters! Take the quiz to complete this story and earn rewards.</p>
-                        <div className="quiz-prompt-buttons">
-                          <button 
-                            className="quiz-start-btn"
-                            onClick={() => {
-                              console.log('🔘 Start Quiz button clicked!');
-                              handleQuizStart();
-                            }}
-                          >
-                            📝 Start Quiz
-                          </button>
-                          <button 
-                            className="quiz-skip-btn"
-                            onClick={() => setShowQuizPrompt(false)}
-                          >
-                            Maybe Later
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Story completion message */}
-                  {isStoryCompleted && (
-                    <div className="story-completion-message">
-                      <div className="completion-icon">🎉</div>
-                      <h3>🌟 You've Completed the Story! 🌟</h3>
-                      <p>Congratulations! You've read all chapters of "{story.title}"</p>
-                      <p className="xp-message">You earned {completedCount * 100} XP! 🏆</p>
-                      <button 
-                        onClick={() => navigate('/stories')}
-                        className="back-to-stories-btn"
-                      >
-                        ← Back to All Stories
-                      </button>
-                    </div>
-                  )}
                 </>
-              ) : (
-                <div className="no-chapter">Select a chapter to read</div>
               )}
             </div>
           </div>
         </div>
-
-        {/* Quiz Modal */}
-        {quizData && (
-          <div className="quiz-modal-overlay">
-            <div className="quiz-modal-content">
-              <div className="quiz-modal-header">
-                <h2>📝 {quizData.title}</h2>
-                <p className="quiz-progress">{currentQuizIndex + 1} / {quizData.questions.length}</p>
-              </div>
-
-              {quizData.questions[currentQuizIndex] && (
-                <div className="quiz-question">
-                  <div className="question-text">
-                    {quizData.questions[currentQuizIndex].text}
-                  </div>
-
-                  <div className="question-options">
-                    {quizData.questions[currentQuizIndex].options.map((option, idx) => (
-                      <button
-                        key={idx}
-                        className={`option-button ${
-                          selectedAnswer === idx ? 'selected' : ''
-                        } ${
-                          showQuizResult && idx === quizData.questions[currentQuizIndex].correctAnswer
-                            ? 'correct'
-                            : showQuizResult && selectedAnswer === idx && selectedAnswer !== quizData.questions[currentQuizIndex].correctAnswer
-                            ? 'incorrect'
-                            : ''
-                        }`}
-                        onClick={() => handleAnswerSelect(idx)}
-                        disabled={showQuizResult}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-
-                  {showQuizResult && (
-                    <div className="quiz-feedback">
-                      {selectedAnswer === quizData.questions[currentQuizIndex].correctAnswer ? (
-                        <div className="feedback correct-feedback">
-                          ✅ Correct!
-                        </div>
-                      ) : (
-                        <div className="feedback incorrect-feedback">
-                          ❌ Incorrect! The correct answer is: {quizData.questions[currentQuizIndex].options[quizData.questions[currentQuizIndex].correctAnswer]}
-                        </div>
-                      )}
-                      {quizData.questions[currentQuizIndex].explanation && (
-                        <p className="explanation">{quizData.questions[currentQuizIndex].explanation}</p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="quiz-actions">
-                    {!showQuizResult ? (
-                      <button className="submit-btn" onClick={handleSubmitAnswer}>
-                        Submit Answer
-                      </button>
-                    ) : (
-                      <button className="next-btn" onClick={handleNextQuestion}>
-                        {currentQuizIndex < quizData.questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Completion Modal */}
-        {showQuizComplete && (
-          <div className="quiz-modal-overlay">
-            <div className="quiz-modal-content quiz-complete-modal">
-              <div className="completion-header">
-                <div className="success-animation">
-                  <span>🎉</span>
-                  <span>✨</span>
-                  <span>🌟</span>
-                </div>
-                <h2>Quiz Passed! 🎉</h2>
-              </div>
-
-              <div className="completion-info">
-                <p className="score-display">
-                  Your Score: <strong>{quizScore}/{quizAnswers.length}</strong>
-                </p>
-                <p className="score-percentage">
-                  {Math.round((quizScore / quizAnswers.length) * 100)}% Correct
-                </p>
-                <p className="reward-message">
-                  ✨ You earned <strong>150 XP</strong> and <strong>30 coins</strong> for completing this quiz!
-                </p>
-              </div>
-
-              <div className="completion-actions">
-                <button 
-                  className="complete-story-btn"
-                  onClick={handleCompleteStory}
-                >
-                  🏆 Complete Story
-                </button>
-                <button 
-                  className="retake-quiz-btn"
-                  onClick={handleRetakeQuiz}
-                >
-                  🔄 Retake Quiz
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </SiteLayout>
   );

@@ -171,16 +171,16 @@ export default function OrderingPuzzle({ puzzle, onComplete, isInline = false })
         </div>
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-teal-50 py-8">
-        <div className="max-w-2xl mx-auto px-4">
+      <div className={isInline ? "py-0" : "min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-teal-50 py-8"}>
+        <div className={isInline ? "" : "max-w-2xl mx-auto px-4"}>
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">🔢 {puzzle.title}</h1>
+          <div className={isInline ? "mb-4" : "text-center mb-8"}>
+            <h1 className={isInline ? "text-2xl font-bold text-gray-800 mb-2" : "text-4xl font-bold text-gray-800 mb-2"}>🔢 {puzzle.title}</h1>
             <p className="text-gray-600">{puzzle.description}</p>
           </div>
 
-          {/* Level Selection - Only show if levels are defined */}
-          {allLevels && allLevels.length > 0 && (
+          {/* Level Selection - Only show if levels are defined and NOT inline */}
+          {!isInline && allLevels && allLevels.length > 0 && (
             <div className="mb-8 bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">📚 Select Level</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

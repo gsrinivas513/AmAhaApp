@@ -46,6 +46,7 @@ import QuizPage from "./quiz/QuizPage";
 import PuzzlesPage from "./pages/PuzzlesPage";
 import PuzzlesMockPage from "./pages/PuzzlesMockPage";
 import PuzzlePlayerPage from "./pages/PuzzlePlayerPage";
+import JigsawTest from "./puzzles/classicJigsaw/JigsawTest";
 
 /* STORIES */
 import StoriesPage from "./pages/StoriesPage";
@@ -55,6 +56,14 @@ import ArtsPage from "./pages/ArtsPage";
 import DocumentsPage from "./pages/DocumentsPage";
 import StudiesPage from "./pages/StudiesPage";
 import WorksheetsPage from "./pages/WorksheetsPage";
+
+/* ARTS COMPONENTS */
+import ArtsHome from "./arts/ArtsHome";
+import DrawCanvas from "./arts/DrawCanvas";
+import PaintCanvas from "./arts/PaintCanvas";
+import GuidedDrawing from "./arts/GuidedDrawing";
+import DigitalArt from "./arts/DigitalArt";
+import ArtGallery from "./arts/ArtGallery";
 
 /* USER */
 import ProfilePage from "./pages/ProfilePage";
@@ -105,6 +114,7 @@ import FixGenericPuzzleTypes from "./admin/FixGenericPuzzleTypes";
 import PopulateMissingPuzzleData from "./admin/PopulateMissingPuzzleData";
 import DeleteIncompletePuzzles from "./admin/DeleteIncompletePuzzles";
 import PuzzleDataValidator from "./admin/PuzzleDataValidator";
+import JigsawPuzzleFixture from "./admin/JigsawPuzzleFixture";
 
 /* ADMIN — PUZZLES */
 import AddPuzzlePage from "./admin/AddPuzzlePage";
@@ -159,9 +169,9 @@ function App() {
         <Route path="/quiz/:categoryName/:topicName/:subtopicName/:difficulty/:level" element={<QuizPage />} />
 
         {/* PUZZLE HUB */}
-        <Route path="/puzzle" element={<PuzzlesPage />} />
-        <Route path="/puzzle-mock" element={<PuzzlesMockPage />} />
         <Route path="/play/puzzle/:id" element={<PuzzlePlayerPage />} />
+        <Route path="/puzzle-mock" element={<PuzzlesMockPage />} />
+        <Route path="/test/jigsaw" element={<JigsawTest />} />
 
         {/* LEADERBOARD */}
         <Route path="/leaderboard/:categoryId" element={<LeaderboardPage />} />
@@ -180,9 +190,6 @@ function App() {
         <Route path="/stories/:storyId" element={<StoryDetailPage />} />
 
         {/* NEW CONTENT TYPES */}
-        <Route path="/arts" element={<ArtsPage />} />
-        <Route path="/arts/:categoryName" element={<ArtsPage />} />
-        <Route path="/arts/:categoryName/:artId" element={<ArtsPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/documents/:categoryName" element={<DocumentsPage />} />
         <Route path="/documents/:categoryName/:documentId" element={<DocumentsPage />} />
@@ -199,6 +206,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/search" element={<SearchPage />} />
+        {/* NOTE: /play/puzzle/:id must come BEFORE /play/:type/:id for proper route matching */}
         <Route path="/play/:type/:id" element={<PlayPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/category/:categoryId/details" element={<CategoryDetailsPage />} />
@@ -209,7 +217,6 @@ function App() {
         <Route path="/admin/modern-dashboard" element={<ModernAdminDashboard />} />
         <Route path="/admin/quizzes" element={<AdminQuizzesManager />} />
         <Route path="/admin/puzzles" element={<AdminPuzzlesManager />} />
-        <Route path="/admin/stories" element={<AdminStoriesManager />} />
         <Route path="/admin/categories" element={<CategoriesPage />} />
         <Route path="/admin/import" element={<ImportQuestionsPage />} />
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />
@@ -243,6 +250,7 @@ function App() {
         <Route path="/admin/populate-missing-puzzle-data" element={<PopulateMissingPuzzleData />} />
         <Route path="/admin/delete-incomplete-puzzles" element={<DeleteIncompletePuzzles />} />
         <Route path="/admin/validate-puzzle-data" element={<PuzzleDataValidator />} />
+        <Route path="/admin/jigsaw-fixture" element={<JigsawPuzzleFixture />} />
 
         {/* ADMIN — PUZZLES */}
         <Route path="/admin/puzzles" element={<PuzzleListPage />} />
@@ -260,6 +268,12 @@ function App() {
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
+        <Route path="/arts" element={<ArtsHome />} />
+        <Route path="/arts/draw" element={<DrawCanvas />} />
+        <Route path="/arts/paint" element={<PaintCanvas />} />
+        <Route path="/arts/guided" element={<GuidedDrawing />} />
+        <Route path="/arts/digital" element={<DigitalArt />} />
+        <Route path="/arts/gallery" element={<ArtGallery />} />
         <Route path="/admin/create-test-puzzles" element={<CreateTestPuzzlesPage />} />
         <Route path="/admin/regenerate-ordering-puzzles" element={<RegenerateOrderingPuzzlesPage />} />
         <Route path="/admin/analytics" element={<AnalyticsPage />} />
@@ -274,13 +288,13 @@ function App() {
         <Route path="/admin/fix-puzzle-type" element={<FixPuzzleType />} />
 
         {/* PUZZLES - USER */}
-        <Route path="/puzzle" element={<PuzzleTopicPage />} />
+        <Route path="/puzzle" element={<PuzzlesPage />} />
         <Route path="/puzzle/:categoryName" element={<PuzzleTopicPage />} />
         <Route path="/puzzle/:categoryName/:topicName" element={<PuzzleSubcategoryPage />} />
         <Route path="/puzzle/:categoryName/:topicName/:subtopicName" element={<PuzzleCategoryPage />} />
         <Route path="/puzzle/:categoryName/:topicName/:subtopicName/:puzzleId" element={<UnifiedPuzzlePage />} />
         
-        {/* DIRECT PLAY - Skip navigation, go straight to puzzle */}
+        {/* DIRECT PLAY - Skip navigation, go straight to puzzle - Must be AFTER /play/puzzle/:id for proper matching */}
         <Route path="/play/:puzzleId" element={<UnifiedPuzzlePage />} />
       </Routes>
     </div>

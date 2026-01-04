@@ -107,11 +107,11 @@ export default function MatchingPuzzle({ puzzle, onComplete, isInline = false })
         </div>
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8">
-        <div className="max-w-4xl mx-auto px-4">
+      <div className={isInline ? "py-0" : "min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8"}>
+        <div className={isInline ? "" : "max-w-4xl mx-auto px-4"}>
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">🎭 {puzzle.title}</h1>
+          <div className={isInline ? "mb-4" : "text-center mb-8"}>
+            <h1 className={isInline ? "text-2xl font-bold text-gray-800 mb-2" : "text-4xl font-bold text-gray-800 mb-2"}>🎭 {puzzle.title}</h1>
             <p className="text-gray-600">{puzzle.description}</p>
           </div>
 
