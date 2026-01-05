@@ -90,25 +90,32 @@ function ProfessionalNavBar() {
         <div
           onClick={() => navigate('/')}
           style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            color: theme.textPrimary,
+            fontSize: '26px',
+            fontWeight: '900',
+            color: theme.accentPrimary,
             letterSpacing: '-0.5px',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            padding: '6px 12px',
-            borderRadius: '8px',
+            transition: 'all 0.3s ease',
+            padding: '6px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            position: 'relative',
+            fontFamily: '"Nunito", system-ui, sans-serif',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = theme.accentPrimary;
-            e.currentTarget.style.background = `${theme.accentPrimary}15`;
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.opacity = '0.9';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = theme.textPrimary;
-            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.opacity = '1';
           }}
         >
-          AmAha
+          <span style={{ fontSize: '28px' }}>🎯</span>
+          <span style={{ color: theme.accentPrimary }}>
+            AmAha
+          </span>
         </div>
 
         {/* Desktop Navigation */}

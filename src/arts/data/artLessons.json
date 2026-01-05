@@ -12,31 +12,31 @@
         "number": 1,
         "instruction": "Draw a large circle in the center. This will be the cat's head.",
         "tip": "Use light strokes so you can erase if needed.",
-        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Circle"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Ccircle cx='150' cy='150' r='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 1: Draw Circle%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 2,
         "instruction": "Add two small triangles on top of the circle for ears.",
         "tip": "Make them pointy but not too sharp.",
-        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Ears"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Ccircle cx='150' cy='150' r='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='110,80 100,40 120,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='190,80 180,40 200,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 2: Add Ears%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 3,
         "instruction": "Draw two circles for the eyes. Leave a small white circle inside each eye.",
         "tip": "Eyes should be spaced apart evenly.",
-        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Eyes"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Ccircle cx='150' cy='150' r='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='110,80 100,40 120,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='190,80 180,40 200,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='120' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='120' cy='130' r='8' fill='%23fff'/%3E%3Ccircle cx='180' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='180' cy='130' r='8' fill='%23fff'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 3: Add Eyes%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 4,
         "instruction": "Add a small triangular nose between the eyes.",
         "tip": "Make it pink or red!",
-        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Nose"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Ccircle cx='150' cy='150' r='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='110,80 100,40 120,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='190,80 180,40 200,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='120' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='120' cy='130' r='8' fill='%23fff'/%3E%3Ccircle cx='180' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='180' cy='130' r='8' fill='%23fff'/%3E%3Cpolygon points='150,155 145,165 155,165' fill='%23ff69b4'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 4: Add Nose%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 5,
         "instruction": "Draw a curved mouth below the nose. Add whiskers with small lines.",
         "tip": "Make it smile and look happy!",
-        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Mouth"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Ccircle cx='150' cy='150' r='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='110,80 100,40 120,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='190,80 180,40 200,70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='120' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='120' cy='130' r='8' fill='%23fff'/%3E%3Ccircle cx='180' cy='130' r='15' fill='%23333'/%3E%3Ccircle cx='180' cy='130' r='8' fill='%23fff'/%3E%3Cpolygon points='150,155 145,165 155,165' fill='%23ff69b4'/%3E%3Cpath d='M 140 170 Q 150 180 160 170' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cline x1='100' y1='155' x2='70' y2='150' stroke='%23333' stroke-width='2'/%3E%3Cline x1='100' y1='165' x2='70' y2='165' stroke='%23333' stroke-width='2'/%3E%3Cline x1='200' y1='155' x2='230' y2='150' stroke='%23333' stroke-width='2'/%3E%3Cline x1='200' y1='165' x2='230' y2='165' stroke='%23333' stroke-width='2'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 5: Add Mouth %26 Whiskers%3C/text%3E%3C/svg%3E"
       }
     ]
   },
@@ -53,31 +53,31 @@
         "number": 1,
         "instruction": "Draw a square for the house body.",
         "tip": "Make sure all corners are clean and straight.",
-        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Square"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='100' y='120' width='100' height='100' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 1: Draw Square%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 2,
         "instruction": "Draw a triangle on top of the square for the roof.",
         "tip": "The triangle should cover the top of the square.",
-        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Roof"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='100' y='120' width='100' height='100' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='150,60 100,120 200,120' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 2: Add Roof%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 3,
         "instruction": "Draw a rectangle in the center for the door.",
         "tip": "Make it tall but not too wide.",
-        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Door"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='100' y='120' width='100' height='100' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='150,60 100,120 200,120' fill='none' stroke='%23333' stroke-width='3'/%3E%3Crect x='135' y='160' width='30' height='60' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 3: Add Door%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 4,
         "instruction": "Draw two small squares for windows on each side of the door.",
         "tip": "Make them the same size.",
-        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Windows"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='100' y='120' width='100' height='100' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='150,60 100,120 200,120' fill='none' stroke='%23333' stroke-width='3'/%3E%3Crect x='135' y='160' width='30' height='60' fill='none' stroke='%23333' stroke-width='3'/%3E%3Crect x='110' y='145' width='15' height='15' fill='none' stroke='%23333' stroke-width='2'/%3E%3Crect x='175' y='145' width='15' height='15' fill='none' stroke='%23333' stroke-width='2'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 4: Add Windows%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 5,
         "instruction": "Add details: a small circle for a doorknob and lines in the windows.",
         "tip": "Color it in with your favorite colors!",
-        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Details"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='100' y='120' width='100' height='100' fill='%23daa520' opacity='0.5'/%3E%3Crect x='100' y='120' width='100' height='100' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='150,60 100,120 200,120' fill='%23a0522d' opacity='0.5'/%3E%3Cpolygon points='150,60 100,120 200,120' fill='none' stroke='%23333' stroke-width='3'/%3E%3Crect x='135' y='160' width='30' height='60' fill='%238b4513' opacity='0.5'/%3E%3Crect x='135' y='160' width='30' height='60' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='158' cy='192' r='2.5' fill='%23333'/%3E%3Crect x='110' y='145' width='15' height='15' fill='%2387ceeb' opacity='0.5'/%3E%3Crect x='110' y='145' width='15' height='15' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cline x1='117.5' y1='145' x2='117.5' y2='160' stroke='%23333' stroke-width='1'/%3E%3Cline x1='110' y1='152.5' x2='125' y2='152.5' stroke='%23333' stroke-width='1'/%3E%3Crect x='175' y='145' width='15' height='15' fill='%2387ceeb' opacity='0.5'/%3E%3Crect x='175' y='145' width='15' height='15' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cline x1='182.5' y1='145' x2='182.5' y2='160' stroke='%23333' stroke-width='1'/%3E%3Cline x1='175' y1='152.5' x2='190' y2='152.5' stroke='%23333' stroke-width='1'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 5: Add Details %26 Color%3C/text%3E%3C/svg%3E"
       }
     ]
   },
@@ -94,31 +94,31 @@
         "number": 1,
         "instruction": "Draw a rectangle for the tree trunk.",
         "tip": "Make it straight and sturdy.",
-        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Trunk"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='130' y='160' width='40' height='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 1: Draw Trunk%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 2,
-        "instruction": "Draw a large circle or cloud shape above the trunk for the canopy (top part).",
-        "tip": "Make it big and fluffy!",
-        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Canopy"
+        "instruction": "Draw a large circle or rounded shape on top for the leaves.",
+        "tip": "This represents the crown of the tree.",
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='130' y='160' width='40' height='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='150' cy='100' r='70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 2: Add Foliage%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 3,
-        "instruction": "Add bumpy edges to the canopy to look more leafy.",
-        "tip": "Make small bumps all around the circle.",
-        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Texture"
+        "instruction": "Add more branches by drawing 2-3 circles overlapping the first one.",
+        "tip": "This creates depth and makes the tree fuller.",
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='130' y='160' width='40' height='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='150' cy='100' r='70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='110' cy='80' r='50' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='190' cy='80' r='50' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 3: Add Branches%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 4,
-        "instruction": "Draw some branches sticking out from the trunk.",
-        "tip": "They should look like arms reaching up.",
-        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Branches"
+        "instruction": "Draw small lines on the trunk to show texture and bark.",
+        "tip": "Add vertical lines for a realistic look.",
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='130' y='160' width='40' height='80' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cline x1='135' y1='160' x2='135' y2='240' stroke='%23333' stroke-width='1'/%3E%3Cline x1='145' y1='160' x2='145' y2='240' stroke='%23333' stroke-width='1'/%3E%3Cline x1='155' y1='160' x2='155' y2='240' stroke='%23333' stroke-width='1'/%3E%3Cline x1='165' y1='160' x2='165' y2='240' stroke='%23333' stroke-width='1'/%3E%3Ccircle cx='150' cy='100' r='70' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='110' cy='80' r='50' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ccircle cx='190' cy='80' r='50' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 4: Add Texture%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 5,
-        "instruction": "Add small circles or lines to represent leaves and details.",
-        "tip": "Use green and brown colors!",
-        "image": "https://via.placeholder.com/300?text=Step+5:+Add+Leaves"
+        "instruction": "Color it in! Use brown for the trunk and green for the leaves.",
+        "tip": "Add some shading for depth!",
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Crect x='130' y='160' width='40' height='80' fill='%238b6f47'/%3E%3Cline x1='135' y1='160' x2='135' y2='240' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='145' y1='160' x2='145' y2='240' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='155' y1='160' x2='155' y2='240' stroke='%23654321' stroke-width='1'/%3E%3Cline x1='165' y1='160' x2='165' y2='240' stroke='%23654321' stroke-width='1'/%3E%3Ccircle cx='150' cy='100' r='70' fill='%2328a745' opacity='0.7'/%3E%3Ccircle cx='110' cy='80' r='50' fill='%2320c997' opacity='0.7'/%3E%3Ccircle cx='190' cy='80' r='50' fill='%2320c997' opacity='0.7'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 5: Add Colors%3C/text%3E%3C/svg%3E"
       }
     ]
   },
@@ -258,31 +258,31 @@
         "number": 1,
         "instruction": "Draw a horizontal oval shape for the fish's body.",
         "tip": "Make it wider in the middle and pointy at one end.",
-        "image": "https://via.placeholder.com/300?text=Step+1:+Draw+Body"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cellipse cx='150' cy='150' rx='70' ry='40' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 1: Draw Body%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 2,
         "instruction": "Draw a triangle at the right end for the tail fin.",
         "tip": "Make it point backwards like it's swimming.",
-        "image": "https://via.placeholder.com/300?text=Step+2:+Add+Tail"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cellipse cx='140' cy='150' rx='70' ry='40' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='210,150 260,120 260,180' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 2: Add Tail%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 3,
         "instruction": "Add two small triangles on top and bottom for the fins.",
         "tip": "These help the fish balance and swim!",
-        "image": "https://via.placeholder.com/300?text=Step+3:+Add+Fins"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cellipse cx='140' cy='150' rx='70' ry='40' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='210,150 260,120 260,180' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='140,110 155,80 150,110' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cpolygon points='140,190 155,220 150,190' fill='none' stroke='%23333' stroke-width='2'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 3: Add Fins%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 4,
         "instruction": "Draw a small circle on the left side for the eye.",
         "tip": "Add a tiny dot inside the eye to make it shine!",
-        "image": "https://via.placeholder.com/300?text=Step+4:+Add+Eye"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cellipse cx='140' cy='150' rx='70' ry='40' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='210,150 260,120 260,180' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='140,110 155,80 150,110' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cpolygon points='140,190 155,220 150,190' fill='none' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='85' cy='145' r='10' fill='%23333'/%3E%3Ccircle cx='87' cy='143' r='3' fill='%23fff'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 4: Add Eye%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 5,
         "instruction": "Color the fish with bright colors - orange, pink, blue, or any color you like!",
         "tip": "Add stripes or spots to make it unique!",
-        "image": "https://via.placeholder.com/300?text=Step+5:+Color+Fish"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cellipse cx='140' cy='150' rx='70' ry='40' fill='%23ff9500' opacity='0.7'/%3E%3Cellipse cx='140' cy='150' rx='70' ry='40' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='210,150 260,120 260,180' fill='%23ff6b9d' opacity='0.7'/%3E%3Cpolygon points='210,150 260,120 260,180' fill='none' stroke='%23333' stroke-width='3'/%3E%3Cpolygon points='140,110 155,80 150,110' fill='%23ff6b9d' opacity='0.7'/%3E%3Cpolygon points='140,110 155,80 150,110' fill='none' stroke='%23333' stroke-width='2'/%3E%3Cpolygon points='140,190 155,220 150,190' fill='%23ff6b9d' opacity='0.7'/%3E%3Cpolygon points='140,190 155,220 150,190' fill='none' stroke='%23333' stroke-width='2'/%3E%3Ccircle cx='85' cy='145' r='10' fill='%23333'/%3E%3Ccircle cx='87' cy='143' r='3' fill='%23fff'/%3E%3Ccircle cx='160' cy='140' r='5' fill='%23fff' opacity='0.6'/%3E%3Ccircle cx='175' cy='155' r='5' fill='%23fff' opacity='0.6'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 5: Add Colors%3C/text%3E%3C/svg%3E"
       }
     ]
   },
@@ -299,31 +299,31 @@
         "number": 1,
         "instruction": "Imagine a point at the top center. Draw a line going down to the bottom right.",
         "tip": "Use light strokes, we'll connect them all.",
-        "image": "https://via.placeholder.com/300?text=Step+1:+First+Line"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cline x1='150' y1='60' x2='210' y2='210' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 1: First Line%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 2,
         "instruction": "From the bottom right, draw a line to the upper left.",
         "tip": "Keep the angle consistent.",
-        "image": "https://via.placeholder.com/300?text=Step+2:+Second+Line"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cline x1='150' y1='60' x2='210' y2='210' stroke='%23333' stroke-width='3'/%3E%3Cline x1='210' y1='210' x2='60' y2='110' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 2: Second Line%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 3,
         "instruction": "From the upper left, draw a line across to the right side.",
         "tip": "This creates the middle of the star.",
-        "image": "https://via.placeholder.com/300?text=Step+3:+Third+Line"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cline x1='150' y1='60' x2='210' y2='210' stroke='%23333' stroke-width='3'/%3E%3Cline x1='210' y1='210' x2='60' y2='110' stroke='%23333' stroke-width='3'/%3E%3Cline x1='60' y1='110' x2='240' y2='110' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 3: Third Line%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 4,
         "instruction": "From the right side, draw a line down to the bottom left.",
         "tip": "Almost there!",
-        "image": "https://via.placeholder.com/300?text=Step+4:+Fourth+Line"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cline x1='150' y1='60' x2='210' y2='210' stroke='%23333' stroke-width='3'/%3E%3Cline x1='210' y1='210' x2='60' y2='110' stroke='%23333' stroke-width='3'/%3E%3Cline x1='60' y1='110' x2='240' y2='110' stroke='%23333' stroke-width='3'/%3E%3Cline x1='240' y1='110' x2='90' y2='210' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 4: Fourth Line%3C/text%3E%3C/svg%3E"
       },
       {
         "number": 5,
         "instruction": "From the bottom left, draw the final line back to the top point to complete your star!",
         "tip": "Color it in - maybe yellow or gold?",
-        "image": "https://via.placeholder.com/300?text=Step+5:+Complete+Star"
+        "image": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23f8f9fa' width='300' height='300'/%3E%3Cpolygon points='150,60 210,210 60,110 240,110 90,210' fill='%23ffd700' opacity='0.5'/%3E%3Cpolygon points='150,60 210,210 60,110 240,110 90,210' fill='none' stroke='%23333' stroke-width='3'/%3E%3Ctext x='150' y='270' font-size='14' text-anchor='middle' fill='%23666'%3EStep 5: Complete Star%3C/text%3E%3C/svg%3E"
       }
     ]
   }

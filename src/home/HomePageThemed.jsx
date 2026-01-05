@@ -37,7 +37,7 @@ function HeroSection() {
                     radial-gradient(circle at bottom left, ${theme.accentSecondary}15, transparent)`,
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        padding: '100px 20px 80px 20px',
+        padding: '140px 20px 60px 20px',
         textAlign: 'center',
         minHeight: 'calc(100vh - 70px)',
         display: 'flex',
@@ -72,16 +72,16 @@ function HeroSection() {
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{
-          fontSize: '48px',
+          fontSize: '64px',
           marginBottom: '20px',
           animation: 'float 3s ease-in-out infinite',
         }}>
-          ✨
+          🚀
         </div>
 
         <h1
           style={{
-            fontSize: 'clamp(2.8rem, 9vw, 4.2rem)',
+            fontSize: 'clamp(2.8rem, 9vw, 4.5rem)',
             fontWeight: '900',
             color: theme.accentPrimary,
             marginBottom: '24px',
@@ -94,7 +94,7 @@ function HeroSection() {
 
         <p
           style={{
-            fontSize: '18px',
+            fontSize: '16px',
             color: theme.textSecondary,
             maxWidth: '700px',
             marginBottom: '48px',

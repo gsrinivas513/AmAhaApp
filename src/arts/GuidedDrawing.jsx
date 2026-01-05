@@ -1,15 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import artLessons from './data/artLessons.json';
 
 const GuidedDrawing = () => {
   const { theme } = useTheme();
+  const canvasRef = useRef(null);
+  const contextRef = useRef(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [brushSize, setBrushSize] = useState(3);
+  const [brushColor, setBrushColor] = useState('#000000');
+  const [canvasHistory, setCanvasHistory] = useState([]);
+
+  // Initialize canvas
+  useEffect(() => {
+    if (selectedLesson && canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = 500;
+      canvas.height = 500;
+
+      const context = canvas.getContext('2d');
+      context.fillStyle = theme.surfacePrimary;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      contextRef.current = context;
+      saveCanvasState();
+    }
+  }, [selectedLesson, theme]);
+
+  const saveCanvasState = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      setCanvasHistory(prev => [...prev, canvas.toDataURL()]);
+    }
+  };
 
   const handleSelectLesson = (lesson) => {
     setSelectedLesson(lesson);
     setCurrentStep(0);
+    setCanvasHistory([]);
   };
 
   const handleNextStep = () => {
@@ -27,6 +56,70 @@ const GuidedDrawing = () => {
   const handleBackToList = () => {
     setSelectedLesson(null);
     setCurrentStep(0);
+    setCanvasHistory([]);
+  };
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const ctx = contextRef.current;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = brushColor;
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const ctx = contextRef.current;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    const ctx = contextRef.current;
+    ctx.closePath();
+    setIsDrawing(false);
+    saveCanvasState();
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = theme.surfacePrimary;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    contextRef.current = ctx;
+    setCanvasHistory([]);
+    saveCanvasState();
+  };
+
+  const undoDrawing = () => {
+    if (canvasHistory.length > 1) {
+      const newHistory = canvasHistory.slice(0, -1);
+      setCanvasHistory(newHistory);
+      
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = newHistory[newHistory.length - 1];
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        contextRef.current = ctx;
+      };
+    }
   };
 
   if (!selectedLesson) {
@@ -37,7 +130,7 @@ const GuidedDrawing = () => {
         padding: '20px',
       }}>
         <div style={{
-          maxWidth: '1000px',
+          maxWidth: '1200px',
           margin: '0 auto',
         }}>
           {/* Header */}
@@ -45,16 +138,24 @@ const GuidedDrawing = () => {
             color: theme.textPrimary,
             fontSize: '32px',
             fontWeight: '700',
-            marginBottom: '30px',
+            marginBottom: '10px',
             textAlign: 'center',
           }}>
             📚 Learn to Draw
           </h1>
+          <p style={{
+            color: theme.textSecondary,
+            fontSize: '14px',
+            textAlign: 'center',
+            marginBottom: '40px',
+          }}>
+            Step-by-step guided drawing lessons for beginners
+          </p>
 
           {/* Lessons Grid */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '20px',
           }}>
             {artLessons.map(lesson => (
@@ -64,7 +165,7 @@ const GuidedDrawing = () => {
                 style={{
                   padding: '20px',
                   background: theme.surfacePrimary,
-                  border: `3px solid #A78BFA`,
+                  border: `3px solid ${theme.accentPrimary}`,
                   borderRadius: '12px',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -72,14 +173,16 @@ const GuidedDrawing = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                  e.currentTarget.style.boxShadow = `0 12px 30px ${theme.accentPrimary}30`;
+                  e.currentTarget.style.borderColor = theme.accentSecondary;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = theme.accentPrimary;
                 }}
               >
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '56px', marginBottom: '12px' }}>
                   {lesson.icon}
                 </div>
                 <h3 style={{
@@ -92,17 +195,28 @@ const GuidedDrawing = () => {
                 </h3>
                 <p style={{
                   color: theme.textSecondary,
-                  fontSize: '12px',
-                  margin: '0',
+                  fontSize: '13px',
+                  margin: '0 0 12px 0',
                 }}>
                   {lesson.level} • {lesson.steps.length} steps
                 </p>
+                <div style={{
+                  display: 'inline-block',
+                  background: theme.accentPrimary + '20',
+                  color: theme.accentPrimary,
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}>
+                  Start Learning
+                </div>
               </button>
             ))}
           </div>
 
           {/* Back Button */}
-          <div style={{ marginTop: '40px', textAlign: 'center' }}>
+          <div style={{ marginTop: '50px', textAlign: 'center' }}>
             <button
               onClick={() => window.history.back()}
               style={{
@@ -114,9 +228,12 @@ const GuidedDrawing = () => {
                 fontSize: '14px',
                 fontWeight: '600',
                 cursor: 'pointer',
+                transition: 'all 0.2s',
               }}
+              onMouseEnter={(e) => e.currentTarget.style.background = theme.border + '30'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
-              ← Back
+              ← Back to Arts
             </button>
           </div>
         </div>
@@ -132,7 +249,7 @@ const GuidedDrawing = () => {
     <div style={{
       minHeight: '100vh',
       background: theme.background,
-      padding: '20px',
+      padding: '16px',
       display: 'flex',
       flexDirection: 'column',
     }}>
@@ -141,11 +258,11 @@ const GuidedDrawing = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '20px',
+        marginBottom: '16px',
       }}>
         <h2 style={{
           color: theme.textPrimary,
-          fontSize: '28px',
+          fontSize: '26px',
           fontWeight: '700',
           margin: '0',
         }}>
@@ -162,127 +279,269 @@ const GuidedDrawing = () => {
             fontSize: '13px',
             fontWeight: '600',
             cursor: 'pointer',
+            transition: 'all 0.2s',
           }}
+          onMouseEnter={(e) => e.currentTarget.style.background = theme.border + '30'}
+          onMouseLeave={(e) => e.currentTarget.style.background = theme.background}
         >
           ← Back
         </button>
       </div>
 
-      {/* Content */}
+      {/* Main Content - Canvas + Instructions */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: '20px',
+        gap: '16px',
         flex: 1,
-        marginBottom: '20px',
+        marginBottom: '16px',
       }}>
-        {/* Reference Image */}
+        {/* Left Panel - Drawing Canvas */}
         <div style={{
           background: theme.surfacePrimary,
           border: `2px solid ${theme.border}`,
           borderRadius: '12px',
-          padding: '20px',
+          padding: '16px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
         }}>
-          <img
-            src={step.image}
-            alt={`Step ${currentStep + 1}`}
+          {/* Canvas Toolbar */}
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginBottom: '12px',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}>
+            {/* Brush Size */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{
+                color: theme.textPrimary,
+                fontSize: '12px',
+                fontWeight: '600',
+              }}>
+                Size:
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                style={{ width: '80px' }}
+              />
+              <span style={{
+                color: theme.textSecondary,
+                fontSize: '12px',
+                minWidth: '30px',
+              }}>
+                {brushSize}px
+              </span>
+            </div>
+
+            {/* Color Picker */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{
+                color: theme.textPrimary,
+                fontSize: '12px',
+                fontWeight: '600',
+              }}>
+                Color:
+              </label>
+              <input
+                type="color"
+                value={brushColor}
+                onChange={(e) => setBrushColor(e.target.value)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  border: `2px solid ${theme.border}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+
+            <div style={{ flex: 1 }} />
+
+            {/* Clear & Undo Buttons */}
+            <button
+              onClick={undoDrawing}
+              disabled={canvasHistory.length <= 1}
+              style={{
+                padding: '8px 12px',
+                background: canvasHistory.length <= 1 ? theme.border : theme.background,
+                border: `1px solid ${theme.border}`,
+                borderRadius: '6px',
+                color: theme.textPrimary,
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: canvasHistory.length <= 1 ? 'not-allowed' : 'pointer',
+                opacity: canvasHistory.length <= 1 ? 0.5 : 1,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (canvasHistory.length > 1) {
+                  e.currentTarget.style.background = theme.accentPrimary + '20';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = theme.background;
+              }}
+            >
+              ↩️ Undo
+            </button>
+
+            <button
+              onClick={clearCanvas}
+              style={{
+                padding: '8px 12px',
+                background: theme.error + '20',
+                border: `1px solid ${theme.error}`,
+                borderRadius: '6px',
+                color: theme.error,
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = theme.error + '30'}
+              onMouseLeave={(e) => e.currentTarget.style.background = theme.error + '20'}
+            >
+              🗑️ Clear
+            </button>
+          </div>
+
+          {/* Canvas */}
+          <canvas
+            ref={canvasRef}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
             style={{
-              maxWidth: '100%',
-              maxHeight: '400px',
+              flex: 1,
+              background: theme.surfacePrimary,
+              border: `3px solid ${theme.border}`,
               borderRadius: '8px',
-            }}
-            onError={(e) => {
-              e.target.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22300%22/%3E%3C/svg%3E';
+              cursor: 'crosshair',
+              minHeight: '400px',
+              touchAction: 'none',
             }}
           />
         </div>
 
-        {/* Instructions */}
+        {/* Right Panel - Reference + Instructions */}
         <div style={{
-          background: theme.surfacePrimary,
-          border: `2px solid ${theme.border}`,
-          borderRadius: '12px',
-          padding: '20px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          gap: '16px',
         }}>
+          {/* Reference Image */}
           <div style={{
-            marginBottom: '20px',
+            background: theme.surfacePrimary,
+            border: `2px solid ${theme.border}`,
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '250px',
+          }}>
+            <img
+              src={step.image}
+              alt={`Step ${currentStep + 1}`}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '250px',
+                borderRadius: '8px',
+                objectFit: 'contain',
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          </div>
+
+          {/* Instructions */}
+          <div style={{
+            background: theme.surfacePrimary,
+            border: `2px solid ${theme.accentPrimary}`,
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
           }}>
             <p style={{
               color: theme.textSecondary,
-              fontSize: '12px',
-              fontWeight: '600',
+              fontSize: '11px',
+              fontWeight: '700',
               textTransform: 'uppercase',
               margin: '0 0 8px 0',
+              letterSpacing: '0.5px',
             }}>
-              Step {currentStep + 1} of {lesson.steps.length}
+              📍 Step {currentStep + 1} of {lesson.steps.length}
             </p>
+
+            {/* Progress Bar */}
             <div style={{
               width: '100%',
-              height: '8px',
+              height: '6px',
               background: theme.background,
-              borderRadius: '4px',
+              borderRadius: '3px',
               overflow: 'hidden',
+              marginBottom: '16px',
             }}>
               <div style={{
                 width: `${progress}%`,
                 height: '100%',
-                background: '#A78BFA',
-                transition: 'width 0.3s ease',
+                background: theme.accentPrimary,
+                transition: 'width 0.4s ease',
+                borderRadius: '3px',
               }} />
             </div>
-          </div>
 
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-          }}>
+            {/* Main Instruction */}
             <p style={{
               color: theme.textPrimary,
-              fontSize: '20px',
+              fontSize: '16px',
               fontWeight: '700',
               lineHeight: '1.6',
-              margin: '0',
-              textAlign: 'center',
+              margin: '0 0 12px 0',
             }}>
               {step.instruction}
             </p>
-          </div>
 
-          {step.tip && (
-            <div style={{
-              background: '#A78BFA25',
-              border: `2px solid #A78BFA`,
-              borderRadius: '8px',
-              padding: '12px',
-              marginBottom: '20px',
-            }}>
-              <p style={{
-                color: theme.textPrimary,
-                fontSize: '13px',
-                margin: '0',
+            {/* Tip Box */}
+            {step.tip && (
+              <div style={{
+                background: theme.accentPrimary + '15',
+                border: `2px solid ${theme.accentPrimary}`,
+                borderRadius: '8px',
+                padding: '12px',
+                marginTop: 'auto',
               }}>
-                💡 {step.tip}
-              </p>
-            </div>
-          )}
+                <p style={{
+                  color: theme.textPrimary,
+                  fontSize: '13px',
+                  margin: '0',
+                  lineHeight: '1.5',
+                }}>
+                  💡 <strong>Tip:</strong> {step.tip}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Buttons */}
       <div style={{
         display: 'flex',
         gap: '12px',
         justifyContent: 'center',
+        paddingTop: '16px',
+        borderTop: `1px solid ${theme.border}`,
       }}>
         <button
           onClick={handlePrevStep}
@@ -297,45 +556,72 @@ const GuidedDrawing = () => {
             fontWeight: '600',
             cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
             opacity: currentStep === 0 ? 0.5 : 1,
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            if (currentStep > 0) {
+              e.currentTarget.style.background = theme.accentPrimary + '20';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = theme.background;
           }}
         >
-          ← Previous
+          ← Previous Step
         </button>
 
         {currentStep === lesson.steps.length - 1 ? (
           <button
             onClick={() => {
-              alert('🎉 Great job! You completed the lesson!');
+              alert('🎉 Awesome! You completed ' + lesson.title + '!');
               handleBackToList();
             }}
             style={{
-              padding: '12px 24px',
-              background: '#81C995',
+              padding: '12px 30px',
+              background: theme.success,
               border: 'none',
               borderRadius: '8px',
               color: '#fff',
               fontSize: '14px',
-              fontWeight: '600',
+              fontWeight: '700',
               cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = `0 8px 20px ${theme.success}40`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            ✅ Complete
+            ✅ Complete Lesson!
           </button>
         ) : (
           <button
             onClick={handleNextStep}
             style={{
-              padding: '12px 24px',
-              background: '#A78BFA',
+              padding: '12px 30px',
+              background: theme.accentPrimary,
               border: 'none',
               borderRadius: '8px',
               color: '#fff',
               fontSize: '14px',
-              fontWeight: '600',
+              fontWeight: '700',
               cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = `0 8px 20px ${theme.accentPrimary}40`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            Next →
+            Next Step →
           </button>
         )}
       </div>
