@@ -5,6 +5,8 @@ import { db } from '../firebase/firebaseConfig';
 import SiteLayout from '../layouts/SiteLayout';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../components/AuthProvider';
+import QuestionRenderer from '../quiz/components/QuestionRenderer';
+import { audioFeedback } from '../quiz/utils/audioFeedback';
 
 export default function QuizPlayerPage() {
   const { quizId } = useParams();
@@ -47,10 +49,13 @@ export default function QuizPlayerPage() {
   // Get current question from variant or all questions
   const currentQuestionData = getVariantQuestions()[currentQuestion];
 
-  // Load quiz
+  // Load quiz and initialize audio
   useEffect(() => {
     const loadQuiz = async () => {
       try {
+        // Initialize audio feedback system
+        audioFeedback.initialize();
+        
         const quizRef = doc(db, 'quizzes', quizId);
         const quizSnap = await getDoc(quizRef);
 
@@ -159,16 +164,47 @@ export default function QuizPlayerPage() {
     return () => clearInterval(timer);
   }, [quizStarted, quizCompleted, quizTimedOut, isPaused, timeLeft, startTime]);
 
-  const handleAnswerSelect = (optionIndex) => {
+  const handleAnswerSelect = (answerData) => {
     if (answered) return;
 
-    setSelectedAnswer(optionIndex);
+    // Handle both simple index (backward compat) and complex answer objects
+    const optionIndex = typeof answerData === 'number' ? answerData : answerData?.index;
+    
+    setSelectedAnswer(answerData);
     setAnswered(true);
 
     const variantQuestions = getVariantQuestions();
     const question = variantQuestions[currentQuestion];
-    if (optionIndex === question.correctAnswer) {
+    
+    let isCorrect = false;
+    
+    // Check answer based on question type
+    if (question.type === 'true-false' || question.type === 'multiple-choice') {
+      isCorrect = optionIndex === question.correctAnswer;
+    } else if (question.type === 'fill-blank') {
+      const userAnswer = typeof answerData === 'string' ? answerData : answerData?.answer;
+      const correctAnswers = Array.isArray(question.answer) ? question.answer : [question.answer];
+      isCorrect = correctAnswers.some(ans => 
+        ans.toLowerCase().trim() === userAnswer?.toLowerCase().trim()
+      );
+    } else if (question.type === 'matching') {
+      isCorrect = JSON.stringify(answerData?.pairs) === JSON.stringify(question.correctPairs);
+    } else if (question.type === 'ordering') {
+      isCorrect = JSON.stringify(answerData?.order) === JSON.stringify(question.correctOrder);
+    } else if (question.type === 'image-select') {
+      isCorrect = JSON.stringify(answerData?.selected) === JSON.stringify(question.correctImages);
+    } else if (question.type === 'multi-select') {
+      isCorrect = JSON.stringify(answerData?.selected?.sort()) === JSON.stringify(question.correctAnswers?.sort());
+    } else if (question.type === 'drag-drop') {
+      isCorrect = JSON.stringify(answerData?.placements) === JSON.stringify(question.correctPlacements);
+    }
+    
+    // Play audio feedback
+    if (isCorrect) {
+      audioFeedback.playCorrectSound();
       setScore(score + 1);
+    } else {
+      audioFeedback.playWrongSound();
     }
   };
 
@@ -199,6 +235,9 @@ export default function QuizPlayerPage() {
     setQuizCompleted(true);
     const finalScore = score;
     const finalTime = elapsedTime;
+    
+    // Play completion sound
+    audioFeedback.playCompletionSound();
 
     if (user) {
       try {
@@ -468,125 +507,21 @@ export default function QuizPlayerPage() {
                   {currentQuestionData?.text}
                 </h2>
 
-                {/* Options */}
-                <div style={{
-                  display: 'grid',
-                  gap: '12px',
-                  marginBottom: '24px',
-                }}>
-                  {(currentQuestionData?.options || currentQuestionData?.answer?.options || []).map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleAnswerSelect(index)}
-                      disabled={answered}
-                      style={{
-                        padding: '16px 20px',
-                        textAlign: 'left',
-                        background: answered
-                          ? index === currentQuestionData?.correctAnswer
-                            ? '#4ECB7115'
-                            : index === selectedAnswer
-                            ? '#FF6B6B15'
-                            : theme.surfacePrimary
-                          : selectedAnswer === index
-                          ? `linear-gradient(135deg, ${theme.accentPrimary}15, ${theme.accentSecondary}10)`
-                          : theme.surfacePrimary,
-                        border: `2px solid ${
-                          answered
-                            ? index === currentQuestionData?.correctAnswer
-                              ? '#4ECB71'
-                              : index === selectedAnswer
-                              ? '#FF6B6B'
-                              : theme.border
-                            : selectedAnswer === index
-                            ? theme.accentPrimary
-                            : theme.border
-                        }`,
-                        borderRadius: '12px',
-                        color: answered
-                          ? index === currentQuestionData?.correctAnswer
-                            ? '#4ECB71'
-                            : index === selectedAnswer
-                            ? '#FF6B6B'
-                            : theme.textPrimary
-                          : theme.textPrimary,
-                        fontSize: '15px',
-                        fontWeight: '600',
-                        cursor: answered ? 'default' : 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: selectedAnswer === index && !answered ? `0 4px 12px ${theme.accentPrimary}20` : 'none',
-                      }}
-                      onMouseOver={(e) => {
-                        if (!answered) {
-                          e.currentTarget.style.borderColor = theme.accentPrimary;
-                          e.currentTarget.style.background = `linear-gradient(135deg, ${theme.accentPrimary}10, ${theme.accentSecondary}05)`;
-                          e.currentTarget.style.boxShadow = `0 4px 12px ${theme.accentPrimary}15`;
-                        }
-                      }}
-                      onMouseOut={(e) => {
-                        if (!answered && selectedAnswer !== index) {
-                          e.currentTarget.style.borderColor = theme.border;
-                          e.currentTarget.style.background = theme.surfacePrimary;
-                          e.currentTarget.style.boxShadow = 'none';
-                        }
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: answered
-                            ? index === currentQuestionData?.correctAnswer
-                              ? 'linear-gradient(135deg, #4ECB71, #34A853)'
-                              : index === selectedAnswer
-                              ? 'linear-gradient(135deg, #FF6B6B, #EF4444)'
-                              : `linear-gradient(135deg, ${theme.accentPrimary}30, ${theme.accentSecondary}30)`
-                            : `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#fff',
-                          fontSize: '18px',
-                          fontWeight: '800',
-                          flexShrink: 0,
-                          border: 'none',
-                          boxShadow: answered
-                            ? index === currentQuestionData?.correctAnswer
-                              ? '0 4px 12px rgba(78, 203, 113, 0.4)'
-                              : index === selectedAnswer
-                              ? '0 4px 12px rgba(255, 107, 107, 0.4)'
-                              : '0 2px 8px rgba(0, 0, 0, 0.1)'
-                            : `0 4px 12px ${theme.accentPrimary}30`,
-                        }}>
-                          {answered ? (index === currentQuestionData?.correctAnswer ? '✓' : index === selectedAnswer ? '✗' : '') : String.fromCharCode(65 + index)}
-                        </div>
-                        <span>{option}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {/* Use QuestionRenderer for all question types */}
+                <QuestionRenderer
+                  question={currentQuestionData}
+                  questionNumber={currentQuestion + 1}
+                  totalQuestions={getVariantQuestions().length}
+                  onAnswer={handleAnswerSelect}
+                  answered={answered}
+                  selectedAnswer={selectedAnswer}
+                  showFeedback={answered}
+                  theme={theme}
+                  difficulty={selectedDifficulty}
+                />
 
                 {answered && (
-                  <div style={{
-                    background: selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB7115' : '#FF6B6B15',
-                    border: `2px solid ${selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB71' : '#FF6B6B'}`,
-                    borderRadius: '12px',
-                    padding: '16px',
-                    marginBottom: '20px',
-                    color: selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB71' : '#FF6B6B',
-                  }}>
-                    <div style={{ fontWeight: '700', marginBottom: '6px', fontSize: '14px' }}>
-                      {selectedAnswer === currentQuestionData?.correctAnswer ? '✓ Correct!' : '✗ Incorrect'}
-                    </div>
-                    <div style={{ fontSize: '13px', color: theme.textSecondary, lineHeight: '1.4' }}>
-                      {currentQuestionData?.explanation}
-                    </div>
-                  </div>
-                )}
-
-                {answered && (
-                  <div style={{ textAlign: 'center' }}>
+                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
                     <button
                       onClick={handleNextQuestion}
                       style={{
