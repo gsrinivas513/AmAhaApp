@@ -1,0 +1,28 @@
+{
+  "id": "activities/matching",
+  "title": "Matching Activities",
+  "description": "Matching activities challenge users to connect or pair related items as quickly and accurately as possible.",
+  "source": "@site/docs/activities/matching.md",
+  "sourceDirName": "activities",
+  "slug": "/activities/matching",
+  "permalink": "/activities/matching",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/activities/matching.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Matching Activities"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Ordering Activities",
+    "permalink": "/activities/ordering"
+  },
+  "next": {
+    "title": "Free-Play Challenges",
+    "permalink": "/activities/free-play-challenge"
+  }
+}

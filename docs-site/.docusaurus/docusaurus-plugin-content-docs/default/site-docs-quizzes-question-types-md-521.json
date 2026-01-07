@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/question-types",
+  "title": "Question Types",
+  "description": "Questions are the building blocks of quizzes. Each question type has distinct characteristics and interaction models.",
+  "source": "@site/docs/quizzes/question-types.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/question-types",
+  "permalink": "/quizzes/question-types",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/question-types.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Question Types"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Difficulty Variants",
+    "permalink": "/quizzes/difficulty-variants"
+  },
+  "next": {
+    "title": "Scoring & Validation",
+    "permalink": "/quizzes/scoring-validation"
+  }
+}

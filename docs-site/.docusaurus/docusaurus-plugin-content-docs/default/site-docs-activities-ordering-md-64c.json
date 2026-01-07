@@ -1,0 +1,28 @@
+{
+  "id": "activities/ordering",
+  "title": "Ordering Activities",
+  "description": "Ordering activities challenge users to arrange items in the correct sequence as quickly and accurately as possible.",
+  "source": "@site/docs/activities/ordering.md",
+  "sourceDirName": "activities",
+  "slug": "/activities/ordering",
+  "permalink": "/activities/ordering",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/activities/ordering.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Ordering Activities"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/activities/overview"
+  },
+  "next": {
+    "title": "Matching Activities",
+    "permalink": "/activities/matching"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "puzzles/overview",
+  "title": "Overview",
+  "description": "Puzzles are a core learning modality in AmAha that engage users through interactive problem-solving. Unlike quizzes (which test knowledge), puzzles develop logic, pattern recognition, and strategic thinking.",
+  "source": "@site/docs/puzzles/overview.md",
+  "sourceDirName": "puzzles",
+  "slug": "/puzzles/overview",
+  "permalink": "/puzzles/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/puzzles/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Overview"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quiz Structure",
+    "permalink": "/quizzes/quiz-structure"
+  },
+  "next": {
+    "title": "Puzzle Categories",
+    "permalink": "/puzzles/puzzle-categories"
+  }
+}

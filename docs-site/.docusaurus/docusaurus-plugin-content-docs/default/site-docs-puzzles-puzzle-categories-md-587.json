@@ -1,0 +1,28 @@
+{
+  "id": "puzzles/puzzle-categories",
+  "title": "Puzzle Categories",
+  "description": "Puzzles in AmAha are organized into 5 major categories, each with distinct gameplay mechanics and educational benefits.",
+  "source": "@site/docs/puzzles/puzzle-categories.md",
+  "sourceDirName": "puzzles",
+  "slug": "/puzzles/puzzle-categories",
+  "permalink": "/puzzles/puzzle-categories",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/puzzles/puzzle-categories.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Puzzle Categories"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/puzzles/overview"
+  },
+  "next": {
+    "title": "Puzzle Types",
+    "permalink": "/puzzles/puzzle-types"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "architecture/interaction-engine",
+  "title": "Interaction Engine",
+  "description": "The Interaction Engine is the core puzzle-solving and interaction handling system that validates user moves, manages game state, and determines puzzle completion.",
+  "source": "@site/docs/architecture/interaction-engine.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/interaction-engine",
+  "permalink": "/architecture/interaction-engine",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/architecture/interaction-engine.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Interaction Engine"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Frontend Stack",
+    "permalink": "/architecture/frontend"
+  },
+  "next": {
+    "title": "State Management",
+    "permalink": "/architecture/state-management"
+  }
+}

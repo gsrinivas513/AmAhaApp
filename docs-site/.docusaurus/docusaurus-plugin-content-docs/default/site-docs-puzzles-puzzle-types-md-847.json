@@ -1,0 +1,28 @@
+{
+  "id": "puzzles/puzzle-types",
+  "title": "Puzzle Types",
+  "description": "AmAha features 13+ distinct puzzle types across 5 categories. This page details each type with examples and specifications.",
+  "source": "@site/docs/puzzles/puzzle-types.md",
+  "sourceDirName": "puzzles",
+  "slug": "/puzzles/puzzle-types",
+  "permalink": "/puzzles/puzzle-types",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/puzzles/puzzle-types.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Puzzle Types"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Puzzle Categories",
+    "permalink": "/puzzles/puzzle-categories"
+  },
+  "next": {
+    "title": "Interaction Types",
+    "permalink": "/puzzles/interaction-types"
+  }
+}

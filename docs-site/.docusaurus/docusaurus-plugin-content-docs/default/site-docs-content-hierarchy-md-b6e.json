@@ -1,0 +1,28 @@
+{
+  "id": "content/hierarchy",
+  "title": "Content Hierarchy",
+  "description": "This page explains how content is organized hierarchically in AmAha.",
+  "source": "@site/docs/content/hierarchy.md",
+  "sourceDirName": "content",
+  "slug": "/content/hierarchy",
+  "permalink": "/content/hierarchy",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/content/hierarchy.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Content Hierarchy"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Free-Play Challenges",
+    "permalink": "/activities/free-play-challenge"
+  },
+  "next": {
+    "title": "Organization",
+    "permalink": "/content/organization"
+  }
+}

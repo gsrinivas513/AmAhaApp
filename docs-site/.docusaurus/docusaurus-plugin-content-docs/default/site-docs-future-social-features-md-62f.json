@@ -1,0 +1,24 @@
+{
+  "id": "future/social-features",
+  "title": "Social Features",
+  "description": "Community and collaboration features planned for future development.",
+  "source": "@site/docs/future/social-features.md",
+  "sourceDirName": "future",
+  "slug": "/future/social-features",
+  "permalink": "/future/social-features",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/future/social-features.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Social Features"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Monetization",
+    "permalink": "/future/monetization"
+  }
+}

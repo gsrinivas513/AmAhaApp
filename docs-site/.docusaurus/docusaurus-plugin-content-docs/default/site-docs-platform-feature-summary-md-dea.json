@@ -1,0 +1,28 @@
+{
+  "id": "platform/feature-summary",
+  "title": "Feature Summary",
+  "description": "Here's an overview of all current AmAha features and capabilities.",
+  "source": "@site/docs/platform/feature-summary.md",
+  "sourceDirName": "platform",
+  "slug": "/platform/feature-summary",
+  "permalink": "/platform/feature-summary",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/platform/feature-summary.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Feature Summary"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Core Philosophy",
+    "permalink": "/platform/core-philosophy"
+  },
+  "next": {
+    "title": "Quiz System Overview",
+    "permalink": "/quizzes/overview"
+  }
+}

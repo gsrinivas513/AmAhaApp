@@ -1,0 +1,28 @@
+{
+  "id": "future/monetization",
+  "title": "Monetization",
+  "description": "Planned monetization strategies for sustainable growth.",
+  "source": "@site/docs/future/monetization.md",
+  "sourceDirName": "future",
+  "slug": "/future/monetization",
+  "permalink": "/future/monetization",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/future/monetization.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Monetization"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Analytics",
+    "permalink": "/future/analytics"
+  },
+  "next": {
+    "title": "Social Features",
+    "permalink": "/future/social-features"
+  }
+}

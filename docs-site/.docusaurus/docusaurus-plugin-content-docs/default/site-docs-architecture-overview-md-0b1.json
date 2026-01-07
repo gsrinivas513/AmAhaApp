@@ -1,0 +1,28 @@
+{
+  "id": "architecture/overview",
+  "title": "Overview",
+  "description": "AmAha is built on a modern, scalable architecture using React, Firebase, and cloud technologies.",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Overview"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Content Workflow",
+    "permalink": "/admin/content-workflow"
+  },
+  "next": {
+    "title": "Frontend Stack",
+    "permalink": "/architecture/frontend"
+  }
+}

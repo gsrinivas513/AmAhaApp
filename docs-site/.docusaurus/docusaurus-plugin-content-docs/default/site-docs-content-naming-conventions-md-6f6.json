@@ -1,0 +1,28 @@
+{
+  "id": "content/naming-conventions",
+  "title": "Naming Conventions",
+  "description": "This page documents the naming standards used across AmAha content for consistency and clarity.",
+  "source": "@site/docs/content/naming-conventions.md",
+  "sourceDirName": "content",
+  "slug": "/content/naming-conventions",
+  "permalink": "/content/naming-conventions",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/content/naming-conventions.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Naming Conventions"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Organization",
+    "permalink": "/content/organization"
+  },
+  "next": {
+    "title": "Design Principles",
+    "permalink": "/ux/design-principles"
+  }
+}

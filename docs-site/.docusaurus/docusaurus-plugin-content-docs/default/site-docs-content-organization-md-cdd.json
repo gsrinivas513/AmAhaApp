@@ -1,0 +1,28 @@
+{
+  "id": "content/organization",
+  "title": "Organization",
+  "description": "This page explains how content is organized and structured for optimal user experience and management.",
+  "source": "@site/docs/content/organization.md",
+  "sourceDirName": "content",
+  "slug": "/content/organization",
+  "permalink": "/content/organization",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/content/organization.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Organization"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Content Hierarchy",
+    "permalink": "/content/hierarchy"
+  },
+  "next": {
+    "title": "Naming Conventions",
+    "permalink": "/content/naming-conventions"
+  }
+}

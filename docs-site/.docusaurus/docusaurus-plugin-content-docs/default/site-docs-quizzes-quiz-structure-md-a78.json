@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/quiz-structure",
+  "title": "Quiz Structure",
+  "description": "This page documents the technical structure and data model of quizzes in AmAha.",
+  "source": "@site/docs/quizzes/quiz-structure.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/quiz-structure",
+  "permalink": "/quizzes/quiz-structure",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/quiz-structure.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6,
+    "title": "Quiz Structure"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Scoring & Validation",
+    "permalink": "/quizzes/scoring-validation"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/puzzles/overview"
+  }
+}

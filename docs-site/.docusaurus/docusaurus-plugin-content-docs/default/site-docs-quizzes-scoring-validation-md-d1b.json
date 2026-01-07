@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/scoring-validation",
+  "title": "Scoring & Validation",
+  "description": "This section explains how AmAha validates answers and calculates scores.",
+  "source": "@site/docs/quizzes/scoring-validation.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/scoring-validation",
+  "permalink": "/quizzes/scoring-validation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/scoring-validation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Scoring & Validation"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Question Types",
+    "permalink": "/quizzes/question-types"
+  },
+  "next": {
+    "title": "Quiz Structure",
+    "permalink": "/quizzes/quiz-structure"
+  }
+}

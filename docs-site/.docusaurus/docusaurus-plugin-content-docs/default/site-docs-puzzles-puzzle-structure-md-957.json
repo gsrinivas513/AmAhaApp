@@ -1,0 +1,28 @@
+{
+  "id": "puzzles/puzzle-structure",
+  "title": "Puzzle Structure",
+  "description": "This page documents the technical structure and data model for puzzles in AmAha.",
+  "source": "@site/docs/puzzles/puzzle-structure.md",
+  "sourceDirName": "puzzles",
+  "slug": "/puzzles/puzzle-structure",
+  "permalink": "/puzzles/puzzle-structure",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/puzzles/puzzle-structure.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Puzzle Structure"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Interaction Types",
+    "permalink": "/puzzles/interaction-types"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/activities/overview"
+  }
+}

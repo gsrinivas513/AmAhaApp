@@ -1,0 +1,28 @@
+{
+  "id": "activities/free-play-challenge",
+  "title": "Free-Play Challenges",
+  "description": "Free-Play Challenges are open-ended, creative activities where users express themselves while following specific constraints.",
+  "source": "@site/docs/activities/free-play-challenge.md",
+  "sourceDirName": "activities",
+  "slug": "/activities/free-play-challenge",
+  "permalink": "/activities/free-play-challenge",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/activities/free-play-challenge.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Free-Play Challenges"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Matching Activities",
+    "permalink": "/activities/matching"
+  },
+  "next": {
+    "title": "Content Hierarchy",
+    "permalink": "/content/hierarchy"
+  }
+}

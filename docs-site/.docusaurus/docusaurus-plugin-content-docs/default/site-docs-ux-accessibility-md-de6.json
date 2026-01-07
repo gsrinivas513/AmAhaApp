@@ -1,0 +1,28 @@
+{
+  "id": "ux/accessibility",
+  "title": "Accessibility",
+  "description": "AmAha is committed to WCAG 2.1 AA accessibility standards, ensuring all users can access and enjoy content regardless of ability.",
+  "source": "@site/docs/ux/accessibility.md",
+  "sourceDirName": "ux",
+  "slug": "/ux/accessibility",
+  "permalink": "/ux/accessibility",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/ux/accessibility.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Accessibility"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "UI Approach",
+    "permalink": "/ux/ui-approach"
+  },
+  "next": {
+    "title": "User Flows",
+    "permalink": "/ux/user-flows"
+  }
+}

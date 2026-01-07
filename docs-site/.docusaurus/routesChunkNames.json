@@ -1,0 +1,218 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/-114": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---aba-d70"
+    }
+  },
+  "/-9d5": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---22-d-307"
+  },
+  "/-834": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/activities/free-play-challenge-4ef": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---activities-free-play-challengea-21-42c"
+  },
+  "/activities/matching-2c6": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---activities-matching-2-b-4-3f9"
+  },
+  "/activities/ordering-230": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---activities-ordering-64-c-c63"
+  },
+  "/activities/overview-d3a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---activities-overview-0-be-26e"
+  },
+  "/admin/content-workflow-869": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---admin-content-workflow-29-e-7d7"
+  },
+  "/admin/overview-f2a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---admin-overviewfea-018"
+  },
+  "/admin/quiz-management-50b": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---admin-quiz-management-11-d-608"
+  },
+  "/architecture/firebase-integration-57a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-firebase-integration-371-085"
+  },
+  "/architecture/frontend-491": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-frontendf-96-82c"
+  },
+  "/architecture/interaction-engine-be4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-interaction-engine-286-809"
+  },
+  "/architecture/overview-fd5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-overview-0-b-1-d38"
+  },
+  "/architecture/state-management-5f7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-state-management-2-ff-c4d"
+  },
+  "/content/hierarchy-da8": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---content-hierarchyb-6-e-a9e"
+  },
+  "/content/naming-conventions-1f4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---content-naming-conventions-6-f-6-7b4"
+  },
+  "/content/organization-5e4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---content-organizationcdd-a6a"
+  },
+  "/future/advanced-puzzles-0f8": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---future-advanced-puzzles-557-381"
+  },
+  "/future/analytics-628": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---future-analytics-801-df8"
+  },
+  "/future/monetization-e6e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---future-monetizationf-2-d-15f"
+  },
+  "/future/overview-508": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---future-overview-8-fb-c04"
+  },
+  "/future/social-features-e46": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---future-social-features-62-f-ffc"
+  },
+  "/intro-9af": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---intro-0-e-3-7b8"
+  },
+  "/platform/core-philosophy-289": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---platform-core-philosophyf-5-c-09d"
+  },
+  "/platform/feature-summary-83d": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---platform-feature-summarydea-4a7"
+  },
+  "/platform/target-audience-dcc": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---platform-target-audience-1-f-0-0bb"
+  },
+  "/platform/what-is-amaha-beb": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---platform-what-is-amaha-848-e80"
+  },
+  "/puzzles/interaction-types-e7e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---puzzles-interaction-types-1-a-1-68d"
+  },
+  "/puzzles/overview-096": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---puzzles-overview-387-8f6"
+  },
+  "/puzzles/puzzle-categories-313": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---puzzles-puzzle-categories-587-985"
+  },
+  "/puzzles/puzzle-structure-f12": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---puzzles-puzzle-structure-957-60a"
+  },
+  "/puzzles/puzzle-types-2a5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---puzzles-puzzle-types-847-65c"
+  },
+  "/quizzes/difficulty-variants-2ec": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-difficulty-variantsf-36-e22"
+  },
+  "/quizzes/overview-140": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-overview-539-b00"
+  },
+  "/quizzes/question-types-8c0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-question-types-521-6b4"
+  },
+  "/quizzes/quiz-structure-c05": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-quiz-structurea-78-f61"
+  },
+  "/quizzes/quiz-types-add": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-quiz-types-225-512"
+  },
+  "/quizzes/scoring-validation-5e6": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---quizzes-scoring-validationd-1-b-38b"
+  },
+  "/ux/accessibility-9fa": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---ux-accessibilityde-6-e83"
+  },
+  "/ux/design-principles-ed7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---ux-design-principles-1-f-3-b77"
+  },
+  "/ux/ui-approach-ff1": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---ux-ui-approachdb-6-eb4"
+  },
+  "/ux/user-flows-f37": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---ux-user-flowsc-45-71d"
+  }
+}

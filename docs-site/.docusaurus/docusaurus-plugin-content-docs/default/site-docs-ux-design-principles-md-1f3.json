@@ -1,0 +1,28 @@
+{
+  "id": "ux/design-principles",
+  "title": "Design Principles",
+  "description": "AmAha's user experience is guided by core design principles that prioritize user success, accessibility, and engagement.",
+  "source": "@site/docs/ux/design-principles.md",
+  "sourceDirName": "ux",
+  "slug": "/ux/design-principles",
+  "permalink": "/ux/design-principles",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/ux/design-principles.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Design Principles"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Naming Conventions",
+    "permalink": "/content/naming-conventions"
+  },
+  "next": {
+    "title": "UI Approach",
+    "permalink": "/ux/ui-approach"
+  }
+}

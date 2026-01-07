@@ -1,0 +1,25 @@
+{
+  "id": "intro",
+  "title": "Welcome to AmAha",
+  "description": "Get started with AmAha documentation",
+  "source": "@site/docs/intro.md",
+  "sourceDirName": ".",
+  "slug": "/intro",
+  "permalink": "/intro",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/intro.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Welcome to AmAha",
+    "description": "Get started with AmAha documentation"
+  },
+  "sidebar": "mainSidebar",
+  "next": {
+    "title": "What is AmAha?",
+    "permalink": "/platform/what-is-amaha"
+  }
+}

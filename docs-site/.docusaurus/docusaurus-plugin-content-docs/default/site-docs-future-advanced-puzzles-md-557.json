@@ -1,0 +1,28 @@
+{
+  "id": "future/advanced-puzzles",
+  "title": "Advanced Puzzles",
+  "description": "Planned advanced puzzle features under development.",
+  "source": "@site/docs/future/advanced-puzzles.md",
+  "sourceDirName": "future",
+  "slug": "/future/advanced-puzzles",
+  "permalink": "/future/advanced-puzzles",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/future/advanced-puzzles.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Advanced Puzzles"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Firebase Integration",
+    "permalink": "/architecture/firebase-integration"
+  },
+  "next": {
+    "title": "Analytics",
+    "permalink": "/future/analytics"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "admin/quiz-management",
+  "title": "Quiz Management",
+  "description": "This page details the complete quiz creation and management workflow in AmAha's admin panel.",
+  "source": "@site/docs/admin/quiz-management.md",
+  "sourceDirName": "admin",
+  "slug": "/admin/quiz-management",
+  "permalink": "/admin/quiz-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/admin/quiz-management.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Quiz Management"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/admin/overview"
+  },
+  "next": {
+    "title": "Content Workflow",
+    "permalink": "/admin/content-workflow"
+  }
+}

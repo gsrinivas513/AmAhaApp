@@ -1,0 +1,28 @@
+{
+  "id": "puzzles/interaction-types",
+  "title": "Interaction Types",
+  "description": "Puzzles in AmAha use various interaction methods based on the puzzle type. This page explains how users interact with different puzzle mechanics.",
+  "source": "@site/docs/puzzles/interaction-types.md",
+  "sourceDirName": "puzzles",
+  "slug": "/puzzles/interaction-types",
+  "permalink": "/puzzles/interaction-types",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/puzzles/interaction-types.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Interaction Types"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Puzzle Types",
+    "permalink": "/puzzles/puzzle-types"
+  },
+  "next": {
+    "title": "Puzzle Structure",
+    "permalink": "/puzzles/puzzle-structure"
+  }
+}

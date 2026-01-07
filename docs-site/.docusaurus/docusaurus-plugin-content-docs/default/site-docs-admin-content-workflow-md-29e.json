@@ -1,0 +1,28 @@
+{
+  "id": "admin/content-workflow",
+  "title": "Content Workflow",
+  "description": "This page describes the process for creating, reviewing, and publishing content on AmAha.",
+  "source": "@site/docs/admin/content-workflow.md",
+  "sourceDirName": "admin",
+  "slug": "/admin/content-workflow",
+  "permalink": "/admin/content-workflow",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/admin/content-workflow.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Content Workflow"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quiz Management",
+    "permalink": "/admin/quiz-management"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/architecture/overview"
+  }
+}

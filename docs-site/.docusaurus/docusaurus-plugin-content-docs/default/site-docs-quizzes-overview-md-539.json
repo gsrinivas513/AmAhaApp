@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/overview",
+  "title": "Quiz System Overview",
+  "description": "The Quiz System is AmAha's core learning assessment tool. It combines question variety with flexible difficulty levels to serve different learning needs.",
+  "source": "@site/docs/quizzes/overview.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/overview",
+  "permalink": "/quizzes/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Quiz System Overview"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Feature Summary",
+    "permalink": "/platform/feature-summary"
+  },
+  "next": {
+    "title": "Quiz Types",
+    "permalink": "/quizzes/quiz-types"
+  }
+}

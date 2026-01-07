@@ -1,0 +1,28 @@
+{
+  "id": "ux/ui-approach",
+  "title": "UI Approach",
+  "description": "This page describes AmAha's user interface philosophy and structural approach.",
+  "source": "@site/docs/ux/ui-approach.md",
+  "sourceDirName": "ux",
+  "slug": "/ux/ui-approach",
+  "permalink": "/ux/ui-approach",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/ux/ui-approach.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "UI Approach"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Design Principles",
+    "permalink": "/ux/design-principles"
+  },
+  "next": {
+    "title": "Accessibility",
+    "permalink": "/ux/accessibility"
+  }
+}

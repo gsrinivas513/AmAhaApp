@@ -1,0 +1,28 @@
+{
+  "id": "architecture/frontend",
+  "title": "Frontend Stack",
+  "description": "The AmAha web application is built with React 18+ and follows modern component-based architecture patterns.",
+  "source": "@site/docs/architecture/frontend.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/frontend",
+  "permalink": "/architecture/frontend",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/architecture/frontend.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Frontend Stack"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Overview",
+    "permalink": "/architecture/overview"
+  },
+  "next": {
+    "title": "Interaction Engine",
+    "permalink": "/architecture/interaction-engine"
+  }
+}

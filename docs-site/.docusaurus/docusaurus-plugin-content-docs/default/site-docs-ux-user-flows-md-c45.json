@@ -1,0 +1,28 @@
+{
+  "id": "ux/user-flows",
+  "title": "User Flows",
+  "description": "This page documents common user journeys and interaction flows in AmAha.",
+  "source": "@site/docs/ux/user-flows.md",
+  "sourceDirName": "ux",
+  "slug": "/ux/user-flows",
+  "permalink": "/ux/user-flows",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/ux/user-flows.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "User Flows"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Accessibility",
+    "permalink": "/ux/accessibility"
+  },
+  "next": {
+    "title": "Overview",
+    "permalink": "/admin/overview"
+  }
+}

@@ -47,7 +47,8 @@ export default function Footer() {
 
         {/* LEGAL / TRUST */}
         <div>
-          <h4>Legal</h4>
+          <h4>Support</h4>
+          <FooterLinkExternal href="http://localhost:3002" target="_blank">Documentation</FooterLinkExternal>
           <FooterLink to="/">Privacy Policy</FooterLink>
           <FooterLink to="/">Terms of Service</FooterLink>
           <FooterLink to="/">Contact</FooterLink>
@@ -84,6 +85,25 @@ function FooterLink({ to, children }) {
       >
         {children}
       </Link>
+    </div>
+  );
+}
+
+function FooterLinkExternal({ href, target, children }) {
+  return (
+    <div style={{ marginTop: 8 }}>
+      <a
+        href={href}
+        target={target}
+        rel="noopener noreferrer"
+        style={{
+          textDecoration: "none",
+          color: "#4b5563",
+          fontSize: 14,
+        }}
+      >
+        {children}
+      </a>
     </div>
   );
 }

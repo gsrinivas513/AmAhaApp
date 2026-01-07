@@ -1,0 +1,28 @@
+{
+  "id": "platform/core-philosophy",
+  "title": "Core Philosophy",
+  "description": "AmAha is built on principles that prioritize learning, engagement, and accessibility.",
+  "source": "@site/docs/platform/core-philosophy.md",
+  "sourceDirName": "platform",
+  "slug": "/platform/core-philosophy",
+  "permalink": "/platform/core-philosophy",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/platform/core-philosophy.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Core Philosophy"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Target Audience",
+    "permalink": "/platform/target-audience"
+  },
+  "next": {
+    "title": "Feature Summary",
+    "permalink": "/platform/feature-summary"
+  }
+}

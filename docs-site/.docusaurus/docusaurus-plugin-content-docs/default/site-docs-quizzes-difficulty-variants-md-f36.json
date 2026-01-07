@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/difficulty-variants",
+  "title": "Difficulty Variants",
+  "description": "Every quiz in AmAha has 4 difficulty variants, allowing users to choose their challenge level.",
+  "source": "@site/docs/quizzes/difficulty-variants.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/difficulty-variants",
+  "permalink": "/quizzes/difficulty-variants",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/difficulty-variants.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Difficulty Variants"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quiz Types",
+    "permalink": "/quizzes/quiz-types"
+  },
+  "next": {
+    "title": "Question Types",
+    "permalink": "/quizzes/question-types"
+  }
+}

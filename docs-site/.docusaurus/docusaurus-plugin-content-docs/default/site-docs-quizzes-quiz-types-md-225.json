@@ -1,0 +1,28 @@
+{
+  "id": "quizzes/quiz-types",
+  "title": "Quiz Types",
+  "description": "AmAha supports 11 distinct quiz types, each designed for different learning objectives and content domains.",
+  "source": "@site/docs/quizzes/quiz-types.md",
+  "sourceDirName": "quizzes",
+  "slug": "/quizzes/quiz-types",
+  "permalink": "/quizzes/quiz-types",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/quizzes/quiz-types.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Quiz Types"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Quiz System Overview",
+    "permalink": "/quizzes/overview"
+  },
+  "next": {
+    "title": "Difficulty Variants",
+    "permalink": "/quizzes/difficulty-variants"
+  }
+}

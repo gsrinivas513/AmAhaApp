@@ -1,0 +1,28 @@
+{
+  "id": "architecture/state-management",
+  "title": "State Management",
+  "description": "AmAha uses Redux for global state management combined with React Context for theme and modal states.",
+  "source": "@site/docs/architecture/state-management.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/state-management",
+  "permalink": "/architecture/state-management",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/architecture/state-management.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "State Management"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Interaction Engine",
+    "permalink": "/architecture/interaction-engine"
+  },
+  "next": {
+    "title": "Firebase Integration",
+    "permalink": "/architecture/firebase-integration"
+  }
+}

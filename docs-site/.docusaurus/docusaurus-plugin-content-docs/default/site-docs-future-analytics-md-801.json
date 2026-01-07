@@ -1,0 +1,28 @@
+{
+  "id": "future/analytics",
+  "title": "Analytics",
+  "description": "Advanced analytics capabilities planned for future releases.",
+  "source": "@site/docs/future/analytics.md",
+  "sourceDirName": "future",
+  "slug": "/future/analytics",
+  "permalink": "/future/analytics",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/future/analytics.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Analytics"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Advanced Puzzles",
+    "permalink": "/future/advanced-puzzles"
+  },
+  "next": {
+    "title": "Monetization",
+    "permalink": "/future/monetization"
+  }
+}

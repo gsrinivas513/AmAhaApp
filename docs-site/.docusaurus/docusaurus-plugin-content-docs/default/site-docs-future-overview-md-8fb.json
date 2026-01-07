@@ -1,0 +1,19 @@
+{
+  "id": "future/overview",
+  "title": "Overview",
+  "description": "AmAha has several planned features in development for upcoming releases. This section documents directional features being explored.",
+  "source": "@site/docs/future/overview.md",
+  "sourceDirName": "future",
+  "slug": "/future/overview",
+  "permalink": "/future/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/future/overview.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Overview"
+  }
+}

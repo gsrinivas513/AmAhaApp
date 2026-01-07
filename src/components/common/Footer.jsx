@@ -31,6 +31,7 @@ const Footer = () => {
   ];
 
   const supportLinks = [
+    { label: 'Documentation', docs: 'http://localhost:3002' },
     { label: 'Help Center', external: 'https://help.amaha.com' },
     { label: 'FAQ', path: '/faq' },
     { label: 'Contact Us', path: '/contact' },
@@ -85,6 +86,8 @@ const Footer = () => {
                   handleNavigate(item.path);
                 } else if (item.external) {
                   handleExternalLink(item.external);
+                } else if (item.docs) {
+                  window.open(item.docs, '_blank');
                 }
               }}
               style={{

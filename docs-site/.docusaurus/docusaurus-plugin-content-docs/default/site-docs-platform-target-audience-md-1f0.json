@@ -1,0 +1,28 @@
+{
+  "id": "platform/target-audience",
+  "title": "Target Audience",
+  "description": "AmAha is designed for diverse users across age groups and learning styles.",
+  "source": "@site/docs/platform/target-audience.md",
+  "sourceDirName": "platform",
+  "slug": "/platform/target-audience",
+  "permalink": "/platform/target-audience",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/platform/target-audience.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Target Audience"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "What is AmAha?",
+    "permalink": "/platform/what-is-amaha"
+  },
+  "next": {
+    "title": "Core Philosophy",
+    "permalink": "/platform/core-philosophy"
+  }
+}

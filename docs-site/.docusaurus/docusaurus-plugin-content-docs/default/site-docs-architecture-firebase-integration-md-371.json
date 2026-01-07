@@ -1,0 +1,28 @@
+{
+  "id": "architecture/firebase-integration",
+  "title": "Firebase Integration",
+  "description": "AmAha is built on Firebase as the primary backend, providing database, authentication, hosting, and real-time capabilities.",
+  "source": "@site/docs/architecture/firebase-integration.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/firebase-integration",
+  "permalink": "/architecture/firebase-integration",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/architecture/firebase-integration.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Firebase Integration"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "State Management",
+    "permalink": "/architecture/state-management"
+  },
+  "next": {
+    "title": "Advanced Puzzles",
+    "permalink": "/future/advanced-puzzles"
+  }
+}

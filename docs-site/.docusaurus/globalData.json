@@ -1,0 +1,227 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "activities/free-play-challenge",
+              "path": "/activities/free-play-challenge",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "activities/matching",
+              "path": "/activities/matching",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "activities/ordering",
+              "path": "/activities/ordering",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "activities/overview",
+              "path": "/activities/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "admin/content-workflow",
+              "path": "/admin/content-workflow",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "admin/overview",
+              "path": "/admin/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "admin/quiz-management",
+              "path": "/admin/quiz-management",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/firebase-integration",
+              "path": "/architecture/firebase-integration",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/frontend",
+              "path": "/architecture/frontend",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/interaction-engine",
+              "path": "/architecture/interaction-engine",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/architecture/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/state-management",
+              "path": "/architecture/state-management",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "content/hierarchy",
+              "path": "/content/hierarchy",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "content/naming-conventions",
+              "path": "/content/naming-conventions",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "content/organization",
+              "path": "/content/organization",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "future/advanced-puzzles",
+              "path": "/future/advanced-puzzles",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "future/analytics",
+              "path": "/future/analytics",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "future/monetization",
+              "path": "/future/monetization",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "future/overview",
+              "path": "/future/overview"
+            },
+            {
+              "id": "future/social-features",
+              "path": "/future/social-features",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/intro",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "platform/core-philosophy",
+              "path": "/platform/core-philosophy",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "platform/feature-summary",
+              "path": "/platform/feature-summary",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "platform/target-audience",
+              "path": "/platform/target-audience",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "platform/what-is-amaha",
+              "path": "/platform/what-is-amaha",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "puzzles/interaction-types",
+              "path": "/puzzles/interaction-types",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "puzzles/overview",
+              "path": "/puzzles/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "puzzles/puzzle-categories",
+              "path": "/puzzles/puzzle-categories",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "puzzles/puzzle-structure",
+              "path": "/puzzles/puzzle-structure",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "puzzles/puzzle-types",
+              "path": "/puzzles/puzzle-types",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/difficulty-variants",
+              "path": "/quizzes/difficulty-variants",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/overview",
+              "path": "/quizzes/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/question-types",
+              "path": "/quizzes/question-types",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/quiz-structure",
+              "path": "/quizzes/quiz-structure",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/quiz-types",
+              "path": "/quizzes/quiz-types",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "quizzes/scoring-validation",
+              "path": "/quizzes/scoring-validation",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "ux/accessibility",
+              "path": "/ux/accessibility",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "ux/design-principles",
+              "path": "/ux/design-principles",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "ux/ui-approach",
+              "path": "/ux/ui-approach",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "ux/user-flows",
+              "path": "/ux/user-flows",
+              "sidebar": "mainSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "mainSidebar": {
+              "link": {
+                "path": "/intro",
+                "label": "Welcome"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

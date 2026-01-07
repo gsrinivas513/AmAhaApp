@@ -1,0 +1,28 @@
+{
+  "id": "platform/what-is-amaha",
+  "title": "What is AmAha?",
+  "description": "AmAha is an interactive learning platform that helps users learn through a combination of:",
+  "source": "@site/docs/platform/what-is-amaha.md",
+  "sourceDirName": "platform",
+  "slug": "/platform/what-is-amaha",
+  "permalink": "/platform/what-is-amaha",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/amuselabs/amaha/tree/main/docs/platform/what-is-amaha.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "What is AmAha?"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Welcome",
+    "permalink": "/intro"
+  },
+  "next": {
+    "title": "Target Audience",
+    "permalink": "/platform/target-audience"
+  }
+}
