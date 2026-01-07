@@ -34,81 +34,165 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
     return data;
   };
 
-  // Validate quiz questions with new format: text-only, text+image, image-only
-  const validateQuizQuestion = (item, idx) => {
+  // Validate quiz (full quiz with flexible contentItems structure)
+  const validateQuiz = (item, idx) => {
     const errors = [];
 
-    // Question validation
+    // Required fields
+    if (!item.title || item.title.trim().length < 3) {
+      errors.push(`Row ${idx + 2}: Quiz title must be at least 3 characters`);
+    }
+    
+    if (!item.category) {
+      errors.push(`Row ${idx + 2}: Category is required`);
+    }
+    
+    if (!item.level) {
+      errors.push(`Row ${idx + 2}: Level is required (Beginner, Intermediate, Advanced, Expert)`);
+    }
+    
+    if (!item.quiztype) {
+      errors.push(`Row ${idx + 2}: Quiz Type is required (MCQ, TRUE_FALSE, FILL_BLANK, etc.)`);
+    }
+    
     if (!item.question || item.question.trim().length < 5) {
       errors.push(`Row ${idx + 2}: Question must be at least 5 characters`);
     }
 
-    // Question type validation
-    const validQuestionTypes = ['text', 'text-image', 'image'];
-    if (!item.questiontype || !validQuestionTypes.includes(item.questiontype.toLowerCase())) {
-      errors.push(`Row ${idx + 2}: Question type must be 'text', 'text-image', or 'image'`);
+    // Content type validation (text, image, video, audio)
+    const validContentTypes = ['text', 'image', 'video', 'audio'];
+    if (!item.contenttype || !validContentTypes.includes(item.contenttype.toLowerCase())) {
+      errors.push(`Row ${idx + 2}: Content type must be 'text', 'image', 'video', or 'audio'`);
     }
 
-    // Image URL validation for text-image and image types
-    if (item.questiontype && (item.questiontype.toLowerCase() === 'text-image' || item.questiontype.toLowerCase() === 'image')) {
-      if (!item.questionimage || !item.questionimage.startsWith('https://')) {
-        errors.push(`Row ${idx + 2}: Question type '${item.questiontype}' requires valid HTTPS image URL`);
+    // Media URL validation for non-text types
+    if (item.contenttype && item.contenttype.toLowerCase() !== 'text') {
+      if (!item.mediaurl || !item.mediaurl.startsWith('https://')) {
+        errors.push(`Row ${idx + 2}: Content type '${item.contenttype}' requires valid HTTPS media URL`);
       }
     }
 
-    // Options validation (2-4 options)
-    if (!item.options) {
-      errors.push(`Row ${idx + 2}: Options are required (pipe-separated, 2-4 options)`);
-    } else {
-      const optionsArray = item.options.split('|').map(o => o.trim()).filter(o => o);
-      
-      if (optionsArray.length < 2) {
-        errors.push(`Row ${idx + 2}: Minimum 2 options required (found ${optionsArray.length})`);
-      } else if (optionsArray.length > 4) {
-        errors.push(`Row ${idx + 2}: Maximum 4 options allowed (found ${optionsArray.length})`);
-      }
-
-      // Check for duplicate options
-      const uniqueOptions = new Set(optionsArray.map(o => o.toLowerCase()));
-      if (uniqueOptions.size !== optionsArray.length) {
-        errors.push(`Row ${idx + 2}: Options must be unique (no duplicates)`);
-      }
-
-      // Correct answer validation
-      if (!item.correctanswer) {
-        errors.push(`Row ${idx + 2}: Correct answer is required`);
+    // Options validation (for MCQ)
+    if (item.quiztype && item.quiztype.toUpperCase() === 'MCQ') {
+      if (!item.options) {
+        errors.push(`Row ${idx + 2}: Options required for MCQ (pipe-separated: A|B|C|D)`);
       } else {
-        const answerLower = item.correctanswer.trim().toLowerCase();
-        const hasMatchingOption = optionsArray.some(o => o.toLowerCase() === answerLower);
-        if (!hasMatchingOption) {
-          errors.push(`Row ${idx + 2}: Correct answer '${item.correctanswer}' not found in options`);
+        const optionsArray = item.options.split('|').map(o => o.trim()).filter(o => o);
+        
+        if (optionsArray.length < 2 || optionsArray.length > 4) {
+          errors.push(`Row ${idx + 2}: MCQ requires 2-4 options (found ${optionsArray.length})`);
         }
-      }
 
-      // Option images validation (if provided)
-      if (item.images) {
-        const imagesArray = item.images.split('|').map(i => i.trim());
-        if (imagesArray.length !== optionsArray.length) {
-          errors.push(`Row ${idx + 2}: Number of option images must match number of options`);
+        // Correct answer validation
+        if (!item.correctanswer) {
+          errors.push(`Row ${idx + 2}: Correct answer is required for MCQ`);
         } else {
-          imagesArray.forEach((img, i) => {
-            if (img && !img.startsWith('https://')) {
-              errors.push(`Row ${idx + 2}: Option ${i + 1} image URL must be valid HTTPS URL`);
-            }
-          });
+          const answerLower = item.correctanswer.trim().toUpperCase();
+          if (!['A', 'B', 'C', 'D'].includes(answerLower)) {
+            errors.push(`Row ${idx + 2}: Correct answer must be A, B, C, or D`);
+          }
         }
       }
     }
 
-    // Difficulty validation
-    const validDifficulties = ['easy', 'medium', 'hard'];
-    if (!item.difficulty || !validDifficulties.includes(item.difficulty.toLowerCase())) {
-      errors.push(`Row ${idx + 2}: Difficulty must be 'easy', 'medium', or 'hard'`);
+    // MULTI_SELECT validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'MULTI_SELECT') {
+      if (!item.options) {
+        errors.push(`Row ${idx + 2}: Options required for MULTI_SELECT (pipe-separated)`);
+      } else {
+        const optionsArray = item.options.split('|').map(o => o.trim()).filter(o => o);
+        if (optionsArray.length < 2 || optionsArray.length > 4) {
+          errors.push(`Row ${idx + 2}: MULTI_SELECT requires 2-4 options`);
+        }
+      }
+      if (!item.correctanswer) {
+        errors.push(`Row ${idx + 2}: Correct answers required for MULTI_SELECT (pipe-separated: A|B)`);
+      }
     }
 
-    // Category validation
-    if (!item.category) {
-      errors.push(`Row ${idx + 2}: Category is required`);
+    // TRUE_FALSE validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'TRUE_FALSE') {
+      if (!item.correctanswer || !['true', 'false'].includes(item.correctanswer.toLowerCase())) {
+        errors.push(`Row ${idx + 2}: Correct answer must be 'True' or 'False'`);
+      }
+    }
+
+    // FILL_BLANK validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'FILL_BLANK') {
+      if (!item.correctanswer) {
+        errors.push(`Row ${idx + 2}: Correct answer required for FILL_BLANK`);
+      }
+    }
+
+    // MATCHING validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'MATCHING') {
+      if (!item.leftitems || !item.rightitems) {
+        errors.push(`Row ${idx + 2}: MATCHING requires leftItems and rightItems (pipe-separated)`);
+      } else {
+        const leftCount = item.leftitems.split('|').filter(x => x.trim()).length;
+        const rightCount = item.rightitems.split('|').filter(x => x.trim()).length;
+        if (leftCount !== rightCount) {
+          errors.push(`Row ${idx + 2}: MATCHING left and right items count must match`);
+        }
+      }
+    }
+
+    // ORDERING/PUZZLE validation
+    if (item.quiztype && ['ORDERING', 'PUZZLE'].includes(item.quiztype.toUpperCase())) {
+      if (!item.items) {
+        errors.push(`Row ${idx + 2}: Items required for ${item.quiztype} (pipe-separated)`);
+      } else {
+        const itemsArray = item.items.split('|').filter(x => x.trim());
+        if (itemsArray.length < 2) {
+          errors.push(`Row ${idx + 2}: ${item.quiztype} requires minimum 2 items`);
+        }
+      }
+      if (!item.correctsequence) {
+        errors.push(`Row ${idx + 2}: correctSequence required for ${item.quiztype} (comma-separated: 1,2,3)`);
+      }
+    }
+
+    // DRAG_DROP validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'DRAG_DROP') {
+      if (!item.categories) {
+        errors.push(`Row ${idx + 2}: Categories required for DRAG_DROP (pipe-separated)`);
+      }
+      if (!item.dragitems) {
+        errors.push(`Row ${idx + 2}: Drag items required for DRAG_DROP (format: item1:catA|item2:catB)`);
+      }
+    }
+
+    // CODING validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'CODING') {
+      if (!item.language) {
+        errors.push(`Row ${idx + 2}: Language required for CODING`);
+      }
+      if (!item.testcases) {
+        errors.push(`Row ${idx + 2}: Test cases required for CODING`);
+      }
+    }
+
+    // IMAGE_BASED validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'IMAGE_BASED') {
+      if (!item.mediaurl || !item.mediaurl.startsWith('https://')) {
+        errors.push(`Row ${idx + 2}: IMAGE_BASED requires valid image URL`);
+      }
+      if (!item.coordinates) {
+        errors.push(`Row ${idx + 2}: IMAGE_BASED requires coordinates (x,y,width,height)`);
+      }
+    }
+
+    // AUDIO_BASED validation
+    if (item.quiztype && item.quiztype.toUpperCase() === 'AUDIO_BASED') {
+      if (!item.mediaurl || !item.mediaurl.startsWith('https://')) {
+        errors.push(`Row ${idx + 2}: AUDIO_BASED requires valid audio URL`);
+      }
+      if (!item.options) {
+        errors.push(`Row ${idx + 2}: Options required for AUDIO_BASED`);
+      }
+      if (!item.correctanswer) {
+        errors.push(`Row ${idx + 2}: Correct answer required for AUDIO_BASED`);
+      }
     }
 
     return errors;
@@ -119,7 +203,7 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
 
     data.forEach((item, idx) => {
       if (dataType === 'quiz') {
-        const quizErrors = validateQuizQuestion(item, idx);
+        const quizErrors = validateQuiz(item, idx);
         errors.push(...quizErrors);
       } else {
         if (!item.title) errors.push(`Row ${idx + 2}: Title is required`);
@@ -156,7 +240,7 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
         return;
       }
 
-      const collectionName = dataType === 'quiz' ? 'questions' : dataType === 'puzzle' ? 'puzzles' : 'stories';
+      const collectionName = dataType === 'quiz' ? 'quizzes' : dataType === 'puzzle' ? 'puzzles' : 'stories';
       let imported = 0;
       let failed = 0;
 
@@ -168,26 +252,174 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
           let docData = {};
 
           if (dataType === 'quiz') {
-            // Quiz: Import as questions (new format with flexible options)
-            const optionsArray = item.options.split('|').map(o => o.trim()).filter(o => o);
-            const imagesArray = item.images ? item.images.split('|').map(i => i.trim()) : [];
+            // Quiz: Import as full quizzes with flexible contentItems
+            const contentItems = [];
+            
+            // Add text content if present
+            if (item.question && item.question.trim()) {
+              contentItems.push({
+                id: `content_${Date.now()}_1`,
+                type: 'text',
+                value: item.question.trim(),
+                url: ''
+              });
+            }
 
-            // Build options array with optional images
-            const optionsData = optionsArray.map((opt, idx) => ({
-              text: opt,
-              image: imagesArray[idx] && imagesArray[idx] !== '' ? imagesArray[idx] : null,
-              imageOnly: false
-            }));
+            // Add media content if present
+            if (item.mediaurl && item.mediaurl.startsWith('https://')) {
+              contentItems.push({
+                id: `content_${Date.now()}_2`,
+                type: item.contenttype.toLowerCase(),
+                value: '',
+                url: item.mediaurl
+              });
+            }
+
+            // Build answer configuration based on quiz type
+            let answerConfig = {};
+            
+            switch(item.quiztype.toUpperCase()) {
+              case 'MCQ':
+              case 'AUDIO_BASED':
+                const optionsArray = item.options.split('|').map(o => o.trim()).filter(o => o);
+                answerConfig = {
+                  options: optionsArray.map((opt, idx) => ({
+                    key: String.fromCharCode(65 + idx),
+                    text: opt,
+                    media: null
+                  })),
+                  correctOption: item.correctanswer.trim().toUpperCase()
+                };
+                break;
+
+              case 'MULTI_SELECT':
+                const multiOptions = item.options.split('|').map(o => o.trim()).filter(o => o);
+                const correctAnswers = item.correctanswer.split('|').map(a => a.trim().toUpperCase());
+                answerConfig = {
+                  correctOptions: correctAnswers,
+                  minCorrect: 1,
+                  maxIncorrect: 1,
+                  options: multiOptions.map((opt, idx) => ({
+                    key: String.fromCharCode(65 + idx),
+                    text: opt,
+                    media: null
+                  }))
+                };
+                break;
+
+              case 'TRUE_FALSE':
+                answerConfig = {
+                  correctAnswer: item.correctanswer.toLowerCase() === 'true'
+                };
+                break;
+
+              case 'FILL_BLANK':
+                answerConfig = {
+                  correctAnswers: [item.correctanswer.trim()],
+                  caseSensitive: false,
+                  fuzzyMatch: true,
+                  fuzzyThreshold: 0.85
+                };
+                break;
+
+              case 'MATCHING':
+                const leftItems = item.leftitems.split('|').map(l => l.trim());
+                const rightItems = item.rightitems.split('|').map(r => r.trim());
+                answerConfig = {
+                  leftItems: leftItems,
+                  rightItems: rightItems,
+                  pairs: leftItems.map((left, idx) => ({ left, right: rightItems[idx] }))
+                };
+                break;
+
+              case 'ORDERING':
+              case 'PUZZLE':
+                const items = item.items.split('|').map(it => it.trim());
+                const sequence = item.correctsequence.split(',').map(s => parseInt(s.trim()) - 1);
+                answerConfig = {
+                  items: items,
+                  correctSequence: sequence
+                };
+                break;
+
+              case 'DRAG_DROP':
+                const categories = item.categories.split('|').map(c => c.trim());
+                const dragItemPairs = item.dragitems.split('|').map(d => {
+                  const [itemName, category] = d.split(':');
+                  return { item: itemName.trim(), category: category.trim() };
+                });
+                answerConfig = {
+                  categories: categories,
+                  availableItems: dragItemPairs.map(p => p.item),
+                  correctMapping: dragItemPairs.reduce((acc, p) => {
+                    acc[p.item] = p.category;
+                    return acc;
+                  }, {})
+                };
+                break;
+
+              case 'CODING':
+                answerConfig = {
+                  language: item.language || 'javascript',
+                  template: item.codetemplate || '',
+                  testCases: item.testcases ? JSON.parse(item.testcases) : []
+                };
+                break;
+
+              case 'IMAGE_BASED':
+                const [x, y, w, h] = item.coordinates.split(',').map(c => parseInt(c.trim()));
+                answerConfig = {
+                  type: 'region',
+                  region: {
+                    shape: 'rectangle',
+                    coordinates: { x, y, width: w, height: h },
+                    tolerance: 10
+                  }
+                };
+                break;
+
+              default:
+                answerConfig = {};
+            }
 
             docData = {
-              question: item.question,
-              questionImage: item.questionimage || null,
-              questionType: item.questiontype.toLowerCase(),
-              options: optionsData,
-              correctAnswer: item.correctanswer.trim(),
-              difficulty: item.difficulty.toLowerCase(),
-              category: item.category,
-              featureType: 'quiz',
+              id: `quiz_${Date.now()}_${i}`,
+              title: item.title.trim(),
+              description: item.description || '',
+              category: item.category.trim(),
+              level: item.level.trim(),
+              audience: item.audience || 'all',
+              quizType: item.quiztype.toUpperCase(),
+              metadata: {
+                timeLimit: 1800,
+                totalPoints: 100,
+                passingScore: 60,
+                shuffle: true,
+                attempts: 3,
+                partialScoring: false,
+                showExplanation: true,
+                totalQuestions: 1
+              },
+              questions: [
+                {
+                  id: `q_${Date.now()}_1`,
+                  sequence: 1,
+                  points: parseInt(item.points) || 10,
+                  quizType: item.quiztype.toUpperCase(),
+                  question: {
+                    text: item.question.trim(),
+                    contentItems: contentItems
+                  },
+                  answer: answerConfig,
+                  hint: item.hint || '',
+                  explanation: item.explanation || ''
+                }
+              ],
+              rules: {
+                allowSkip: true,
+                allowReview: false,
+                randomizeOptions: true
+              },
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             };
@@ -246,11 +478,15 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
 
   const getTemplate = () => {
     if (dataType === 'quiz') {
-      return `question,questionType,options,correctAnswer,difficulty,category,questionImage,images
-"What is the capital of France?",text,"Paris|London|Berlin|Madrid",Paris,easy,Geography,,
-"Which color is in the flag?",text-image,"Red|Blue|Green|Yellow",Red,medium,Geography,https://example.com/flag.jpg,
-"Identify this flag",image,"Option A|Option B|Option C|Option D",Option A,hard,Geography,https://example.com/flag.jpg,https://ex.com/opt1.jpg|https://ex.com/opt2.jpg|https://ex.com/opt3.jpg|https://ex.com/opt4.jpg
-"Is Earth round?",text,"True|False",True,easy,Science,,`;
+      return `title,category,level,audience,quizType,question,contentType,mediaUrl,options,correctAnswer,leftItems,rightItems,items,correctSequence,categories,dragItems,language,coordinates,points,description,hint,explanation
+"Geography Basics",Geography,Beginner,all,MCQ,"What is the capital of France?",text,,Paris|London|Berlin|Madrid,A,,,,,,,,,,10,"Basic geography","Think of the Eiffel Tower","Paris is the capital"
+"World Flags",Geography,Intermediate,all,MCQ,"Which country's flag is this?",image,https://example.com/flag.jpg,France|Germany|Italy|Spain,A,,,,,,,,,,15,"Identify flags","Look at colors","This is French flag"
+"Science Quiz",Science,Beginner,all,TRUE_FALSE,"The Earth orbits the Sun",text,,,,,,,,,,,,10,"Earth science","It's about orbital motion","Yes, Earth orbits the Sun"
+"Language Fill",Language,Intermediate,all,FILL_BLANK,"The capital of France is _____",text,,,,,,,,,,,,10,"Fill the blank","It's a European city","Paris is the answer"
+"Multi Answer",Science,Intermediate,all,MULTI_SELECT,"Which are planets?",text,,Jupiter|Moon|Saturn|Sun,Jupiter|Saturn,,,,,,,,,,15,"Select multiple","Think about size","Jupiter and Saturn are planets"
+"Match Pairs",History,Intermediate,all,MATCHING,"Match dates to events",text,,,,1453 - Fall of Constantinople|1492 - Columbus Discovery|1789 - French Revolution,Fall of Constantinople|Columbus Discovery|French Revolution,,,,,,,,20,"Matching exercise","Look at dates","Match correctly"
+"Number Order",Math,Intermediate,all,ORDERING,"Arrange in order",text,,,,"1|2|3|4|5",1,2,3,4,5,,,10,"Order items","Smallest to largest","Correct sequence"
+"Audio Question",Language,Beginner,all,AUDIO_BASED,"Listen and choose",audio,https://example.com/audio.mp3,Option A|Option B|Option C|Option D,A,,,,,,,,10,"Listening test","Listen carefully","Audio plays first"`;
     } else if (dataType === 'puzzle') {
       return 'title,type,difficulty,audience,pieces,timelimit,description\n'
         + 'Classic Jigsaw,Jigsaw,Medium,All Users,500,Unlimited,A beautiful landscape puzzle\n'
@@ -339,7 +575,7 @@ const BulkImport = ({ isOpen, onClose, dataType, categories = [] }) => {
             lineHeight: '1.5',
           }}>
             {dataType === 'quiz' 
-              ? '✏️ Questions with: text-only, text+image, or image-only. Options: 2-4 (pipe-separated). No images = empty cells.'
+              ? '✏️ Import complete quizzes with flexible content (text, image, video, audio). Supports MCQ, TRUE_FALSE, FILL_BLANK. Leave mediaUrl empty for text-only questions.'
               : 'ℹ️ Paste CSV data below. Required columns: title, category, and others specific to the type.'}
           </p>
         </div>

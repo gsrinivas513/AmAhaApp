@@ -11,6 +11,10 @@ export default function QuizPlayerPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { user } = useAuth();
+  
+  // Get difficulty from URL query parameter
+  const searchParams = new URLSearchParams(window.location.search);
+  const difficultyParam = searchParams.get('difficulty');
 
   const [quiz, setQuiz] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -18,7 +22,8 @@ export default function QuizPlayerPage() {
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quizStarted, setQuizStarted] = useState(true);
+  const [quizStarted, setQuizStarted] = useState(!!difficultyParam);
+  const [isPaused, setIsPaused] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizTimedOut, setQuizTimedOut] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300);
@@ -28,7 +33,19 @@ export default function QuizPlayerPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [startTime, setStartTime] = useState(Date.now());
-  const [selectedDifficulty, setSelectedDifficulty] = useState('Easy');
+  const [selectedDifficulty, setSelectedDifficulty] = useState(difficultyParam || 'Easy');
+
+  // Helper function to get questions based on variant or fallback to all questions
+  const getVariantQuestions = () => {
+    if (quiz?.levelVariants && quiz.levelVariants[selectedDifficulty]) {
+      return quiz.levelVariants[selectedDifficulty].questions || quiz.questions || [];
+    }
+    // Fallback: if no levelVariants, return all questions (for backward compatibility)
+    return quiz?.questions || [];
+  };
+
+  // Get current question from variant or all questions
+  const currentQuestionData = getVariantQuestions()[currentQuestion];
 
   // Load quiz
   useEffect(() => {
@@ -46,6 +63,11 @@ export default function QuizPlayerPage() {
         setQuiz(quizSnap.data());
         loadLeaderboardByDifficulty(quizId);
         loadReviews(quizId);
+        
+        // Auto-start if difficulty param is provided
+        if (difficultyParam) {
+          setQuizStarted(true);
+        }
       } catch (error) {
         console.error('Error loading quiz:', error);
         navigate('/quiz');
@@ -55,7 +77,7 @@ export default function QuizPlayerPage() {
     };
 
     loadQuiz();
-  }, [quizId, navigate]);
+  }, [quizId, navigate, difficultyParam]);
 
   const loadLeaderboardByDifficulty = async (id) => {
     try {
@@ -118,7 +140,7 @@ export default function QuizPlayerPage() {
 
   // Timer effect
   useEffect(() => {
-    if (!quizStarted || quizCompleted || quizTimedOut) return;
+    if (!quizStarted || quizCompleted || quizTimedOut || isPaused) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -135,7 +157,7 @@ export default function QuizPlayerPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [quizStarted, quizCompleted, quizTimedOut, timeLeft, startTime]);
+  }, [quizStarted, quizCompleted, quizTimedOut, isPaused, timeLeft, startTime]);
 
   const handleAnswerSelect = (optionIndex) => {
     if (answered) return;
@@ -143,14 +165,16 @@ export default function QuizPlayerPage() {
     setSelectedAnswer(optionIndex);
     setAnswered(true);
 
-    const question = quiz.questions[currentQuestion];
+    const variantQuestions = getVariantQuestions();
+    const question = variantQuestions[currentQuestion];
     if (optionIndex === question.correctAnswer) {
       setScore(score + 1);
     }
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
+    const variantQuestions = getVariantQuestions();
+    if (currentQuestion < variantQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setAnswered(false);
       setSelectedAnswer(null);
@@ -184,7 +208,7 @@ export default function QuizPlayerPage() {
           userName: user.displayName || user.email,
           userEmail: user.email,
           score: finalScore,
-          totalQuestions: quiz.questions.length,
+          totalQuestions: quiz?.questions?.length || 0,
           timeSpent: finalTime,
           createdAt: new Date().toISOString(),
           difficulty: selectedDifficulty,
@@ -274,6 +298,25 @@ export default function QuizPlayerPage() {
 
   // Playing quiz - show question
   if (quizStarted && !quizCompleted && !quizTimedOut) {
+    const variantQuestions = getVariantQuestions();
+    
+    // Safety check: ensure we have questions and current question data
+    if (!variantQuestions || variantQuestions.length === 0 || !currentQuestionData) {
+      return (
+        <SiteLayout>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            color: theme.textSecondary,
+          }}>
+            Loading quiz questions...
+          </div>
+        </SiteLayout>
+      );
+    }
+
     return (
       <SiteLayout>
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
@@ -312,7 +355,7 @@ export default function QuizPlayerPage() {
               marginBottom: '0',
               margin: '0',
             }}>
-              Question {currentQuestion + 1} of {quiz.questions.length}
+              {selectedDifficulty} • Question {currentQuestion + 1} of {getVariantQuestions().length}
             </p>
           </div>
 
@@ -342,7 +385,7 @@ export default function QuizPlayerPage() {
                   <div style={{
                     background: `linear-gradient(90deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
                     height: '100%',
-                    width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%`,
+                    width: `${((currentQuestion + 1) / getVariantQuestions().length) * 100}%`,
                     transition: 'width 0.3s ease',
                 }} />
                 </div>
@@ -358,6 +401,24 @@ export default function QuizPlayerPage() {
                 }}>
                   ⏱️ {formatTime(timeLeft || 0)}
                 </div>
+                <button onClick={() => setIsPaused(!isPaused)} style={{
+                  background: isPaused ? `linear-gradient(135deg, #4ADE80, #22C55E)` : `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
+                  color: '#fff',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: `0 4px 12px ${theme.accentPrimary}20`,
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}>
+                  {isPaused ? '▶️ Resume' : '⏸️ Pause'}
+                </button>
               </div>
 
               {/* Question Card */}
@@ -383,7 +444,7 @@ export default function QuizPlayerPage() {
                     fontSize: '13px',
                     fontWeight: '600',
                   }}>
-                    Question {currentQuestion + 1} of {quiz.questions.length}
+                    Question {currentQuestion + 1} of {getVariantQuestions().length}
                   </span>
                   <span style={{
                     background: `${theme.accentPrimary}20`,
@@ -404,7 +465,7 @@ export default function QuizPlayerPage() {
                   marginBottom: '24px',
                   lineHeight: '1.5',
                 }}>
-                  {quiz.questions[currentQuestion]?.text}
+                  {currentQuestionData?.text}
                 </h2>
 
                 {/* Options */}
@@ -413,7 +474,7 @@ export default function QuizPlayerPage() {
                   gap: '12px',
                   marginBottom: '24px',
                 }}>
-                  {quiz.questions[currentQuestion]?.options.map((option, index) => (
+                  {(currentQuestionData?.options || currentQuestionData?.answer?.options || []).map((option, index) => (
                     <button
                       key={index}
                       onClick={() => handleAnswerSelect(index)}
@@ -422,7 +483,7 @@ export default function QuizPlayerPage() {
                         padding: '16px 20px',
                         textAlign: 'left',
                         background: answered
-                          ? index === quiz.questions[currentQuestion].correctAnswer
+                          ? index === currentQuestionData?.correctAnswer
                             ? '#4ECB7115'
                             : index === selectedAnswer
                             ? '#FF6B6B15'
@@ -432,7 +493,7 @@ export default function QuizPlayerPage() {
                           : theme.surfacePrimary,
                         border: `2px solid ${
                           answered
-                            ? index === quiz.questions[currentQuestion].correctAnswer
+                            ? index === currentQuestionData?.correctAnswer
                               ? '#4ECB71'
                               : index === selectedAnswer
                               ? '#FF6B6B'
@@ -443,7 +504,7 @@ export default function QuizPlayerPage() {
                         }`,
                         borderRadius: '12px',
                         color: answered
-                          ? index === quiz.questions[currentQuestion].correctAnswer
+                          ? index === currentQuestionData?.correctAnswer
                             ? '#4ECB71'
                             : index === selectedAnswer
                             ? '#FF6B6B'
@@ -476,7 +537,7 @@ export default function QuizPlayerPage() {
                           height: '40px',
                           borderRadius: '50%',
                           background: answered
-                            ? index === quiz.questions[currentQuestion].correctAnswer
+                            ? index === currentQuestionData?.correctAnswer
                               ? 'linear-gradient(135deg, #4ECB71, #34A853)'
                               : index === selectedAnswer
                               ? 'linear-gradient(135deg, #FF6B6B, #EF4444)'
@@ -491,14 +552,14 @@ export default function QuizPlayerPage() {
                           flexShrink: 0,
                           border: 'none',
                           boxShadow: answered
-                            ? index === quiz.questions[currentQuestion].correctAnswer
+                            ? index === currentQuestionData?.correctAnswer
                               ? '0 4px 12px rgba(78, 203, 113, 0.4)'
                               : index === selectedAnswer
                               ? '0 4px 12px rgba(255, 107, 107, 0.4)'
                               : '0 2px 8px rgba(0, 0, 0, 0.1)'
                             : `0 4px 12px ${theme.accentPrimary}30`,
                         }}>
-                          {answered ? (index === quiz.questions[currentQuestion].correctAnswer ? '✓' : index === selectedAnswer ? '✗' : '') : String.fromCharCode(65 + index)}
+                          {answered ? (index === currentQuestionData?.correctAnswer ? '✓' : index === selectedAnswer ? '✗' : '') : String.fromCharCode(65 + index)}
                         </div>
                         <span>{option}</span>
                       </div>
@@ -508,18 +569,18 @@ export default function QuizPlayerPage() {
 
                 {answered && (
                   <div style={{
-                    background: selectedAnswer === quiz.questions[currentQuestion].correctAnswer ? '#4ECB7115' : '#FF6B6B15',
-                    border: `2px solid ${selectedAnswer === quiz.questions[currentQuestion].correctAnswer ? '#4ECB71' : '#FF6B6B'}`,
+                    background: selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB7115' : '#FF6B6B15',
+                    border: `2px solid ${selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB71' : '#FF6B6B'}`,
                     borderRadius: '12px',
                     padding: '16px',
                     marginBottom: '20px',
-                    color: selectedAnswer === quiz.questions[currentQuestion].correctAnswer ? '#4ECB71' : '#FF6B6B',
+                    color: selectedAnswer === currentQuestionData?.correctAnswer ? '#4ECB71' : '#FF6B6B',
                   }}>
                     <div style={{ fontWeight: '700', marginBottom: '6px', fontSize: '14px' }}>
-                      {selectedAnswer === quiz.questions[currentQuestion].correctAnswer ? '✓ Correct!' : '✗ Incorrect'}
+                      {selectedAnswer === currentQuestionData?.correctAnswer ? '✓ Correct!' : '✗ Incorrect'}
                     </div>
                     <div style={{ fontSize: '13px', color: theme.textSecondary, lineHeight: '1.4' }}>
-                      {quiz.questions[currentQuestion]?.explanation}
+                      {currentQuestionData?.explanation}
                     </div>
                   </div>
                 )}
@@ -540,7 +601,7 @@ export default function QuizPlayerPage() {
                         transition: 'all 0.3s ease',
                       }}
                     >
-                      {currentQuestion === quiz.questions.length - 1 ? 'See Results' : 'Next Question →'}
+                      {currentQuestion === (quiz?.questions?.length || 0) - 1 ? 'See Results' : 'Next Question →'}
                     </button>
                   </div>
                 )}
@@ -611,7 +672,7 @@ export default function QuizPlayerPage() {
                       }
                     }}
                   >
-                    {difficulty} ({quiz.questions.length}Q)
+                    {difficulty} ({quiz?.levelVariants?.[difficulty]?.questionCount || quiz?.questions?.length || 0}Q)
                   </button>
                 ))}
               </div>
@@ -961,7 +1022,7 @@ export default function QuizPlayerPage() {
               marginBottom: '0',
               margin: '0',
             }}>
-              Time's up! You answered {currentQuestion} of {quiz.questions.length} questions.
+              Time's up! You answered {currentQuestion} of {quiz?.questions?.length || 0} questions.
             </p>
           </div>
 
@@ -982,7 +1043,7 @@ export default function QuizPlayerPage() {
               <div style={{
                 background: `linear-gradient(90deg, #FF6B6B, #EF4444)`,
                 height: '100%',
-                width: `${((currentQuestion) / quiz.questions.length) * 100}%`,
+                width: `${((currentQuestion) / quiz?.questions?.length || 0) * 100}%`,
                 transition: 'width 0.3s ease',
               }} />
             </div>
@@ -1035,7 +1096,7 @@ export default function QuizPlayerPage() {
                   marginBottom: '24px',
                   textAlign: 'center',
                 }}>
-                  You answered {currentQuestion} out of {quiz.questions.length} questions and scored {score} correct. Try again with a different difficulty level!
+                  You answered {currentQuestion} out of {quiz?.questions?.length || 0} questions and scored {score} correct. Try again with a different difficulty level!
                 </p>
 
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1133,7 +1194,7 @@ export default function QuizPlayerPage() {
                       }
                     }}
                   >
-                    {difficulty} ({quiz.questions.length}Q)
+                    {difficulty} ({quiz?.levelVariants?.[difficulty]?.questionCount || quiz?.questions?.length || 0}Q)
                   </button>
                 ))}
               </div>
@@ -1364,7 +1425,7 @@ export default function QuizPlayerPage() {
 
   // Results screen - same layout as playing
   if (quizCompleted) {
-    const percentage = Math.round((score / quiz.questions.length) * 100);
+    const percentage = Math.round((score / quiz?.questions?.length || 0) * 100);
     const passed = percentage >= 70;
 
     return (
@@ -1414,7 +1475,7 @@ export default function QuizPlayerPage() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '56px', fontWeight: '700', color: passed ? '#4ECB71' : '#FFB627', marginBottom: '8px' }}>
-                {score}/{quiz.questions.length}
+                {score}/{quiz?.questions?.length || 0}
               </div>
               <div style={{ fontSize: '16px', color: theme.textSecondary, fontWeight: '600' }}>
                 {percentage}%
@@ -1568,7 +1629,7 @@ export default function QuizPlayerPage() {
                       {difficulty}
                     </div>
                     <div style={{ fontSize: '11px', opacity: 0.7 }}>
-                      {quiz.questions.length}Q
+                      {quiz?.levelVariants?.[difficulty]?.questionCount || quiz?.questions?.length || 0}Q
                     </div>
                   </button>
                 ))}
@@ -1939,7 +2000,7 @@ export default function QuizPlayerPage() {
               marginBottom: '20px',
               margin: '0 0 20px 0',
             }}>
-              Choose Variant
+              Choose Difficulty & Start
             </h2>
 
             <div style={{
@@ -1947,48 +2008,49 @@ export default function QuizPlayerPage() {
               gridTemplateColumns: '1fr',
               gap: '10px',
             }}>
-              {['Easy', 'Medium', 'Hard', 'Expert'].map(difficulty => (
-                <button
-                  key={difficulty}
-                  onClick={() => {
-                    setSelectedDifficulty(difficulty);
-                    setCurrentQuestion(0);
-                    setScore(0);
-                    setAnswered(false);
-                    setSelectedAnswer(null);
-                    setQuizCompleted(false);
-                    setTimeLeft(300);
-                    setStartTime(Date.now());
-                    setQuizStarted(true);
-                  }}
-                  style={{
-                    padding: '14px 12px',
-                    background: selectedDifficulty === difficulty ? `linear-gradient(135deg, ${theme.accentPrimary}30, ${theme.accentSecondary}20)` : theme.surfacePrimary,
-                    color: theme.textPrimary,
-                    border: `2px solid ${selectedDifficulty === difficulty ? theme.accentPrimary : theme.border}`,
-                    borderRadius: '12px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'center',
-                  }}
-                  onMouseOver={(e) => {
-                    if (selectedDifficulty !== difficulty) {
-                      e.currentTarget.style.borderColor = theme.accentPrimary;
-                      e.currentTarget.style.background = theme.accentPrimary + '10';
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (selectedDifficulty !== difficulty) {
-                      e.currentTarget.style.borderColor = theme.border;
-                      e.currentTarget.style.background = theme.surfacePrimary;
-                    }
-                  }}
-                >
-                  {difficulty} ({quiz.questions.length}Q)
-                </button>
-              ))}
+              {['Easy', 'Medium', 'Hard', 'Expert'].map(difficulty => {
+                const variantCount = quiz?.levelVariants?.[difficulty]?.questionCount || quiz?.questions?.length || 0;
+                return (
+                  <button
+                    key={difficulty}
+                    onClick={() => {
+                      setSelectedDifficulty(difficulty);
+                      setCurrentQuestion(0);
+                      setScore(0);
+                      setAnswered(false);
+                      setSelectedAnswer(null);
+                      setQuizCompleted(false);
+                      setTimeLeft(300);
+                      setStartTime(Date.now());
+                      setIsPaused(false);
+                      setQuizStarted(true);
+                    }}
+                    style={{
+                      padding: '16px 12px',
+                      background: `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
+                      color: '#fff',
+                      border: `2px solid ${theme.accentPrimary}`,
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'center',
+                      boxShadow: `0 6px 20px ${theme.accentPrimary}30`,
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = `0 8px 24px ${theme.accentPrimary}50`;
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 6px 20px ${theme.accentPrimary}30`;
+                    }}
+                  >
+                    🚀 START {difficulty} ({variantCount}Q)
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

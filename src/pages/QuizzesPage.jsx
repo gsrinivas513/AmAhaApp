@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import SiteLayout from '../layouts/SiteLayout';
 import { useTheme } from '../context/ThemeContext';
+import AudienceSelector, { AUDIENCES } from '../components/AudienceSelector';
 
 export default function QuizzesPage() {
   const { theme } = useTheme();
@@ -23,14 +24,6 @@ export default function QuizzesPage() {
     { id: 'technology', label: '💻 Technology', color: '#FF85A2' },
   ];
 
-  const AUDIENCES = [
-    { value: 'all', label: '👥 All Users', emoji: '👥' },
-    { value: 'kids', label: '👶 Kids (5-12)', emoji: '👶' },
-    { value: 'students', label: '📚 Students (13-18)', emoji: '📚' },
-    { value: 'professionals', label: '💼 Professionals', emoji: '💼' },
-    { value: 'programmers', label: '💻 Programmers', emoji: '💻' },
-  ];
-
   // Load real quiz data from Firestore
   useEffect(() => {
     const loadQuizzes = async () => {
@@ -42,36 +35,48 @@ export default function QuizzesPage() {
         const quizzesSnapshot = await getDocs(collection(db, 'quizzes'));
         console.log("📊 [QuizzesPage] Quizzes query returned:", quizzesSnapshot.docs.length);
         
-        if (quizzesSnapshot.empty) {
-          console.warn("⚠️ [QuizzesPage] No quizzes found in Firestore");
-          setQuizzes([]);
-          setLoading(false);
-          return;
-        }
+        let quizzesData = [];
 
-        const quizzesData = quizzesSnapshot.docs.map(doc => {
-          const data = doc.data();
-          console.log(`✅ [QuizzesPage] Quiz found:`, { 
-            id: doc.id, 
-            title: data.title, 
-            category: data.category,
-            difficulty: data.difficulty 
+        if (!quizzesSnapshot.empty) {
+          quizzesData = quizzesSnapshot.docs.map(doc => {
+            const data = doc.data();
+            
+            // Calculate total questions from levelVariants
+            let totalQuestions = 0;
+            if (data.levelVariants) {
+              totalQuestions = Object.values(data.levelVariants).reduce((sum, variant) => {
+                return sum + (variant.questionCount || variant.questions?.length || 0);
+              }, 0);
+            } else {
+              totalQuestions = data.totalQuestions || data.questions?.length || 0;
+            }
+            
+            console.log(`✅ [QuizzesPage] Quiz found:`, { 
+              id: doc.id, 
+              title: data.title, 
+              category: data.category,
+              difficulty: data.difficulty,
+              levelVariants: data.levelVariants ? Object.keys(data.levelVariants) : null,
+              totalQuestions: totalQuestions
+            });
+            
+            return {
+              id: doc.id,
+              title: data.title || data.name || doc.id,
+              description: data.description || `Quiz on ${data.title || doc.id}`,
+              category: data.category || 'Uncategorized',
+              difficulty: data.difficulty || 'Medium',
+              audience: data.audience || 'all',
+              questions: totalQuestions,
+              avgTime: data.avgTime || '10 min',
+              rating: data.rating || 4.5,
+              plays: data.plays || 0,
+              levelVariants: data.levelVariants || null,
+            };
           });
-          
-          return {
-            id: doc.id,
-            title: data.title || data.name || doc.id,
-            description: data.description || `Quiz on ${data.title || doc.id}`,
-            category: data.category || 'Uncategorized',
-            difficulty: data.difficulty || 'Medium',
-            audience: data.audience || 'all',
-            questions: data.totalQuestions || data.questions || 0,
-            avgTime: data.avgTime || '10 min',
-            rating: data.rating || 4.5,
-            plays: data.plays || 0,
-            _isMock: false, // Real data
-          };
-        });
+        } else {
+          console.warn("⚠️ [QuizzesPage] No quizzes found in Firestore");
+        }
 
         console.log("🎯 [QuizzesPage] Final quizzes:", quizzesData.length);
         setQuizzes(quizzesData);
@@ -190,51 +195,12 @@ export default function QuizzesPage() {
             <div style={{
               marginBottom: '30px',
             }}>
-              <h3 style={{
-                color: theme.textPrimary,
-                fontSize: '18px',
-                fontWeight: '700',
-                marginBottom: '16px',
-              }}>
-                👥 Who is this for?
-              </h3>
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                flexWrap: 'wrap',
-              }}>
-                {AUDIENCES.map(aud => (
-                  <button
-                    key={aud.value}
-                    onClick={() => setSelectedAudience(aud.value)}
-                    style={{
-                      padding: '12px 24px',
-                      background: selectedAudience === aud.value ? `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})` : theme.surfaceSecondary,
-                      color: selectedAudience === aud.value ? '#fff' : theme.textPrimary,
-                      border: `2px solid ${selectedAudience === aud.value ? 'transparent' : theme.border}`,
-                      borderRadius: '12px',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      if (selectedAudience !== aud.value) {
-                        e.target.style.borderColor = theme.accentPrimary;
-                        e.target.style.background = `${theme.accentPrimary}15`;
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (selectedAudience !== aud.value) {
-                        e.target.style.borderColor = theme.border;
-                        e.target.style.background = theme.surfaceSecondary;
-                      }
-                    }}
-                  >
-                    {aud.label}
-                  </button>
-                ))}
-              </div>
+              <AudienceSelector
+                value={selectedAudience}
+                onChange={setSelectedAudience}
+                label="Who is this for?"
+                inline={true}
+              />
             </div>
 
             {/* Categories Filter */}
@@ -351,7 +317,8 @@ export default function QuizzesPage() {
                     cursor: 'pointer',
                   }}
                   onClick={() => {
-                    navigate(`/quiz-play/${quiz.id}`);
+                    // Start with Easy difficulty by default - no extra page!
+                    navigate(`/quiz-play/${quiz.id}?difficulty=Easy`);
                   }}
                 >
                   {/* Header */}
@@ -392,28 +359,87 @@ export default function QuizzesPage() {
                     }}>
                       {quiz.category}
                     </div>
-                    <div style={{
-                      background: `${getDifficultyColor(quiz.difficulty)}20`,
-                      color: getDifficultyColor(quiz.difficulty),
-                      padding: '4px 12px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                    }}>
-                      {quiz.difficulty}
-                    </div>
+                    {quiz.levelVariants ? (
+                      <div style={{
+                        display: 'flex',
+                        gap: '4px',
+                        flexWrap: 'wrap',
+                      }}>
+                        {Object.keys(quiz.levelVariants).map(difficulty => (
+                          <button
+                            key={difficulty}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Navigate directly to quiz with this difficulty
+                              navigate(`/quiz-play/${quiz.id}?difficulty=${difficulty}`);
+                            }}
+                            style={{
+                              background: `${getDifficultyColor(difficulty)}20`,
+                              color: getDifficultyColor(difficulty),
+                              padding: '4px 12px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              border: `1px solid ${getDifficultyColor(difficulty)}40`,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.background = `${getDifficultyColor(difficulty)}40`;
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = `0 4px 12px ${getDifficultyColor(difficulty)}30`;
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.background = `${getDifficultyColor(difficulty)}20`;
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            {difficulty}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{
+                        background: `${getDifficultyColor(quiz.difficulty)}20`,
+                        color: getDifficultyColor(quiz.difficulty),
+                        padding: '4px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                      }}>
+                        {quiz.difficulty}
+                      </div>
+                    )}
                   </div>
 
                   {/* Stats */}
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
                     gap: '12px',
                     paddingBottom: '16px',
                     borderBottom: `1px solid ${theme.border}`,
                     marginBottom: '16px',
                     flex: '1',
                   }}>
+                    <div>
+                      <div style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        marginBottom: '4px',
+                      }}>
+                        Variants
+                      </div>
+                      <div style={{
+                        color: theme.textPrimary,
+                        fontSize: '18px',
+                        fontWeight: '700',
+                      }}>
+                        {quiz.levelVariants ? Object.keys(quiz.levelVariants).length : 1}
+                      </div>
+                    </div>
                     <div>
                       <div style={{
                         color: theme.textSecondary,
@@ -449,6 +475,41 @@ export default function QuizzesPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Variants Info */}
+                  {quiz.levelVariants && (
+                    <div style={{
+                      background: `${theme.accentPrimary}10`,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      marginBottom: '16px',
+                    }}>
+                      <div style={{
+                        color: theme.textSecondary,
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        marginBottom: '8px',
+                        textTransform: 'uppercase',
+                      }}>
+                        Difficulty Variants
+                      </div>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '6px',
+                        fontSize: '12px',
+                      }}>
+                        {Object.entries(quiz.levelVariants).map(([level, variant]) => (
+                          <div key={level} style={{
+                            color: getDifficultyColor(level),
+                            fontWeight: '600',
+                          }}>
+                            {level} ({variant.questionCount}Q)
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Footer */}
                   <div style={{

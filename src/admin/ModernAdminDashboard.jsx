@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SiteLayout from '../layouts/SiteLayout';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import AudienceSelector, { AUDIENCES } from '../components/AudienceSelector';
+import { seedQuizzesWithVariants } from '../scripts/seedQuizzesWithVariants';
 import PictureWordEditor from './puzzle-editors/PictureWordEditor';
 import SpotDifferenceEditor from './puzzle-editors/SpotDifferenceEditor';
 import FindPairEditor from './puzzle-editors/FindPairEditor';
@@ -28,6 +30,7 @@ import { runTemplate } from './utils/templateExecutor';
 import SearchFilterBar from './components/SearchFilterBar';
 import ImprovedFeaturesHierarchyManager from './components/ImprovedFeaturesHierarchyManager';
 import StatusBadge from '../components/badges/StatusBadge';
+import AdminQuizBuilder from '../quizzes/admin/AdminQuizBuilder';
 import VisibilityBadge from '../components/badges/VisibilityBadge';
 import FeaturedBadge from '../components/badges/FeaturedBadge';
 import AdminStatusFilter from './components/AdminStatusFilter';
@@ -182,6 +185,10 @@ export default function ModernAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showAddQuizForm, setShowAddQuizForm] = useState(false);
+  const [showUniversalQuizBuilder, setShowUniversalQuizBuilder] = useState(false);
+  const [editingQuizData, setEditingQuizData] = useState(null);
+  const [showBulkImportQuiz, setShowBulkImportQuiz] = useState(false);
+  const [bulkImportData, setBulkImportData] = useState('');
   const [showAddPuzzleForm, setShowAddPuzzleForm] = useState(false);
   const [showAddStoryForm, setShowAddStoryForm] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -265,6 +272,12 @@ export default function ModernAdminDashboard() {
   const [setupMessage, setSetupMessage] = useState('');
   const [setupError, setSetupError] = useState('');
   const [addingSampleQuizzes, setAddingSampleQuizzes] = useState(false);
+  const [seedingQuizzes, setSeedingQuizzes] = useState(false);
+  const [seedProgress, setSeedProgress] = useState(null);
+  const [seedResults, setSeedResults] = useState(null);
+  const [deletingQuizzes, setDeletingQuizzes] = useState(false);
+  const [deleteProgress, setDeleteProgress] = useState(null);
+  const [deleteResults, setDeleteResults] = useState(null);
   const [puzzleDuplicateWarning, setPuzzleDuplicateWarning] = useState(null);
   const [quickCreateType, setQuickCreateType] = useState(null);
   const [quickCreateData, setQuickCreateData] = useState({});
@@ -1187,6 +1200,155 @@ export default function ModernAdminDashboard() {
     }
   };
 
+  // Handle save from AdminQuizBuilder
+  const handleSaveUniversalQuiz = async (quizData) => {
+    try {
+      // Add timestamp
+      const quizWithTimestamp = {
+        ...quizData,
+        createdDate: new Date(),
+        status: 'Draft',
+        plays: 0,
+        published: false,
+      };
+      
+      // Save to Firestore
+      const docRef = await addDoc(collection(db, 'quizzes'), quizWithTimestamp);
+      
+      // Add to local state
+      setQuizzes([{ id: docRef.id, ...quizWithTimestamp }, ...quizzes]);
+      
+      // Close builder and show success message
+      setShowUniversalQuizBuilder(false);
+      alert(`✅ Quiz "${quizData.title}" created successfully!`);
+    } catch (error) {
+      console.error('Error saving quiz:', error);
+      alert('❌ Error saving quiz. Please try again.');
+    }
+  };
+
+  // Handle bulk import quizzes with complete data (metadata + questions + options + answers)
+  const handleBulkImportQuiz = async () => {
+    if (!bulkImportData.trim()) {
+      alert('❌ Please paste complete quiz JSON data');
+      return;
+    }
+
+    try {
+      let quizzesToImport = [];
+
+      // Parse as JSON (required format for complete quiz data)
+      try {
+        const jsonData = JSON.parse(bulkImportData);
+        quizzesToImport = Array.isArray(jsonData) ? jsonData : [jsonData];
+      } catch (parseError) {
+        alert('❌ Invalid JSON format. Please ensure your data is valid JSON.\n\nFor help, see the format examples in the textarea placeholder.');
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      for (const quizData of quizzesToImport) {
+        try {
+          // Validate required fields
+          if (!quizData.title || !quizData.category || !quizData.quizType) {
+            throw new Error('Missing required fields: title, category, quizType');
+          }
+
+          // Build complete quiz object with metadata AND questions
+          const quizWithTimestamp = {
+            // Metadata
+            title: quizData.title,
+            category: quizData.category,
+            audience: quizData.audience || 'All Ages',
+            level: quizData.level || 'Beginner',
+            quizType: quizData.quizType,
+            description: quizData.description || '',
+            
+            // Settings
+            metadata: {
+              timeLimit: parseInt(quizData.timeLimit) || 1800,
+              passingScore: parseInt(quizData.passingScore) || 60,
+              attempts: parseInt(quizData.attempts) || 1,
+              shuffle: quizData.shuffle === 'true' || quizData.shuffle === true,
+              partialScoring: quizData.partialScoring === 'true' || quizData.partialScoring === true,
+              showExplanation: quizData.showExplanation !== 'false' && quizData.showExplanation !== false,
+            },
+            
+            // Multiple levels support
+            levelVariant: quizData.levelVariant || 'standard',
+            
+            // Questions - COMPLETE with options, answers, media
+            questions: (quizData.questions || []).map((q, idx) => ({
+              id: q.id || `q_${Date.now()}_${idx}`,
+              order: q.order || idx + 1,
+              text: q.text || '',
+              type: q.type || 'multiple-choice',
+              
+              // For multiple choice questions
+              options: (q.options || []).map((opt, optIdx) => ({
+                id: opt.id || `opt_${Date.now()}_${optIdx}`,
+                text: opt.text || '',
+                image: opt.image || null,
+                video: opt.video || null,
+                correct: opt.correct === true || opt.correct === 'true',
+              })),
+              
+              // Correct answer(s)
+              correctAnswers: q.correctAnswers || [],
+              
+              // Answer explanation
+              explanation: q.explanation || '',
+              explanationImage: q.explanationImage || null,
+              explanationVideo: q.explanationVideo || null,
+              
+              // Media
+              image: q.image || null,
+              video: q.video || null,
+              audio: q.audio || null,
+              
+              // Points and difficulty
+              points: q.points || 1,
+              difficulty: q.difficulty || 'medium',
+              
+              // Additional metadata
+              tags: q.tags || [],
+              hints: q.hints || [],
+            })),
+            
+            // File metadata
+            createdDate: new Date(),
+            status: 'Draft',
+            plays: 0,
+            published: false,
+          };
+
+          const docRef = await addDoc(collection(db, 'quizzes'), quizWithTimestamp);
+          setQuizzes(prev => [{ id: docRef.id, ...quizWithTimestamp }, ...prev]);
+          successCount++;
+        } catch (err) {
+          console.error('Error importing quiz:', err);
+          errors.push(`"${quizData.title || 'Unknown'}": ${err.message}`);
+          errorCount++;
+        }
+      }
+
+      setShowBulkImportQuiz(false);
+      setBulkImportData('');
+      
+      let message = `✅ Import Complete!\n✓ ${successCount} quizzes imported\n✗ ${errorCount} failed`;
+      if (errors.length > 0 && errors.length <= 5) {
+        message += `\n\nErrors:\n${errors.join('\n')}`;
+      }
+      alert(message);
+    } catch (error) {
+      console.error('Error in bulk import:', error);
+      alert('❌ Error importing quizzes. Check your JSON format and try again.');
+    }
+  };
+
   const handleAddPuzzle = async () => {
     // Accept either displayLabel or title (Manage Puzzles form uses title)
     const effectiveLabel = (puzzleFormData.displayLabel || puzzleFormData.title || '').trim();
@@ -1253,6 +1415,111 @@ export default function ModernAdminDashboard() {
       } catch (error) {
         console.error('Error adding story:', error);
       }
+    }
+  };
+
+  // Seed Sample Quizzes to Firebase
+  const handleSeedQuizzes = async () => {
+    try {
+      setSeedingQuizzes(true);
+      setSeedProgress(null);
+      setSeedResults(null);
+
+      console.log('🌱 Starting quiz seed process with variants...');
+
+      const results = await seedQuizzesWithVariants((progress) => {
+        setSeedProgress(progress);
+      });
+
+      setSeedResults(results);
+      setSeedingQuizzes(false);
+
+      // Log detailed results for debugging
+      if (results.failed > 0) {
+        console.error('🔴 Seed Failures:', results.errors);
+        console.table(results.errors);
+      } else {
+        console.log('✅ All quizzes seeded successfully!');
+        // Only auto-refresh if all successful
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('❌ Error seeding quizzes:', error);
+      setSeedResults({
+        success: 0,
+        failed: 11,
+        errors: [{ title: 'All', error: error.message }],
+      });
+      setSeedingQuizzes(false);
+    }
+  };
+
+  // Delete all quizzes from database
+  const handleDeleteAllQuizzes = async () => {
+    if (!window.confirm('🗑️ DELETE ALL QUIZZES? This action cannot be undone. All quiz data will be permanently removed.')) {
+      return;
+    }
+
+    try {
+      setDeletingQuizzes(true);
+      setDeleteProgress(null);
+      setDeleteResults(null);
+
+      console.log('🗑️ Starting deletion of all quizzes...');
+
+      const quizzesRef = collection(db, 'quizzes');
+      const snapshot = await getDocs(quizzesRef);
+
+      setDeleteProgress({
+        current: 0,
+        total: snapshot.docs.length,
+      });
+
+      let deleted = 0;
+      let failed = 0;
+      const errors = [];
+
+      for (let i = 0; i < snapshot.docs.length; i++) {
+        const quizDoc = snapshot.docs[i];
+        try {
+          await deleteDoc(doc(db, 'quizzes', quizDoc.id));
+          deleted++;
+          setDeleteProgress({
+            current: i + 1,
+            total: snapshot.docs.length,
+          });
+        } catch (error) {
+          failed++;
+          errors.push({
+            id: quizDoc.id,
+            error: error.message,
+          });
+        }
+      }
+
+      setDeleteResults({
+        success: deleted,
+        failed: failed,
+        total: snapshot.docs.length,
+        errors: errors,
+      });
+
+      setDeletingQuizzes(false);
+
+      // Refresh quiz list after deletion
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error('❌ Error deleting quizzes:', error);
+      setDeleteResults({
+        success: 0,
+        failed: 1,
+        errors: [{ error: error.message }],
+      });
+      setDeletingQuizzes(false);
     }
   };
 
@@ -1668,8 +1935,9 @@ export default function ModernAdminDashboard() {
 
         {!loading && (
         <div style={{
-          maxWidth: '1400px',
+          maxWidth: '100%',
           margin: '0 auto',
+          padding: '0 20px',
         }}>
           {/* Hero Section */}
           <div style={{
@@ -1821,31 +2089,6 @@ export default function ModernAdminDashboard() {
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                   gap: '16px',
                 }}>
-                  <button
-                    onClick={() => setShowAddQuizForm(!showAddQuizForm)}
-                    style={{
-                      padding: '20px',
-                      background: '#4ECDC420',
-                      border: `2px solid #4ECDC4`,
-                      borderRadius: '12px',
-                      color: '#4ECDC4',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#4ECDC440';
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#4ECDC420';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    ➕ Add Quiz
-                  </button>
-
                   <button
                     onClick={() => setShowAddPuzzleForm(!showAddPuzzleForm)}
                     style={{
@@ -2729,7 +2972,7 @@ export default function ModernAdminDashboard() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setShowAddQuizForm(!showAddQuizForm)}
+                  onClick={() => setShowUniversalQuizBuilder(!showUniversalQuizBuilder)}
                   style={{
                     padding: '12px 24px',
                     background: `linear-gradient(135deg, #4ECDC4, #FFE66D)`,
@@ -2739,26 +2982,348 @@ export default function ModernAdminDashboard() {
                     fontSize: '15px',
                     fontWeight: '600',
                     cursor: 'pointer',
+                    transition: 'all 0.3s ease',
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  ➕ Add New Quiz
+                  🚀 Create New Quiz
                 </button>
                 <button
                   onClick={() => setShowBulkImport('quiz')}
                   style={{
                     padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#4ECDC4',
-                    border: '2px solid #4ECDC4',
+                    background: `linear-gradient(135deg, #FF6B6B, #FF8E72)`,
+                    color: '#fff',
+                    border: 'none',
                     borderRadius: '10px',
                     fontSize: '15px',
                     fontWeight: '600',
                     cursor: 'pointer',
+                    transition: 'all 0.3s ease',
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                  📤 Bulk Import
+                  📤 Bulk Import Quizzes
+                </button>
+                <button
+                  onClick={handleSeedQuizzes}
+                  disabled={seedingQuizzes}
+                  style={{
+                    padding: '12px 24px',
+                    background: seedingQuizzes ? '#ccc' : `linear-gradient(135deg, #9B59B6, #8E44AD)`,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: seedingQuizzes ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: seedingQuizzes ? 0.7 : 1,
+                  }}
+                  onMouseOver={(e) => !seedingQuizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                  onMouseOut={(e) => !seedingQuizzes && (e.currentTarget.style.transform = 'translateY(0)')}
+                >
+                  {seedingQuizzes ? '🌱 Seeding...' : '🌱 Seed Sample Quizzes'}
+                </button>
+                <button
+                  onClick={handleDeleteAllQuizzes}
+                  disabled={deletingQuizzes}
+                  style={{
+                    padding: '12px 24px',
+                    background: deletingQuizzes ? '#ccc' : `linear-gradient(135deg, #E74C3C, #C0392B)`,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: deletingQuizzes ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: deletingQuizzes ? 0.7 : 1,
+                  }}
+                  onMouseOver={(e) => !deletingQuizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                  onMouseOut={(e) => !deletingQuizzes && (e.currentTarget.style.transform = 'translateY(0)')}
+                >
+                  {deletingQuizzes ? '🗑️ Deleting...' : '🗑️ Delete All Quizzes'}
                 </button>
               </div>
+
+              {/* Seed Progress Display */}
+              {seedProgress && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid #9B59B6`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: '#9B59B6',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    🌱 Seeding Progress
+                  </h3>
+                  <p style={{
+                    color: theme.textSecondary,
+                    marginBottom: '10px',
+                  }}>
+                    {seedProgress.current} / {seedProgress.total} - {seedProgress.title}
+                  </p>
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    background: theme.border,
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${(seedProgress.current / seedProgress.total) * 100}%`,
+                      background: seedProgress.status === 'success' ? '#27AE60' : '#E74C3C',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Seed Results Display */}
+              {seedResults && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid ${seedResults.failed > 0 ? '#E74C3C' : '#27AE60'}`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: seedResults.failed > 0 ? '#E74C3C' : '#27AE60',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    {seedResults.failed > 0 ? '❌ Seeding Complete with Errors' : '✅ Seeding Complete'}
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '15px',
+                    marginBottom: '15px',
+                  }}>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #27AE60`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ✅ Created
+                      </p>
+                      <p style={{
+                        color: '#27AE60',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {seedResults.success}
+                      </p>
+                    </div>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #E74C3C`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ❌ Failed
+                      </p>
+                      <p style={{
+                        color: '#E74C3C',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {seedResults.failed}
+                      </p>
+                    </div>
+                  </div>
+                  {seedResults.errors && seedResults.errors.length > 0 && (
+                    <div style={{
+                      background: theme.background,
+                      padding: '15px',
+                      borderRadius: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        margin: '0 0 10px 0',
+                      }}>
+                        Errors:
+                      </p>
+                      {seedResults.errors.map((err, idx) => (
+                        <p key={idx} style={{
+                          color: '#E74C3C',
+                          fontSize: '12px',
+                          margin: '5px 0',
+                        }}>
+                          • {err.title}: {err.error}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Delete Progress Display */}
+              {deleteProgress && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid #E74C3C`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: '#E74C3C',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    🗑️ Deletion Progress
+                  </h3>
+                  <p style={{
+                    color: theme.textSecondary,
+                    marginBottom: '10px',
+                  }}>
+                    {deleteProgress.current} / {deleteProgress.total} quizzes deleted
+                  </p>
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    background: theme.border,
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${(deleteProgress.current / deleteProgress.total) * 100}%`,
+                      background: '#E74C3C',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Results Display */}
+              {deleteResults && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid ${deleteResults.failed > 0 ? '#E74C3C' : '#27AE60'}`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: deleteResults.failed > 0 ? '#E74C3C' : '#27AE60',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    {deleteResults.failed > 0 ? '❌ Deletion Complete with Errors' : '✅ Deletion Complete'}
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '15px',
+                    marginBottom: '15px',
+                  }}>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #27AE60`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ✅ Deleted
+                      </p>
+                      <p style={{
+                        color: '#27AE60',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {deleteResults.success}
+                      </p>
+                    </div>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #E74C3C`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ❌ Failed
+                      </p>
+                      <p style={{
+                        color: '#E74C3C',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {deleteResults.failed}
+                      </p>
+                    </div>
+                  </div>
+                  {deleteResults.errors && deleteResults.errors.length > 0 && (
+                    <div style={{
+                      background: theme.background,
+                      padding: '15px',
+                      borderRadius: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        margin: '0 0 10px 0',
+                      }}>
+                        Errors:
+                      </p>
+                      {deleteResults.errors.map((err, idx) => (
+                        <p key={idx} style={{
+                          color: '#E74C3C',
+                          fontSize: '12px',
+                          margin: '5px 0',
+                        }}>
+                          • {err.id || 'Unknown'}: {err.error}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Add Quiz Form */}
               {showAddQuizForm && (
@@ -2909,6 +3474,275 @@ export default function ModernAdminDashboard() {
                 </div>
               )}
 
+              {/* Universal Quiz Builder Modal - Opens as Popup */}
+              {showUniversalQuizBuilder && (
+                <div style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10000,
+                  padding: '20px',
+                  overflowY: 'auto',
+                }}>
+                  <div style={{
+                    background: theme.surfacePrimary,
+                    border: `2px solid ${theme.accentPrimary}`,
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: `0 8px 24px ${theme.accentPrimary}40`,
+                    width: '100%',
+                    maxWidth: '1000px',
+                    maxHeight: '90vh',
+                    overflowY: 'auto',
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '20px',
+                      paddingBottom: '16px',
+                      borderBottom: `2px solid ${theme.border}`,
+                      position: 'sticky',
+                      top: 0,
+                      background: theme.surfacePrimary,
+                      zIndex: 1,
+                    }}>
+                      <h3 style={{
+                        color: theme.textPrimary,
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        margin: 0,
+                      }}>
+                        🚀 Quiz Builder
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setShowUniversalQuizBuilder(false);
+                          setEditingQuizData(null);
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: theme.textSecondary,
+                          fontSize: '24px',
+                          cursor: 'pointer',
+                          padding: '0',
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <AdminQuizBuilder 
+                      theme={theme}
+                      initialData={editingQuizData}
+                      onSave={(quizData) => {
+                        handleSaveUniversalQuiz(quizData);
+                        setEditingQuizData(null);
+                      }}
+                      onClose={() => {
+                        setShowUniversalQuizBuilder(false);
+                        setEditingQuizData(null);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Bulk Import Modal - NEW */}
+              {showBulkImportQuiz && (
+                <div style={{
+                  marginBottom: '20px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid #FF8E72`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                  boxShadow: `0 8px 24px rgba(255, 139, 114, 0.4)`,
+                  width: '100%',
+                  boxSizing: 'border-box',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                    paddingBottom: '16px',
+                    borderBottom: `2px solid ${theme.border}`,
+                  }}>
+                    <h3 style={{
+                      color: theme.textPrimary,
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      margin: 0,
+                    }}>
+                      📤 Bulk Import Quizzes
+                    </h3>
+                    <button
+                      onClick={() => setShowBulkImportQuiz(false)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: theme.textSecondary,
+                        fontSize: '24px',
+                        cursor: 'pointer',
+                        padding: '0',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px', padding: '12px', background: theme.backgroundSecondary, borderRadius: '8px' }}>
+                    <p style={{ color: theme.textSecondary, fontSize: '13px', margin: 0 }}>
+                      ✨ <strong>Import complete quizzes</strong> with metadata, questions, options, correct answers, images, videos, and explanations!
+                    </p>
+                  </div>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{
+                      display: 'block',
+                      color: theme.textSecondary,
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      marginBottom: '8px',
+                    }}>
+                      Paste JSON data with complete quiz structure:
+                    </label>
+                    <textarea
+                      value={bulkImportData}
+                      onChange={(e) => setBulkImportData(e.target.value)}
+                      placeholder={`[{
+  "title": "Biology Quiz",
+  "category": "Science",
+  "audience": "Students",
+  "level": "Intermediate",
+  "quizType": "multiple-choice",
+  "description": "Learn biology basics",
+  "timeLimit": 1800,
+  "passingScore": 70,
+  "attempts": 3,
+  "shuffle": true,
+  "partialScoring": true,
+  "showExplanation": true,
+  "levelVariant": "beginner",
+  "questions": [
+    {
+      "id": "q1",
+      "order": 1,
+      "text": "What is photosynthesis?",
+      "type": "multiple-choice",
+      "image": null,
+      "video": null,
+      "points": 1,
+      "difficulty": "medium",
+      "options": [
+        {
+          "id": "opt1",
+          "text": "Process of converting light to chemical energy",
+          "correct": true,
+          "image": null,
+          "video": null
+        },
+        {
+          "id": "opt2",
+          "text": "Process of breaking down glucose",
+          "correct": false,
+          "image": null,
+          "video": null
+        }
+      ],
+      "correctAnswers": ["opt1"],
+      "explanation": "Photosynthesis converts light energy into chemical energy stored in glucose.",
+      "explanationImage": null,
+      "explanationVideo": null,
+      "tags": ["biology", "plants"],
+      "hints": ["Think about plants and sunlight"]
+    }
+  ]
+}]`}
+                      style={{
+                        width: '100%',
+                        minHeight: '300px',
+                        padding: '12px',
+                        background: theme.backgroundSecondary,
+                        border: `1px solid ${theme.border}`,
+                        borderRadius: '8px',
+                        color: theme.textPrimary,
+                        fontFamily: 'monospace',
+                        fontSize: '12px',
+                        resize: 'vertical',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    background: theme.backgroundSecondary,
+                    borderRadius: '8px',
+                    borderLeft: `4px solid #FF8E72`,
+                  }}>
+                    <p style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 8px 0', fontWeight: '600' }}>
+                      📋 Required Fields:
+                    </p>
+                    <ul style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 0 20px', paddingLeft: 0 }}>
+                      <li><strong>Quiz Level:</strong> title, category, quizType, level, audience</li>
+                      <li><strong>Settings:</strong> timeLimit, passingScore, attempts, shuffle, partialScoring, showExplanation</li>
+                      <li><strong>Questions:</strong> text, type (multiple-choice, true-false, etc.)</li>
+                      <li><strong>Options:</strong> text, correct (boolean), id</li>
+                      <li><strong>Answers:</strong> correctAnswers array with option IDs</li>
+                      <li><strong>Media:</strong> image, video, audio URLs (optional)</li>
+                      <li><strong>Explanations:</strong> explanation text + explanationImage/Video (optional)</li>
+                    </ul>
+                  </div>
+                  
+                  <div style={{
+                    display: 'flex',
+                    gap: '12px',
+                    justifyContent: 'flex-end',
+                  }}>
+                    <button
+                      onClick={() => {
+                        setShowBulkImportQuiz(false);
+                        setBulkImportData('');
+                      }}
+                      style={{
+                        padding: '10px 24px',
+                        background: theme.surfaceSecondary,
+                        border: `1px solid ${theme.border}`,
+                        borderRadius: '8px',
+                        color: theme.textPrimary,
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleBulkImportQuiz}
+                      style={{
+                        padding: '10px 24px',
+                        background: `linear-gradient(135deg, #FF6B6B, #FF8E72)`,
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Import Quizzes
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Admin Status Filter */}
               <AdminStatusFilter
                 onStatusChange={setStatusFilter}
@@ -2997,7 +3831,10 @@ export default function ModernAdminDashboard() {
                         </span>
                       </div>
                       <button
-                        onClick={() => setEditingQuiz(quiz)}
+                        onClick={() => {
+                          setEditingQuizData(quiz);
+                          setShowUniversalQuizBuilder(true);
+                        }}
                         style={{
                           padding: '6px 12px',
                           background: `${theme.accentPrimary}25`,
