@@ -246,6 +246,7 @@ function Sidebar() {
     quiz: false,
     puzzles: false,
     createVisual: false,
+    advancedPuzzles: false,
     devtools: false,
   });
 
@@ -264,6 +265,11 @@ function Sidebar() {
     // Puzzles section routes
     if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle") || path.includes("/admin/series-management") || path.includes("/admin/series-leaderboard") || path.includes("/admin/series-branding") || path.includes("/admin/rewards-manager")) {
       newOpen.puzzles = true;
+    }
+
+    // Advanced Puzzles section routes
+    if (path.includes("/puzzles/crossword") || path.includes("/puzzles/sudoku") || path.includes("/puzzles/word-search") || path.includes("/puzzles/customizer")) {
+      newOpen.advancedPuzzles = true;
     }
     
     // Stories section routes
@@ -373,6 +379,18 @@ function Sidebar() {
           <Item icon="🏆" label="Series Leaderboard" path="/admin/series-leaderboard" active={isActive("/admin/series-leaderboard")} />
           <Item icon="🎨" label="Series Branding" path="/admin/series-branding" active={isActive("/admin/series-branding")} />
           <Item icon="⭐" label="Rewards Manager" path="/admin/rewards-manager" active={isActive("/admin/rewards-manager")} />
+        </Section>
+
+        {/* ================= ADVANCED PUZZLE TYPES ================= */}
+        <Section
+          title="Advanced Puzzle Types"
+          open={open.advancedPuzzles}
+          onToggle={() => toggle("advancedPuzzles")}
+        >
+          <Item icon="📝" label="Crossword" path="/puzzles/crossword" active={isActive("/puzzles/crossword")} />
+          <Item icon="🔢" label="Sudoku" path="/puzzles/sudoku" active={isActive("/puzzles/sudoku")} />
+          <Item icon="🔍" label="Word Search" path="/puzzles/word-search" active={isActive("/puzzles/word-search")} />
+          <Item icon="⚙️" label="Puzzle Customizer" path="/puzzles/customizer" active={isActive("/puzzles/customizer")} />
         </Section>
 
 

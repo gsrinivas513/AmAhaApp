@@ -136,6 +136,10 @@ import SeriesManagementPage from "./admin/SeriesManagementPage";
 import SeriesLeaderboardPage from "./admin/SeriesLeaderboardPage";
 import SeriesBrandingEditor from "./admin/SeriesBrandingEditor";
 import RewardsManager from "./admin/RewardsManager";
+import CrosswordPuzzle from "./components/CrosswordPuzzle";
+import SudokuPuzzle from "./components/SudokuPuzzle";
+import WordSearchPuzzle from "./components/WordSearchPuzzle";
+import PuzzleCustomizer from "./components/PuzzleCustomizer";
 import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
@@ -276,6 +280,10 @@ function App() {
         <Route path="/admin/series-leaderboard" element={<SeriesLeaderboardPage />} />
         <Route path="/admin/series-branding" element={<SeriesBrandingEditor />} />
         <Route path="/admin/rewards-manager" element={<RewardsManager />} />
+        <Route path="/puzzles/customizer" element={<PuzzleCustomizer />} />
+        <Route path="/puzzles/crossword" element={<CrosswordPuzzle />} />
+        <Route path="/puzzles/sudoku" element={<SudokuPuzzle />} />
+        <Route path="/puzzles/word-search" element={<WordSearchPuzzle />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
