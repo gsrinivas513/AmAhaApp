@@ -1,0 +1,62 @@
+/* Series Management Styles */
+
+.series-management {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.series-management input:focus,
+.series-management textarea:focus,
+.series-management select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 102, 51, 0.1);
+}
+
+.series-management input[type="color"]:hover,
+.series-management button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.series-management button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.series-management div[style*="overflowY"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 102, 51, 0.5) transparent;
+}
+
+.series-management div[style*="overflowY"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.series-management div[style*="overflowY"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.series-management div[style*="overflowY"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 102, 51, 0.5);
+  border-radius: 3px;
+}
+
+.series-management div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 102, 51, 0.7);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .series-management > div {
+    grid-template-columns: 1fr !important;
+  }
+}

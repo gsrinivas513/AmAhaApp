@@ -132,6 +132,7 @@ import AnalyticsPage from "./admin/AnalyticsPage";
 import CreateTestPuzzlesPage from "./admin/CreateTestPuzzlesPage";
 import RegenerateOrderingPuzzlesPage from "./admin/RegenerateOrderingPuzzlesPage";
 import PuzzleRecordCreatorTool from "./admin/PuzzleRecordCreatorTool";
+import SeriesManagementPage from "./admin/SeriesManagementPage";
 import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
 /* PUZZLES - USER */
@@ -268,6 +269,7 @@ function App() {
         <Route path="/admin/create-visual-puzzle/:puzzleId" element={<VisualPuzzleAdminPage />} />
         <Route path="/admin/create-ordering-puzzles" element={<CreateOrderingPuzzlesFromTemplatesPage />} />
         <Route path="/admin/puzzle-record-creator" element={<PuzzleRecordCreatorTool />} />
+        <Route path="/admin/series-management" element={<SeriesManagementPage />} />
         <Route path="/admin/social-media" element={<SocialMediaManagerPage />} />
         <Route path="/admin/daily-challenge" element={<DailyChallengeAdmin />} />
         <Route path="/admin/stories" element={<StoryEditor />} />
