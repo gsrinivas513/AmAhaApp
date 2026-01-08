@@ -262,7 +262,7 @@ function Sidebar() {
     }
     
     // Puzzles section routes
-    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle") || path.includes("/admin/series-management") || path.includes("/admin/series-leaderboard") || path.includes("/admin/series-branding")) {
+    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle") || path.includes("/admin/series-management") || path.includes("/admin/series-leaderboard") || path.includes("/admin/series-branding") || path.includes("/admin/rewards-manager")) {
       newOpen.puzzles = true;
     }
     
@@ -272,7 +272,7 @@ function Sidebar() {
     }
     
     // Global section routes (everything else under /admin)
-    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content") && !path.includes("/admin/series-management") && !path.includes("/admin/series-leaderboard") && !path.includes("/admin/series-branding")) {
+    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content") && !path.includes("/admin/series-management") && !path.includes("/admin/series-leaderboard") && !path.includes("/admin/series-branding") && !path.includes("/admin/rewards-manager")) {
       newOpen.global = true;
     }
     
@@ -372,6 +372,7 @@ function Sidebar() {
           <Item icon="📚" label="Series Management" path="/admin/series-management" active={isActive("/admin/series-management")} />
           <Item icon="🏆" label="Series Leaderboard" path="/admin/series-leaderboard" active={isActive("/admin/series-leaderboard")} />
           <Item icon="🎨" label="Series Branding" path="/admin/series-branding" active={isActive("/admin/series-branding")} />
+          <Item icon="⭐" label="Rewards Manager" path="/admin/rewards-manager" active={isActive("/admin/rewards-manager")} />
         </Section>
 
 

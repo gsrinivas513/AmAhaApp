@@ -1,0 +1,473 @@
+/* Rewards Manager Styles */
+
+.rewards-manager {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.rewards-manager.light {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.rewards-manager.dark {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Header */
+.manager-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 20px 0;
+  border-bottom: 2px solid rgba(255, 102, 0, 0.2);
+}
+
+.manager-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  color: #ff6600;
+}
+
+.manager-header p {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Tab Navigation */
+.manager-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid rgba(255, 102, 0, 0.2);
+  padding-bottom: 10px;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  border: none;
+  background-color: transparent;
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  border-radius: 4px 4px 0 0;
+}
+
+.tab-button:hover {
+  background-color: rgba(255, 102, 0, 0.1);
+}
+
+.tab-button.active {
+  color: #ff6600;
+  border-bottom-color: #ff6600;
+  background-color: rgba(255, 102, 0, 0.05);
+}
+
+/* Tab Content */
+.manager-content {
+  min-height: 400px;
+}
+
+.tab-pane {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Overview Grid */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.overview-card {
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 102, 0, 0.1);
+  background: transparent;
+}
+
+.rewards-manager.dark .overview-card {
+  border-color: rgba(255, 102, 0, 0.2);
+}
+
+.overview-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  color: #ff6600;
+}
+
+.overview-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.overview-card li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.overview-card strong {
+  color: inherit;
+}
+
+.big-number {
+  margin: 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ff6600;
+}
+
+.level-preview {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 1.5rem;
+}
+
+.level-preview-item {
+  display: inline-block;
+}
+
+/* Configuration Tables */
+.config-section {
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 102, 0, 0.1);
+  background: transparent;
+}
+
+.config-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+  color: #ff6600;
+}
+
+.config-table {
+  width: 100%;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: rgba(255, 102, 0, 0.1);
+}
+
+thead th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #ff6600;
+  border-bottom: 2px solid rgba(255, 102, 0, 0.2);
+}
+
+tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(255, 102, 0, 0.1);
+}
+
+tbody tr:hover {
+  background-color: rgba(255, 102, 0, 0.05);
+}
+
+.editable {
+  background-color: rgba(255, 102, 0, 0.05);
+  font-weight: 600;
+  color: #ff6600;
+}
+
+/* Achievements Manager */
+.achievements-manager {
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 102, 0, 0.1);
+}
+
+.achievements-manager h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+  color: #ff6600;
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 102, 0, 0.1);
+  background: rgba(255, 102, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.achievement-item:hover {
+  border-color: #ff6600;
+  background: rgba(255, 102, 0, 0.05);
+}
+
+.achievement-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.achievement-icon {
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-details h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.achievement-details p {
+  margin: 0 0 8px 0;
+  opacity: 0.7;
+}
+
+.achievement-rewards {
+  display: flex;
+  gap: 15px;
+}
+
+.reward {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: rgba(255, 102, 0, 0.1);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.edit-button {
+  padding: 8px 16px;
+  background-color: #ff6600;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #e55a00;
+  transform: scale(1.05);
+}
+
+/* Edit Form */
+.edit-form {
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid #ff6600;
+  background: rgba(255, 102, 0, 0.05);
+  margin-top: 20px;
+}
+
+.edit-form h4 {
+  margin: 0 0 20px 0;
+  color: #ff6600;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid rgba(255, 102, 0, 0.2);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background-color: transparent;
+  color: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ff6600;
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.save-button,
+.cancel-button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-button {
+  background-color: #ff6600;
+  color: white;
+}
+
+.save-button:hover {
+  background-color: #e55a00;
+  transform: scale(1.05);
+}
+
+.cancel-button {
+  background-color: rgba(100, 100, 100, 0.2);
+  color: inherit;
+}
+
+.cancel-button:hover {
+  background-color: rgba(100, 100, 100, 0.3);
+}
+
+.save-status {
+  margin-top: 15px;
+  color: #4caf50;
+  font-weight: 600;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Levels Manager */
+.levels-manager {
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 102, 0, 0.1);
+}
+
+.levels-manager h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.3rem;
+  color: #ff6600;
+}
+
+.levels-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.level-number {
+  text-align: center;
+  font-weight: 600;
+  color: #ff6600;
+}
+
+.level-icon {
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.xp-required {
+  text-align: right;
+  font-weight: 600;
+  color: #ff6600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .manager-header h1 {
+    font-size: 2rem;
+  }
+
+  .manager-tabs {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    border-bottom: none;
+    border-right: 3px solid transparent;
+    border-radius: 0;
+    text-align: left;
+  }
+
+  .tab-button.active {
+    border-right-color: #ff6600;
+    border-bottom: none;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
