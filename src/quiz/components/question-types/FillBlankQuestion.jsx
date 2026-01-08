@@ -13,33 +13,41 @@ export default function FillBlankQuestion({
 }) {
   const [inputValue, setInputValue] = useState(selectedAnswer || '');
 
+  // Parse correct answers - handle both array and string formats
+  const getCorrectAnswers = () => {
+    if (question.correctAnswers && Array.isArray(question.correctAnswers)) {
+      return question.correctAnswers;
+    } else if (question.answer && Array.isArray(question.answer)) {
+      return question.answer;
+    } else if (question.answer && typeof question.answer === 'string') {
+      return [question.answer];
+    } else if (typeof question.answer === 'object' && question.answer?.text) {
+      return [question.answer.text];
+    }
+    return [];
+  };
+
+  const correctAnswers = getCorrectAnswers();
+
   // Check if answer is correct (case-insensitive by default)
   const checkAnswer = (value) => {
+    if (correctAnswers.length === 0) return false;
+    
     const userAnswer = value.trim().toLowerCase();
-    const correctAnswer = question.answer.toLowerCase();
     const caseSensitive = question.caseSensitive || false;
 
-    if (caseSensitive) {
-      return value.trim() === question.answer;
-    }
-
-    // Check exact match
-    if (userAnswer === correctAnswer) return true;
-
-    // Check variations if provided
-    if (question.acceptVariations) {
-      return question.acceptVariations.some(
-        (variation) => userAnswer === variation.toLowerCase()
-      );
-    }
-
-    return false;
+    return correctAnswers.some((correct) => {
+      if (caseSensitive) {
+        return value.trim() === correct;
+      }
+      return userAnswer === correct.toLowerCase();
+    });
   };
 
   const isCorrect = checkAnswer(inputValue);
   const handleSubmit = () => {
     if (!answered && inputValue.trim()) {
-      onAnswer(inputValue, isCorrect);
+      onAnswer(inputValue);
     }
   };
 
@@ -50,100 +58,83 @@ export default function FillBlankQuestion({
   };
 
   return (
-    <div style={{ marginBottom: '24px' }}>
-      {/* Question text with blank */}
-      <p style={{
-        color: theme.textPrimary,
-        fontSize: '16px',
-        lineHeight: '1.8',
-        marginBottom: '24px',
-        textAlign: 'center',
+    <div style={{ marginBottom: '24px', width: '100%' }}>
+      {/* Input field container */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '12px', 
+        marginBottom: '12px',
+        width: '100%',
+        minHeight: '50px',
       }}>
-        {question.text.replace(
-          '____',
-          answered ? (
-            <span style={{
-              background: isCorrect ? '#4ECB7130' : '#FF6B6B30',
-              color: isCorrect ? '#4ECB71' : '#FF6B6B',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontWeight: '700',
-              marginLeft: '4px',
-              marginRight: '4px',
-            }}>
-              {inputValue}
-            </span>
-          ) : (
-            <span style={{
-              borderBottom: `2px solid ${theme.accentPrimary}`,
-              minWidth: '120px',
-              display: 'inline-block',
-            }} />
-          )
-        )}
-      </p>
-
-      {/* Input field (if not answered) */}
-      {!answered && (
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your answer here..."
-            disabled={answered}
-            style={{
-              flex: 1,
-              padding: '12px 16px',
-              fontSize: '16px',
-              border: `2px solid ${theme.border}`,
-              borderRadius: '8px',
-              color: theme.textPrimary,
-              background: theme.surfacePrimary,
-              transition: 'all 0.2s ease',
-              outline: 'none',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = theme.accentPrimary;
-              e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.accentPrimary}20`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = theme.border;
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!inputValue.trim()}
-            style={{
-              padding: '12px 24px',
-              background: inputValue.trim()
-                ? `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`
-                : `${theme.border}50`,
-              color: inputValue.trim() ? '#fff' : theme.textSecondary,
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: inputValue.trim() ? 'pointer' : 'default',
-              transition: 'all 0.3s ease',
-            }}
-            onMouseOver={(e) => {
-              if (inputValue.trim()) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = `0 6px 20px ${theme.accentPrimary}30`;
-              }
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            Submit
-          </button>
-        </div>
-      )}
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            if (!answered) {
+              setInputValue(e.target.value);
+            }
+          }}
+          onKeyPress={handleKeyPress}
+          placeholder="Type your answer here..."
+          disabled={answered}
+          autoFocus
+          style={{
+            flex: 1,
+            padding: '14px 18px',
+            fontSize: '16px',
+            border: '2px solid #FF6633',
+            borderRadius: '8px',
+            color: '#333',
+            backgroundColor: '#ffffff',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            cursor: 'text',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            minWidth: '0',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 0 4px rgba(255, 102, 51, 0.2)';
+            e.currentTarget.style.borderColor = '#FF6633';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={!inputValue.trim() || answered}
+          style={{
+            padding: '14px 28px',
+            background: inputValue.trim() && !answered ? '#FF6633' : '#ccc',
+            color: inputValue.trim() && !answered ? '#fff' : '#999',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: inputValue.trim() && !answered ? 'pointer' : 'not-allowed',
+            transition: 'all 0.3s ease',
+            whiteSpace: 'nowrap',
+            fontFamily: 'inherit',
+            flexShrink: 0,
+          }}
+          onMouseOver={(e) => {
+            if (inputValue.trim() && !answered) {
+              e.currentTarget.style.background = '#E85A23';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 102, 51, 0.3)';
+            }
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = inputValue.trim() && !answered ? '#FF6633' : '#ccc';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          Submit
+        </button>
+      </div>
 
       {/* Feedback (if answered) */}
       {answered && showFeedback && (
@@ -157,7 +148,10 @@ export default function FillBlankQuestion({
           textAlign: 'center',
           fontWeight: '600',
         }}>
-          {isCorrect ? '✓ Correct!' : `✗ The correct answer is: ${question.answer}`}
+          {isCorrect 
+            ? '✓ Correct!' 
+            : `✗ The correct answer is: ${correctAnswers.join(' or ')}`
+          }
         </div>
       )}
 

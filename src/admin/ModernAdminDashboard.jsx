@@ -4,6 +4,11 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import AudienceSelector, { AUDIENCES } from '../components/AudienceSelector';
 import { seedQuizzesWithVariants } from '../scripts/seedQuizzesWithVariants';
+import { setupTestQuizzes } from './utils/setupTestQuizzesAPI';
+import { useAppIntegration } from '../hooks/useAppIntegration';
+import QuizBuilder from '../quiz/components/QuizBuilder';
+import AnalyticsDashboard from '../dashboard/AnalyticsDashboard';
+import { useAuth } from '../components/AuthProvider';
 import PictureWordEditor from './puzzle-editors/PictureWordEditor';
 import SpotDifferenceEditor from './puzzle-editors/SpotDifferenceEditor';
 import FindPairEditor from './puzzle-editors/FindPairEditor';
@@ -182,10 +187,14 @@ const BASE_PUZZLE_TEMPLATES = [
 export default function ModernAdminDashboard() {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { quizService, currentTheme } = useAppIntegration();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showAddQuizForm, setShowAddQuizForm] = useState(false);
   const [showUniversalQuizBuilder, setShowUniversalQuizBuilder] = useState(false);
+  const [showQuizBuilderPanel, setShowQuizBuilderPanel] = useState(false);
+  const [showAnalyticsPanel, setShowAnalyticsPanel] = useState(false);
   const [editingQuizData, setEditingQuizData] = useState(null);
   const [showBulkImportQuiz, setShowBulkImportQuiz] = useState(false);
   const [bulkImportData, setBulkImportData] = useState('');
@@ -275,6 +284,9 @@ export default function ModernAdminDashboard() {
   const [seedingQuizzes, setSeedingQuizzes] = useState(false);
   const [seedProgress, setSeedProgress] = useState(null);
   const [seedResults, setSeedResults] = useState(null);
+  const [creatingPhase1Quizzes, setCreatingPhase1Quizzes] = useState(false);
+  const [phase1Progress, setPhase1Progress] = useState(null);
+  const [phase1Results, setPhase1Results] = useState(null);
   const [deletingQuizzes, setDeletingQuizzes] = useState(false);
   const [deleteProgress, setDeleteProgress] = useState(null);
   const [deleteResults, setDeleteResults] = useState(null);
@@ -1138,6 +1150,7 @@ export default function ModernAdminDashboard() {
   const ADMIN_TABS = [
     { id: 'overview', label: '📊 Overview', icon: '📊' },
     { id: 'quizzes', label: '❓ Manage Quizzes', icon: '❓' },
+    { id: 'quiz-builder', label: '🏗️ Quiz Builder', icon: '🏗️' },
     { id: 'puzzles', label: '🧩 Manage Puzzles', icon: '🧩' },
     { id: 'stories', label: '📖 Manage Stories', icon: '📖' },
     { id: 'arts', label: '🎨 Manage Arts', icon: '🎨' },
@@ -1145,6 +1158,7 @@ export default function ModernAdminDashboard() {
     { id: 'studies', label: '📚 Manage Studies', icon: '📚' },
     { id: 'worksheets', label: '📋 Manage Worksheets', icon: '📋' },
     { id: 'features', label: '✨ Features & Categories', icon: '✨' },
+    { id: 'analytics', label: '📈 Analytics', icon: '📈' },
     { id: 'users', label: '👥 Users & Analytics', icon: '👥' },
     { id: 'settings', label: '⚙️ Settings', icon: '⚙️' },
   ];
@@ -1456,6 +1470,44 @@ export default function ModernAdminDashboard() {
     }
   };
 
+  // Create Phase 1 Test Quizzes
+  const handleCreatePhase1Quizzes = async () => {
+    try {
+      setCreatingPhase1Quizzes(true);
+      setPhase1Progress(null);
+      setPhase1Results(null);
+
+      console.log('🚀 Starting Phase 1 test quiz creation...');
+
+      const results = await setupTestQuizzes((progress) => {
+        setPhase1Progress(progress);
+      });
+
+      setPhase1Results(results);
+      setCreatingPhase1Quizzes(false);
+
+      // Log detailed results
+      if (results.failed > 0) {
+        console.error('🔴 Creation Failures:', results.errors);
+        console.table(results.errors);
+      } else {
+        console.log('✅ All Phase 1 test quizzes created successfully!');
+        // Auto-refresh after success
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('❌ Error creating Phase 1 quizzes:', error);
+      setPhase1Results({
+        success: 0,
+        failed: 9,
+        errors: [{ error: error.message }],
+      });
+      setCreatingPhase1Quizzes(false);
+    }
+  };
+
   // Delete all quizzes from database
   const handleDeleteAllQuizzes = async () => {
     if (!window.confirm('🗑️ DELETE ALL QUIZZES? This action cannot be undone. All quiz data will be permanently removed.')) {
@@ -1594,6 +1646,59 @@ export default function ModernAdminDashboard() {
     } catch (error) {
       console.error('Error creating template:', error);
       alert('Error creating template: ' + error.message);
+    }
+  };
+
+  // Handle saving quiz from Quiz Builder component
+  const handleSaveQuizFromBuilder = async (quizData) => {
+    try {
+      if (!quizData || !quizData.title) {
+        alert('❌ Please provide a quiz title');
+        return;
+      }
+
+      // Prepare quiz with metadata
+      const quizWithMetadata = {
+        title: quizData.title,
+        description: quizData.description || '',
+        category: quizData.category || 'General',
+        difficulty: quizData.difficulty || 'Medium',
+        questions: quizData.questions || [],
+        tags: quizData.tags || [],
+        createdDate: new Date(),
+        updatedDate: new Date(),
+        status: 'Draft',
+        plays: 0,
+        published: false,
+        author: user?.email || 'admin',
+        timer: quizData.timer || null,
+        shuffleQuestions: quizData.shuffleQuestions || false,
+        shuffleOptions: quizData.shuffleOptions || false,
+        showResults: quizData.showResults || true,
+      };
+
+      // Save to Firestore using quizService
+      if (quizService && quizService.createQuiz) {
+        const savedQuiz = await quizService.createQuiz(quizWithMetadata);
+        
+        // Update local state
+        setQuizzes([savedQuiz, ...quizzes]);
+        
+        // Show success message
+        alert(`✅ Quiz "${quizData.title}" saved successfully!`);
+        
+        // Switch to quizzes tab to show the new quiz
+        setActiveTab('quizzes');
+      } else {
+        // Fallback: Save directly to Firestore
+        const docRef = await addDoc(collection(db, 'quizzes'), quizWithMetadata);
+        setQuizzes([{ id: docRef.id, ...quizWithMetadata }, ...quizzes]);
+        alert(`✅ Quiz "${quizData.title}" saved successfully!`);
+        setActiveTab('quizzes');
+      }
+    } catch (error) {
+      console.error('Error saving quiz from builder:', error);
+      alert(`❌ Error saving quiz: ${error.message}`);
     }
   };
 
@@ -3028,6 +3133,27 @@ export default function ModernAdminDashboard() {
                   {seedingQuizzes ? '🌱 Seeding...' : '🌱 Seed Sample Quizzes'}
                 </button>
                 <button
+                  onClick={handleCreatePhase1Quizzes}
+                  disabled={creatingPhase1Quizzes}
+                  style={{
+                    padding: '12px 24px',
+                    background: creatingPhase1Quizzes ? '#ccc' : `linear-gradient(135deg, #27AE60, #229954)`,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: creatingPhase1Quizzes ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: creatingPhase1Quizzes ? 0.7 : 1,
+                  }}
+                  onMouseOver={(e) => !creatingPhase1Quizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                  onMouseOut={(e) => !creatingPhase1Quizzes && (e.currentTarget.style.transform = 'translateY(0)')}
+                  title="Create 9 test quizzes for Phase 1 testing (all 8 question types)"
+                >
+                  {creatingPhase1Quizzes ? '⏳ Creating Phase 1 Tests...' : '🧪 Create Phase 1 Test Quizzes'}
+                </button>
+                <button
                   onClick={handleDeleteAllQuizzes}
                   disabled={deletingQuizzes}
                   style={{
@@ -3180,6 +3306,191 @@ export default function ModernAdminDashboard() {
                           margin: '5px 0',
                         }}>
                           • {err.title}: {err.error}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Phase 1 Progress Display */}
+              {phase1Progress && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid #27AE60`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: '#27AE60',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    🧪 Creating Phase 1 Test Quizzes
+                  </h3>
+                  <div style={{
+                    width: '100%',
+                    height: '24px',
+                    background: theme.background,
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    marginBottom: '10px',
+                  }}>
+                    <div style={{
+                      width: `${(phase1Progress.current / phase1Progress.total) * 100}%`,
+                      height: '100%',
+                      background: `linear-gradient(90deg, #27AE60, #229954)`,
+                      transition: 'width 0.3s ease',
+                    }}></div>
+                  </div>
+                  <p style={{
+                    color: theme.textSecondary,
+                    fontSize: '14px',
+                    margin: '0',
+                  }}>
+                    {phase1Progress.message} ({phase1Progress.current}/{phase1Progress.total})
+                  </p>
+                </div>
+              )}
+
+              {/* Phase 1 Results Display */}
+              {phase1Results && (
+                <div style={{
+                  marginBottom: '30px',
+                  background: theme.surfacePrimary,
+                  border: `2px solid ${phase1Results.failed > 0 ? '#E74C3C' : '#27AE60'}`,
+                  borderRadius: '16px',
+                  padding: '20px',
+                }}>
+                  <h3 style={{
+                    color: phase1Results.failed > 0 ? '#E74C3C' : '#27AE60',
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    marginBottom: '15px',
+                  }}>
+                    {phase1Results.failed > 0 ? '❌ Phase 1 Setup Complete with Errors' : '✅ Phase 1 Test Quizzes Created'}
+                  </h3>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '15px',
+                    marginBottom: '15px',
+                  }}>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #27AE60`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ✅ Created
+                      </p>
+                      <p style={{
+                        color: '#27AE60',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {phase1Results.success}
+                      </p>
+                    </div>
+                    <div style={{
+                      background: theme.background,
+                      padding: '12px',
+                      borderRadius: '8px',
+                      border: `2px solid #E74C3C`,
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        margin: '0 0 5px 0',
+                      }}>
+                        ❌ Failed
+                      </p>
+                      <p style={{
+                        color: '#E74C3C',
+                        fontSize: '24px',
+                        fontWeight: '700',
+                        margin: '0',
+                      }}>
+                        {phase1Results.failed}
+                      </p>
+                    </div>
+                  </div>
+                  {phase1Results.failed === 0 && (
+                    <div style={{
+                      background: '#E8F8F5',
+                      padding: '15px',
+                      borderRadius: '8px',
+                      border: '2px solid #27AE60',
+                    }}>
+                      <p style={{
+                        color: '#27AE60',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        margin: '0 0 10px 0',
+                      }}>
+                        🎉 All 9 test quizzes created successfully!
+                      </p>
+                      <p style={{
+                        color: '#229954',
+                        fontSize: '13px',
+                        margin: '5px 0',
+                      }}>
+                        • Multiple Choice (2 quizzes)
+                      </p>
+                      <p style={{
+                        color: '#229954',
+                        fontSize: '13px',
+                        margin: '5px 0',
+                      }}>
+                        • True/False, Fill Blank, Matching, Ordering, Image Select, Multi-Select, Drag & Drop
+                      </p>
+                      <p style={{
+                        color: '#229954',
+                        fontSize: '13px',
+                        margin: '5px 0',
+                      }}>
+                        • Plus one quiz with all question types combined
+                      </p>
+                      <p style={{
+                        color: '#229954',
+                        fontSize: '13px',
+                        margin: '5px 0',
+                      }}>
+                        <strong>→ Ready to test at http://localhost:3001/quizzes</strong>
+                      </p>
+                    </div>
+                  )}
+                  {phase1Results.errors && phase1Results.errors.length > 0 && (
+                    <div style={{
+                      background: theme.background,
+                      padding: '15px',
+                      borderRadius: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                    }}>
+                      <p style={{
+                        color: theme.textSecondary,
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        margin: '0 0 10px 0',
+                      }}>
+                        Errors:
+                      </p>
+                      {phase1Results.errors.map((err, idx) => (
+                        <p key={idx} style={{
+                          color: '#E74C3C',
+                          fontSize: '12px',
+                          margin: '5px 0',
+                        }}>
+                          • {err.error || JSON.stringify(err)}
                         </p>
                       ))}
                     </div>
@@ -6617,6 +6928,26 @@ export default function ModernAdminDashboard() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Quiz Builder Tab */}
+          {activeTab === 'quiz-builder' && (
+            <QuizBuilder
+              onSaveQuiz={handleSaveQuizFromBuilder}
+              theme={currentTheme}
+              breakpoints={{ isMobile: window.innerWidth < 768 }}
+              getResponsivePadding={() => '16px'}
+            />
+          )}
+
+          {/* Analytics Tab */}
+          {activeTab === 'analytics' && (
+            <AnalyticsDashboard
+              userId={user?.uid}
+              theme={currentTheme}
+              breakpoints={{ isMobile: window.innerWidth < 768 }}
+              getResponsivePadding={() => '16px'}
+            />
           )}
         </div>
         )}

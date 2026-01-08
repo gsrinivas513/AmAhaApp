@@ -11,6 +11,8 @@ import { AuthProvider } from "./components/AuthProvider";
 import { ToastProvider } from "./components/Toast";
 import { AdUnlockProvider } from "./ads/AdUnlockProvider";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AppIntegrationProvider } from "./hooks/useAppIntegration";
+import { db } from "./firebase/firebaseConfig";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -21,7 +23,9 @@ root.render(
         <ToastProvider>
           <AuthProvider>
             <AdUnlockProvider>
-              <App />
+              <AppIntegrationProvider firebaseDb={db}>
+                <App />
+              </AppIntegrationProvider>
             </AdUnlockProvider>
           </AuthProvider>
         </ToastProvider>

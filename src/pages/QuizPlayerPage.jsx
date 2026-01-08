@@ -183,9 +183,19 @@ export default function QuizPlayerPage() {
       isCorrect = optionIndex === question.correctAnswer;
     } else if (question.type === 'fill-blank') {
       const userAnswer = typeof answerData === 'string' ? answerData : answerData?.answer;
-      const correctAnswers = Array.isArray(question.answer) ? question.answer : [question.answer];
-      isCorrect = correctAnswers.some(ans => 
-        ans.toLowerCase().trim() === userAnswer?.toLowerCase().trim()
+      // Handle both 'correctAnswers' (array) and 'answer' (string or array) formats
+      let correctAnswersArray = [];
+      if (Array.isArray(question.correctAnswers)) {
+        correctAnswersArray = question.correctAnswers;
+      } else if (Array.isArray(question.answer)) {
+        correctAnswersArray = question.answer;
+      } else if (question.answer) {
+        correctAnswersArray = [question.answer];
+      } else if (question.correctAnswers) {
+        correctAnswersArray = [question.correctAnswers];
+      }
+      isCorrect = correctAnswersArray.some(ans => 
+        ans && userAnswer && ans.toLowerCase().trim() === userAnswer.toLowerCase().trim()
       );
     } else if (question.type === 'matching') {
       isCorrect = JSON.stringify(answerData?.pairs) === JSON.stringify(question.correctPairs);
@@ -394,7 +404,6 @@ export default function QuizPlayerPage() {
               marginBottom: '0',
               margin: '0',
             }}>
-              {selectedDifficulty} • Question {currentQuestion + 1} of {getVariantQuestions().length}
             </p>
           </div>
 
@@ -470,43 +479,6 @@ export default function QuizPlayerPage() {
                 boxShadow: `0 12px 32px ${theme.accentPrimary}15`,
                 transition: 'all 0.3s ease',
               }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '20px',
-                  paddingBottom: '12px',
-                  borderBottom: `1px solid ${theme.border}`,
-                }}>
-                  <span style={{
-                    color: theme.textSecondary,
-                    fontSize: '13px',
-                    fontWeight: '600',
-                  }}>
-                    Question {currentQuestion + 1} of {getVariantQuestions().length}
-                  </span>
-                  <span style={{
-                    background: `${theme.accentPrimary}20`,
-                    color: theme.accentPrimary,
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                  }}>
-                    {selectedDifficulty}
-                  </span>
-                </div>
-
-                <h2 style={{
-                  color: theme.textPrimary,
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  marginBottom: '24px',
-                  lineHeight: '1.5',
-                }}>
-                  {currentQuestionData?.text}
-                </h2>
-
                 {/* Use QuestionRenderer for all question types */}
                 <QuestionRenderer
                   question={currentQuestionData}

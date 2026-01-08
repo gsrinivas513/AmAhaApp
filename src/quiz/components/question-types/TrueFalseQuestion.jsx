@@ -11,9 +11,23 @@ export default function TrueFalseQuestion({
   showFeedback,
   theme,
 }) {
+  // Handle both boolean and index-based correctAnswer formats
+  let correctAnswerIndex = 0;
+  
+  if (typeof question.correctAnswer === 'boolean') {
+    // Convert boolean to index: true -> 0, false -> 1
+    correctAnswerIndex = question.correctAnswer ? 0 : 1;
+  } else if (typeof question.correctAnswer === 'number') {
+    // Already an index
+    correctAnswerIndex = question.correctAnswer;
+  } else if (question.answer?.isCorrect !== undefined) {
+    // Handle answer object format
+    correctAnswerIndex = question.answer.isCorrect ? 0 : 1;
+  }
+
   const options = [
-    { text: 'True', value: 0, isCorrect: question.correctAnswer === 0 || question.answer?.options?.[0]?.isCorrect },
-    { text: 'False', value: 1, isCorrect: question.correctAnswer === 1 || question.answer?.options?.[1]?.isCorrect },
+    { text: 'True', value: 0, isCorrect: correctAnswerIndex === 0 },
+    { text: 'False', value: 1, isCorrect: correctAnswerIndex === 1 },
   ];
 
   return (

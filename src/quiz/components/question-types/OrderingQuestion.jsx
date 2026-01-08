@@ -11,12 +11,20 @@ export default function OrderingQuestion({
   showFeedback,
   theme,
 }) {
-  const items = question.items || [];
+  // Parse items - handle both string arrays and object arrays
+  const rawItems = question.items || [];
+  const items = rawItems.map((item, idx) => ({
+    id: `item-${idx}`,
+    text: typeof item === 'string' ? item : item.text || item,
+  }));
+
   const [order, setOrder] = useState(selectedAnswer || items);
   const [draggedItem, setDraggedItem] = useState(null);
 
   const handleDragStart = (e, index) => {
-    setDraggedItem(index);
+    if (!answered) {
+      setDraggedItem(index);
+    }
   };
 
   const handleDragOver = (e) => {
@@ -25,7 +33,7 @@ export default function OrderingQuestion({
 
   const handleDrop = (e, targetIndex) => {
     e.preventDefault();
-    if (draggedItem === null || draggedItem === targetIndex) return;
+    if (draggedItem === null || draggedItem === targetIndex || answered) return;
 
     const newOrder = [...order];
     const draggedItemContent = newOrder[draggedItem];
@@ -36,6 +44,7 @@ export default function OrderingQuestion({
   };
 
   const handleSwap = (index1, index2) => {
+    if (answered) return;
     const newOrder = [...order];
     [newOrder[index1], newOrder[index2]] = [newOrder[index2], newOrder[index1]];
     setOrder(newOrder);
@@ -43,25 +52,25 @@ export default function OrderingQuestion({
 
   const handleSubmit = () => {
     if (!answered) {
-      // Check if order is correct
-      const isCorrect = order.every((item, index) => item.id === items[index].id);
+      // Check if order is correct - compare text values
+      const isCorrect = order.every((item, index) => item.text === items[index].text);
       onAnswer(order, isCorrect);
     }
   };
 
-  const isCorrectOrder = order.every((item, index) => item.id === items[index].id);
+  const isCorrectOrder = order.every((item, index) => item.text === items[index].text);
 
   return (
     <div style={{ marginBottom: '24px' }}>
       {/* Instruction */}
-      {question.instruction && (
+      {(question.question || question.instruction) && (
         <p style={{
           color: theme.textSecondary,
           fontSize: '14px',
           marginBottom: '16px',
           fontStyle: 'italic',
         }}>
-          {question.instruction}
+          {question.question || question.instruction}
         </p>
       )}
 

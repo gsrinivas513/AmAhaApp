@@ -11,8 +11,25 @@ export default function DragDropQuestion({
   showFeedback,
   theme,
 }) {
-  const dropZones = question.dropZones || [];
-  const items = question.items || [];
+  // Parse items and zones from data structure
+  const rawItems = question.items || [];
+  const rawZones = question.zones || [];
+
+  // Transform items to have id and text
+  const items = rawItems.map((item, idx) => ({
+    id: `item-${idx}`,
+    text: typeof item === 'string' ? item : item.text || item,
+    originalValue: item,
+  }));
+
+  // Transform zones to have id and name
+  const zones = rawZones.map((zone, idx) => ({
+    id: `zone-${idx}`,
+    name: zone.name || zone.label || zone,
+    correctItems: zone.correctItems || [],
+  }));
+
+  // Initialize dropMap: { itemId: zoneId }
   const [dropMap, setDropMap] = React.useState(selectedAnswer || {});
   const [draggedItem, setDraggedItem] = React.useState(null);
 
@@ -41,20 +58,31 @@ export default function DragDropQuestion({
     }
   };
 
+  // Check if item is in the correct zone
+  const isItemInCorrectZone = (item, zoneId) => {
+    const zone = zones.find(z => z.id === zoneId);
+    if (!zone) return false;
+    return zone.correctItems.includes(item.text) || zone.correctItems.includes(item.originalValue);
+  };
+
   const allItemsDropped = items.every((item) => dropMap[item.id]);
-  const isCorrect = items.every((item) => dropMap[item.id] === item.correctZone);
+  const isCorrect = items.every((item) => {
+    const zoneId = dropMap[item.id];
+    if (!zoneId) return false;
+    return isItemInCorrectZone(item, zoneId);
+  });
 
   return (
     <div style={{ marginBottom: '24px' }}>
       {/* Instruction */}
-      {question.instruction && (
+      {question.question && (
         <p style={{
           color: theme.textSecondary,
           fontSize: '14px',
           marginBottom: '16px',
           fontStyle: 'italic',
         }}>
-          {question.instruction}
+          {question.question}
         </p>
       )}
 
@@ -107,9 +135,10 @@ export default function DragDropQuestion({
 
       {/* Drop zones */}
       <div style={{ display: 'grid', gap: '16px', marginBottom: '20px' }}>
-        {dropZones.map((zone) => {
-          const itemInZone = items.find((item) => dropMap[item.id] === zone.id);
-          const isCorrectItem = itemInZone && itemInZone.correctZone === zone.id;
+        {zones.map((zone) => {
+          const itemsInZone = items.filter((item) => dropMap[item.id] === zone.id);
+          const allCorrect = itemsInZone.length > 0 && itemsInZone.every((item) => isItemInCorrectZone(item, zone.id));
+          const anyIncorrect = itemsInZone.some((item) => !isItemInCorrectZone(item, zone.id));
 
           return (
             <div
@@ -119,55 +148,68 @@ export default function DragDropQuestion({
               style={{
                 padding: '16px',
                 background: answered
-                  ? itemInZone && isCorrectItem
+                  ? allCorrect && itemsInZone.length > 0
                     ? '#4ECB7110'
-                    : itemInZone
+                    : anyIncorrect
                     ? '#FF6B6B10'
                     : theme.surfacePrimary
                   : theme.surfacePrimary,
                 border: `2px dashed ${
                   answered
-                    ? itemInZone && isCorrectItem
+                    ? allCorrect && itemsInZone.length > 0
                       ? '#4ECB71'
-                      : itemInZone
+                      : anyIncorrect
                       ? '#FF6B6B'
                       : theme.border
                     : theme.border
                 }`,
                 borderRadius: '8px',
-                minHeight: '80px',
+                minHeight: itemsInZone.length > 0 ? 'auto' : '80px',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
+                padding: itemsInZone.length > 0 ? '16px' : '16px',
               }}
             >
-              <div style={{ textAlign: 'center' }}>
-                <p style={{
-                  color: theme.textSecondary,
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  marginBottom: '8px',
-                  textTransform: 'uppercase',
-                }}>
-                  {zone.label}
-                </p>
-                {itemInZone ? (
-                  <div style={{
-                    padding: '12px 16px',
-                    background: `linear-gradient(135deg, ${theme.accentPrimary}20, ${theme.accentSecondary}10)`,
-                    border: `2px solid ${theme.accentPrimary}`,
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: theme.textPrimary,
-                  }}>
-                    {itemInZone.text}
-                    {answered && (isCorrectItem ? ' ✓' : ' ✗')}
-                  </div>
-                ) : (
-                  <p style={{ color: theme.textSecondary, fontSize: '13px' }}>Drop item here</p>
-                )}
-              </div>
+              <p style={{
+                color: theme.textSecondary,
+                fontSize: '12px',
+                fontWeight: '600',
+                marginBottom: itemsInZone.length > 0 ? '12px' : '8px',
+                textTransform: 'uppercase',
+              }}>
+                {zone.name}
+              </p>
+              {itemsInZone.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  {itemsInZone.map((item) => {
+                    const isCorrect = isItemInCorrectZone(item, zone.id);
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: '12px 16px',
+                          background: `linear-gradient(135deg, ${theme.accentPrimary}20, ${theme.accentSecondary}10)`,
+                          border: `2px solid ${theme.accentPrimary}`,
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: theme.textPrimary,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span>{item.text}</span>
+                        {answered && (isCorrect ? ' ✓' : ' ✗')}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p style={{ color: theme.textSecondary, fontSize: '13px' }}>Drop item here</p>
+              )}
             </div>
           );
         })}

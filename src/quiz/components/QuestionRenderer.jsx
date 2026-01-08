@@ -141,7 +141,7 @@ export default function QuestionRenderer({
       </div>
 
       {/* Question Text */}
-      <h2 style={questionTitleStyles}>{question.text}</h2>
+      <h2 style={questionTitleStyles}>{question.text || question.question}</h2>
 
       {/* Question Image */}
       {question.imageUrl && (
@@ -154,7 +154,7 @@ export default function QuestionRenderer({
       {renderQuestionContent()}
 
       {/* Explanation (shown after answering) */}
-      {answered && showFeedback && question.explanation && (
+      {answered && showFeedback && question.explanation && showExplanation && (
         <div style={explanationStyles}>
           <div style={explanationTitleStyles}>💡 Explanation:</div>
           <p>{question.explanation.text || question.explanation}</p>

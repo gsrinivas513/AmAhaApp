@@ -11,7 +11,16 @@ export default function ImageSelectQuestion({
   showFeedback,
   theme,
 }) {
-  const options = question.options || [];
+  // Handle both 'options' and 'images' property names
+  const rawOptions = question.options || question.images || [];
+  
+  // Transform to standard format with imageUrl
+  const options = rawOptions.map((option, idx) => ({
+    imageUrl: option.imageUrl || option.url,
+    label: option.label || `Option ${idx + 1}`,
+    isCorrect: option.isCorrect,
+  }));
+  
   const multiSelect = question.multiSelect || false;
   const [selected, setSelected] = React.useState(selectedAnswer || (multiSelect ? [] : null));
 

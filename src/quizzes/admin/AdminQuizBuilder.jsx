@@ -1311,6 +1311,336 @@ const QuizTypeAnswerForm = ({ question, onUpdate, theme }) => {
           </div>
         );
 
+      case "CROSSWORD":
+        return (
+          <div>
+            <div className="form-group">
+              <label htmlFor="grid_size">Grid Size (rows x cols) *</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="number"
+                  min="5"
+                  max="20"
+                  placeholder="Rows"
+                  value={question.answer?.gridSize?.rows || 9}
+                  onChange={(e) =>
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        gridSize: {
+                          ...question.answer?.gridSize,
+                          rows: parseInt(e.target.value),
+                        },
+                      },
+                    })
+                  }
+                  style={{
+                    borderColor: theme?.border,
+                    color: theme?.textPrimary,
+                    backgroundColor: theme?.cardBg,
+                    flex: 1,
+                  }}
+                />
+                <input
+                  type="number"
+                  min="5"
+                  max="20"
+                  placeholder="Cols"
+                  value={question.answer?.gridSize?.cols || 9}
+                  onChange={(e) =>
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        gridSize: {
+                          ...question.answer?.gridSize,
+                          cols: parseInt(e.target.value),
+                        },
+                      },
+                    })
+                  }
+                  style={{
+                    borderColor: theme?.border,
+                    color: theme?.textPrimary,
+                    backgroundColor: theme?.cardBg,
+                    flex: 1,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="across_clues">Across Clues (format: number|clue|answer, each on new line) *</label>
+              <textarea
+                id="across_clues"
+                placeholder="Example:&#10;1|Dog's sound|BARK&#10;5|Not down|UP"
+                defaultValue={question.answer?.clues?.across?.map(c => `${c.number}|${c.text}|${c.answer}`).join("\n") || ""}
+                onChange={(e) => {
+                  const across = e.target.value
+                    .split("\n")
+                    .filter(line => line.trim())
+                    .map(line => {
+                      const [number, text, answer] = line.split("|").map(s => s.trim());
+                      return { number: parseInt(number) || 1, text, answer };
+                    });
+                  onUpdate({
+                    answer: {
+                      ...question.answer,
+                      clues: {
+                        ...question.answer?.clues,
+                        across,
+                      },
+                    },
+                  });
+                }}
+                rows={5}
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="down_clues">Down Clues (format: number|clue|answer, each on new line) *</label>
+              <textarea
+                id="down_clues"
+                placeholder="Example:&#10;1|Canine|DOG&#10;2|Chair part|ARM"
+                defaultValue={question.answer?.clues?.down?.map(c => `${c.number}|${c.text}|${c.answer}`).join("\n") || ""}
+                onChange={(e) => {
+                  const down = e.target.value
+                    .split("\n")
+                    .filter(line => line.trim())
+                    .map(line => {
+                      const [number, text, answer] = line.split("|").map(s => s.trim());
+                      return { number: parseInt(number) || 1, text, answer };
+                    });
+                  onUpdate({
+                    answer: {
+                      ...question.answer,
+                      clues: {
+                        ...question.answer?.clues,
+                        down,
+                      },
+                    },
+                  });
+                }}
+                rows={5}
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+            </div>
+          </div>
+        );
+
+      case "WORD_SEARCH":
+        return (
+          <div>
+            <div className="form-group">
+              <label htmlFor="grid_size">Grid Size (rows x cols) *</label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="number"
+                  min="8"
+                  max="20"
+                  placeholder="Rows"
+                  value={question.answer?.gridSize?.rows || 10}
+                  onChange={(e) =>
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        gridSize: {
+                          ...question.answer?.gridSize,
+                          rows: parseInt(e.target.value),
+                        },
+                      },
+                    })
+                  }
+                  style={{
+                    borderColor: theme?.border,
+                    color: theme?.textPrimary,
+                    backgroundColor: theme?.cardBg,
+                    flex: 1,
+                  }}
+                />
+                <input
+                  type="number"
+                  min="8"
+                  max="20"
+                  placeholder="Cols"
+                  value={question.answer?.gridSize?.cols || 10}
+                  onChange={(e) =>
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        gridSize: {
+                          ...question.answer?.gridSize,
+                          cols: parseInt(e.target.value),
+                        },
+                      },
+                    })
+                  }
+                  style={{
+                    borderColor: theme?.border,
+                    color: theme?.textPrimary,
+                    backgroundColor: theme?.cardBg,
+                    flex: 1,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="words">Words to Find (one per line, UPPERCASE) *</label>
+              <textarea
+                id="words"
+                placeholder="EXAMPLE&#10;PUZZLE&#10;SEARCH&#10;GAMES"
+                defaultValue={question.answer?.words?.map(w => w.word).join("\n") || ""}
+                onChange={(e) => {
+                  const words = e.target.value
+                    .split("\n")
+                    .filter(line => line.trim())
+                    .map(word => ({
+                      word: word.trim().toUpperCase(),
+                      difficulty: "medium"
+                    }));
+                  onUpdate({
+                    answer: {
+                      ...question.answer,
+                      words,
+                    },
+                  });
+                }}
+                rows={6}
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Search Directions *</label>
+              <div className="checkbox-group">
+                {["horizontal", "vertical", "diagonal", "backwards"].map((dir) => (
+                  <label key={dir}>
+                    <input
+                      type="checkbox"
+                      defaultChecked={question.answer?.directions?.includes(dir) || ["horizontal", "vertical"].includes(dir)}
+                      onChange={(e) => {
+                        const directions = question.answer?.directions || ["horizontal", "vertical"];
+                        if (e.target.checked) {
+                          if (!directions.includes(dir)) {
+                            directions.push(dir);
+                          }
+                        } else {
+                          directions.splice(directions.indexOf(dir), 1);
+                        }
+                        onUpdate({
+                          answer: {
+                            ...question.answer,
+                            directions: [...directions],
+                          },
+                        });
+                      }}
+                    />
+                    {dir.charAt(0).toUpperCase() + dir.slice(1)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "SUDOKU":
+        return (
+          <div>
+            <div className="form-group">
+              <label htmlFor="difficulty">Difficulty Level *</label>
+              <select
+                id="difficulty"
+                value={question.answer?.difficulty || "medium"}
+                onChange={(e) =>
+                  onUpdate({
+                    answer: {
+                      ...question.answer,
+                      difficulty: e.target.value,
+                    },
+                  })
+                }
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              >
+                <option value="easy">Easy (40-50 given cells)</option>
+                <option value="medium">Medium (30-40 given cells)</option>
+                <option value="hard">Hard (20-30 given cells)</option>
+                <option value="expert">Expert (15-20 given cells)</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="puzzle_grid">Puzzle Grid (comma-separated, 81 cells, 0 for empty) *</label>
+              <textarea
+                id="puzzle_grid"
+                placeholder="5,3,0,0,7,0,0,0,0,6,0,0,1,9,5,0,0,0,0,9,8,0,0,0,0,6,0,..."
+                defaultValue={question.answer?.puzzle?.join(",") || ""}
+                onChange={(e) => {
+                  const cells = e.target.value.split(",").map(c => parseInt(c.trim()) || 0);
+                  if (cells.length === 81) {
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        puzzle: cells,
+                      },
+                    });
+                  }
+                }}
+                rows={5}
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+              <small style={{ color: theme?.textSecondary }}>Must be exactly 81 numbers (0-9)</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="solution_grid">Solution Grid (comma-separated, 81 cells) *</label>
+              <textarea
+                id="solution_grid"
+                placeholder="5,3,4,6,7,8,9,1,2,6,7,2,1,9,5,3,4,8,1,9,8,3,4,2,5,6,7,..."
+                defaultValue={question.answer?.solution?.join(",") || ""}
+                onChange={(e) => {
+                  const cells = e.target.value.split(",").map(c => parseInt(c.trim()) || 0);
+                  if (cells.length === 81) {
+                    onUpdate({
+                      answer: {
+                        ...question.answer,
+                        solution: cells,
+                      },
+                    });
+                  }
+                }}
+                rows={5}
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+              <small style={{ color: theme?.textSecondary }}>Must be exactly 81 numbers (1-9)</small>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div style={{ color: theme?.textSecondary }}>

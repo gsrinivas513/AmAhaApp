@@ -29,7 +29,9 @@ export default function MultiSelectQuestion({
   };
 
   return (
-    <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
+    <div style={{ display: 'grid', gap: '20px', marginBottom: '24px' }}>
+      {/* Options Container */}
+      <div style={{ display: 'grid', gap: '12px' }}>
       {options.map((option, index) => {
         const isSelected = selected.includes(index);
         const isCorrect = option.isCorrect;
@@ -171,6 +173,7 @@ export default function MultiSelectQuestion({
           Submit ({selected.length} selected)
         </button>
       )}
+      </div>
     </div>
   );
 }

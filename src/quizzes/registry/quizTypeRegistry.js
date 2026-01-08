@@ -15,6 +15,9 @@ export const QUIZ_TYPES = {
   IMAGE_BASED: "IMAGE_BASED",
   PUZZLE: "PUZZLE",
   AUDIO_BASED: "AUDIO_BASED",
+  CROSSWORD: "CROSSWORD",
+  WORD_SEARCH: "WORD_SEARCH",
+  SUDOKU: "SUDOKU",
 };
 
 /**
@@ -250,6 +253,79 @@ export const QUIZ_TYPE_PLUGINS = {
           { key: "C", text: "" },
         ],
         evaluationType: "exact",
+      },
+    },
+  },
+
+  [QUIZ_TYPES.CROSSWORD]: {
+    id: "CROSSWORD",
+    label: "Crossword Puzzle",
+    description: "Fill grid with words using clues (horizontal and vertical)",
+    category: "advanced",
+    complexity: "complex",
+    inputType: "text_grid",
+    evaluationType: "grid_match",
+    supportsMedia: false,
+    defaultPoints: 25,
+    template: {
+      answer: {
+        gridSize: { rows: 9, cols: 9 },
+        clues: {
+          across: [
+            { number: 1, text: "Example clue", answer: "WORD" }
+          ],
+          down: [
+            { number: 1, text: "Example clue", answer: "WORD" }
+          ]
+        },
+        grid: [],
+        solution: [],
+        evaluationType: "grid_match",
+      },
+    },
+  },
+
+  [QUIZ_TYPES.WORD_SEARCH]: {
+    id: "WORD_SEARCH",
+    label: "Word Search",
+    description: "Find hidden words in a letter grid",
+    category: "intermediate",
+    complexity: "medium",
+    inputType: "word_selection",
+    evaluationType: "word_match",
+    supportsMedia: false,
+    defaultPoints: 15,
+    template: {
+      answer: {
+        gridSize: { rows: 10, cols: 10 },
+        words: [
+          { word: "EXAMPLE", difficulty: "easy" }
+        ],
+        grid: [],
+        directions: ["horizontal", "vertical", "diagonal"],
+        evaluationType: "word_match",
+      },
+    },
+  },
+
+  [QUIZ_TYPES.SUDOKU]: {
+    id: "SUDOKU",
+    label: "Sudoku Puzzle",
+    description: "Fill 9x9 grid with numbers 1-9 (each row, column, and 3x3 box unique)",
+    category: "advanced",
+    complexity: "complex",
+    inputType: "number_grid",
+    evaluationType: "sudoku_rules",
+    supportsMedia: false,
+    defaultPoints: 30,
+    template: {
+      answer: {
+        gridSize: { rows: 9, cols: 9 },
+        difficulty: "medium",
+        puzzle: [],
+        solution: [],
+        givenCells: 30,
+        evaluationType: "sudoku_rules",
       },
     },
   },
