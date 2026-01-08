@@ -262,7 +262,7 @@ function Sidebar() {
     }
     
     // Puzzles section routes
-    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle") || path.includes("/admin/series-management")) {
+    if (path.includes("/admin/puzzle") || path.includes("visual-puzzle") || path.includes("/admin/puzzles") || path.includes("logical-puzzle") || path.includes("/admin/series-management") || path.includes("/admin/series-leaderboard")) {
       newOpen.puzzles = true;
     }
     
@@ -272,7 +272,7 @@ function Sidebar() {
     }
     
     // Global section routes (everything else under /admin)
-    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content") && !path.includes("/admin/series-management")) {
+    if (path.startsWith("/admin") && !path.includes("/admin/quiz") && !path.includes("/admin/puzzle") && !path.includes("visual-puzzle") && !path.includes("/admin/puzzles") && !path.includes("logical-puzzle") && !path.includes("/admin/stories") && !path.includes("/admin/add-quiz-content") && !path.includes("/admin/series-management") && !path.includes("/admin/series-leaderboard")) {
       newOpen.global = true;
     }
     
@@ -370,6 +370,7 @@ function Sidebar() {
           <Item icon={<PuzzleIcon />} label="View Puzzles" path="/admin/puzzles" active={isActive("/admin/puzzles")} />
           <Item icon="🔧" label="Create Puzzle Records" path="/admin/puzzle-record-creator" active={isActive("/admin/puzzle-record-creator")} />
           <Item icon="📚" label="Series Management" path="/admin/series-management" active={isActive("/admin/series-management")} />
+          <Item icon="🏆" label="Series Leaderboard" path="/admin/series-leaderboard" active={isActive("/admin/series-leaderboard")} />
         </Section>
 
 

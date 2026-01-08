@@ -1,0 +1,134 @@
+/* Leaderboard Styles */
+
+.leaderboard-page {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.leaderboard-page table {
+  font-size: 14px;
+  width: 100%;
+}
+
+.leaderboard-page table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(255, 102, 51, 0.2);
+  background: rgba(255, 102, 51, 0.05);
+}
+
+.leaderboard-page table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 102, 51, 0.1);
+}
+
+.leaderboard-page table tr:hover {
+  background-color: rgba(255, 102, 51, 0.08);
+  transition: background-color 0.2s ease;
+}
+
+.leaderboard-page input:focus,
+.leaderboard-page textarea:focus,
+.leaderboard-page select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 102, 51, 0.1);
+}
+
+.leaderboard-page button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 102, 51, 0.2);
+}
+
+.leaderboard-page button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.leaderboard-page div[style*="overflowY"],
+.leaderboard-page div[style*="overflowX"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 102, 51, 0.5) transparent;
+}
+
+.leaderboard-page div[style*="overflowY"]::-webkit-scrollbar,
+.leaderboard-page div[style*="overflowX"]::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.leaderboard-page div[style*="overflowY"]::-webkit-scrollbar-track,
+.leaderboard-page div[style*="overflowX"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.leaderboard-page div[style*="overflowY"]::-webkit-scrollbar-thumb,
+.leaderboard-page div[style*="overflowX"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 102, 51, 0.5);
+  border-radius: 3px;
+}
+
+.leaderboard-page div[style*="overflowY"]::-webkit-scrollbar-thumb:hover,
+.leaderboard-page div[style*="overflowX"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 102, 51, 0.7);
+}
+
+/* Medal animations */
+@keyframes medal-spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.leaderboard-page td:first-child {
+  font-weight: bold;
+  min-width: 40px;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .leaderboard-page > div {
+    grid-template-columns: 1fr !important;
+  }
+
+  .leaderboard-page table {
+    font-size: 12px;
+  }
+
+  .leaderboard-page table th,
+  .leaderboard-page table td {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .leaderboard-page table {
+    font-size: 11px;
+  }
+
+  .leaderboard-page table th,
+  .leaderboard-page table td {
+    padding: 6px;
+  }
+
+  .leaderboard-page button {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+  }
+}
