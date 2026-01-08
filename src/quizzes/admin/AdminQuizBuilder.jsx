@@ -244,7 +244,108 @@ const QuizMetadataStep = ({ quiz, onUpdate, theme }) => {
           />
           Show explanations
         </label>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={quiz.metadata?.contestMode || false}
+            onChange={(e) =>
+              handleMetadataChange("contestMode", e.target.checked)
+            }
+          />
+          🏆 Enable Contest Mode
+        </label>
       </div>
+
+      {/* Contest Mode Options */}
+      {quiz.metadata?.contestMode && (
+        <div className="contest-mode-section" style={{
+          marginTop: '20px',
+          padding: '16px',
+          background: 'rgba(255, 102, 51, 0.05)',
+          border: '1px solid rgba(255, 102, 51, 0.2)',
+          borderRadius: '8px',
+        }}>
+          <h4 style={{ color: theme?.textPrimary, marginBottom: '12px' }}>Contest Mode Settings</h4>
+
+          <div className="checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={quiz.metadata?.disableHints || false}
+                onChange={(e) =>
+                  handleMetadataChange("disableHints", e.target.checked)
+                }
+              />
+              Disable hints during contest
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={quiz.metadata?.disableCheck || false}
+                onChange={(e) =>
+                  handleMetadataChange("disableCheck", e.target.checked)
+                }
+              />
+              Disable "Check Answer" option
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={quiz.metadata?.disableReveal || false}
+                onChange={(e) =>
+                  handleMetadataChange("disableReveal", e.target.checked)
+                }
+              />
+              Disable "Reveal Answer" option
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={quiz.metadata?.enableLeadForm || false}
+                onChange={(e) =>
+                  handleMetadataChange("enableLeadForm", e.target.checked)
+                }
+              />
+              Collect participant information (leads)
+            </label>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={quiz.metadata?.enableLeaderboard || false}
+                onChange={(e) =>
+                  handleMetadataChange("enableLeaderboard", e.target.checked)
+                }
+              />
+              Enable leaderboard
+            </label>
+          </div>
+
+          {quiz.metadata?.enableLeadForm && (
+            <div className="form-group" style={{ marginTop: '12px' }}>
+              <label htmlFor="leadFormFields">Participant Form Fields (comma-separated)</label>
+              <input
+                id="leadFormFields"
+                type="text"
+                placeholder="e.g., Name, Email, Employee ID"
+                value={quiz.metadata?.leadFormFields || ""}
+                onChange={(e) =>
+                  handleMetadataChange("leadFormFields", e.target.value)
+                }
+                style={{
+                  borderColor: theme?.border,
+                  color: theme?.textPrimary,
+                  backgroundColor: theme?.cardBg,
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

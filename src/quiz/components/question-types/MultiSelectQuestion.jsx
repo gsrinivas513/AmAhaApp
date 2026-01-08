@@ -10,6 +10,8 @@ export default function MultiSelectQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   const options = question.options || [];
   const [selected, setSelected] = React.useState(selectedAnswer || []);

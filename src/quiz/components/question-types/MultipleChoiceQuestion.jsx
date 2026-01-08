@@ -10,6 +10,8 @@ export default function MultipleChoiceQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   const options = question.options || question.answer?.options || [];
 

@@ -10,6 +10,8 @@ export default function TrueFalseQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   // Handle both boolean and index-based correctAnswer formats
   let correctAnswerIndex = 0;

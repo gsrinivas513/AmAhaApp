@@ -10,6 +10,8 @@ export default function ImageSelectQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   // Handle both 'options' and 'images' property names
   const rawOptions = question.options || question.images || [];

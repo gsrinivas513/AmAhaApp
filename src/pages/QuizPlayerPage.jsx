@@ -490,6 +490,10 @@ export default function QuizPlayerPage() {
                   showFeedback={answered}
                   theme={theme}
                   difficulty={selectedDifficulty}
+                  contestMode={quiz?.metadata?.contestMode || false}
+                  disableHints={quiz?.metadata?.disableHints || false}
+                  disableCheck={quiz?.metadata?.disableCheck || false}
+                  disableReveal={quiz?.metadata?.disableReveal || false}
                 />
 
                 {answered && (

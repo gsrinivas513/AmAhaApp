@@ -10,6 +10,8 @@ export default function DragDropQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   // Parse items and zones from data structure
   const rawItems = question.items || [];

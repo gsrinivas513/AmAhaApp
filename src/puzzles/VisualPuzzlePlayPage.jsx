@@ -8,6 +8,9 @@ import SpotDifferencePuzzle from "./renderers/SpotDifferencePuzzle";
 import FindPairPuzzle from "./renderers/FindPairPuzzle";
 import PictureShadowPuzzle from "./renderers/PictureShadowPuzzle";
 import OrderingPuzzle from "./renderers/OrderingPuzzle";
+import CrosswordPuzzle from "./renderers/CrosswordPuzzle";
+import SudokuPuzzle from "./renderers/SudokuPuzzle";
+import WordSearchPuzzle from "./renderers/WordSearchPuzzle";
 import PuzzleFinish from "./PuzzleFinish";
 import "../styles/puzzle-renderers.css";
 
@@ -118,6 +121,12 @@ function VisualPuzzlePlayPage() {
         return <PictureShadowPuzzle {...puzzleProps} />;
       case "ordering":
         return <OrderingPuzzle {...puzzleProps} />;
+      case "crossword":
+        return <CrosswordPuzzle {...puzzleProps} />;
+      case "sudoku":
+        return <SudokuPuzzle {...puzzleProps} />;
+      case "word-search":
+        return <WordSearchPuzzle {...puzzleProps} />;
       default:
         return (
           <div className="puzzle-error">

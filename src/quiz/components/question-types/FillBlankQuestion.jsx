@@ -10,6 +10,8 @@ export default function FillBlankQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   const [inputValue, setInputValue] = useState(selectedAnswer || '');
 
@@ -156,7 +158,7 @@ export default function FillBlankQuestion({
       )}
 
       {/* Hints */}
-      {!answered && question.hints && question.hints.length > 0 && (
+      {!answered && !disableHints && !contestMode && question.hints && question.hints.length > 0 && (
         <div style={{
           marginTop: '16px',
           padding: '12px',

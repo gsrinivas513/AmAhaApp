@@ -10,6 +10,8 @@ export default function OrderingQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   // Parse items - handle both string arrays and object arrays
   const rawItems = question.items || [];

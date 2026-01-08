@@ -10,6 +10,8 @@ export default function MatchingQuestion({
   selectedAnswer,
   showFeedback,
   theme,
+  disableHints = false,
+  contestMode = false,
 }) {
   // Parse data - handle both structures
   let leftItems = [];

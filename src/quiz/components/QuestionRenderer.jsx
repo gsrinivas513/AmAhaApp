@@ -23,6 +23,10 @@ export default function QuestionRenderer({
   showFeedback,
   theme,
   difficulty,
+  contestMode = false,
+  disableHints = false,
+  disableCheck = false,
+  disableReveal = false,
 }) {
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -106,6 +110,8 @@ export default function QuestionRenderer({
       selectedAnswer,
       showFeedback,
       theme,
+      disableHints,
+      contestMode,
     };
 
     switch (questionType) {
@@ -154,7 +160,7 @@ export default function QuestionRenderer({
       {renderQuestionContent()}
 
       {/* Explanation (shown after answering) */}
-      {answered && showFeedback && question.explanation && showExplanation && (
+      {answered && showFeedback && question.explanation && showExplanation && !contestMode && (
         <div style={explanationStyles}>
           <div style={explanationTitleStyles}>💡 Explanation:</div>
           <p>{question.explanation.text || question.explanation}</p>
@@ -169,7 +175,7 @@ export default function QuestionRenderer({
       )}
 
       {/* Explanation Toggle for answered questions */}
-      {answered && showFeedback && question.explanation && (
+      {answered && showFeedback && question.explanation && !contestMode && (
         <button
           onClick={() => setShowExplanation(!showExplanation)}
           style={{
@@ -193,6 +199,23 @@ export default function QuestionRenderer({
         >
           {showExplanation ? '▼ Hide Explanation' : '▶ Show Explanation'}
         </button>
+      )}
+
+      {/* Contest Mode Notice */}
+      {contestMode && (
+        <div style={{
+          marginTop: '20px',
+          padding: '12px',
+          background: 'rgba(255, 102, 51, 0.1)',
+          border: '1px solid rgba(255, 102, 51, 0.3)',
+          borderRadius: '8px',
+          color: '#FF6633',
+          fontSize: '13px',
+          fontWeight: '600',
+          textAlign: 'center',
+        }}>
+          🏆 This is a contest - Hints and explanations are disabled
+        </div>
       )}
     </div>
   );
