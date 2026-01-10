@@ -81,7 +81,7 @@ import CategoryDetailsPage from "./pages/CategoryDetailsPage";
 import AdminDashboard from "./admin/AdminDashboard";
 import ModernAdminDashboard from "./admin/ModernAdminDashboard";
 import AdminQuizzesManager from "./admin/AdminQuizzesManager";
-import AdminPuzzlesManager from "./admin/AdminPuzzlesManager";
+import AdminQuizPuzzleManager from "./admin/AdminQuizPuzzleManager";
 import AdminStoriesManager from "./admin/AdminStoriesManager";
 import CategoriesPage from "./admin/CategoriesPage";
 import ImportQuestionsPage from "./admin/ImportQuestionsPage";
@@ -142,6 +142,16 @@ import WordSearchPuzzle from "./components/WordSearchPuzzle";
 import PuzzleCustomizer from "./components/PuzzleCustomizer";
 import InitializeStoriesPage from "./pages/InitializeStoriesPage";
 
+/* PHASE 8 - GAMIFICATION & REWARDS */
+import DailyChallengesPage from "./pages/DailyChallengesPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import StoryModePage from "./pages/StoryModePage";
+import ShopPage from "./pages/ShopPage";
+import MultiplayerPage from "./pages/MultiplayerPage";
+import PracticePage from "./pages/PracticePage";
+import AdminContentManager from "./pages/AdminContentManager";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+
 /* PUZZLES - USER */
 import PuzzleCategoryPage from "./puzzles/PuzzleCategoryPage";
 import PuzzleTopicPage from "./puzzles/PuzzleTopicPage";
@@ -190,6 +200,16 @@ function App() {
         {/* DAILY CHALLENGE */}
         <Route path="/daily-challenge" element={<DailyChallengePage />} />
         
+        {/* PHASE 8 - GAMIFICATION & REWARDS */}
+        <Route path="/daily-challenges" element={<DailyChallengesPage />} />
+        <Route path="/profile/:userId" element={<UserProfilePage />} />
+        <Route path="/story-mode" element={<StoryModePage />} />
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/multiplayer" element={<MultiplayerPage />} />
+        <Route path="/practice" element={<PracticePage />} />
+        <Route path="/admin/content-manager" element={<AdminContentManager />} />
+        <Route path="/admin/analytics-dashboard" element={<AnalyticsDashboard />} />
+        
         {/* STORIES */}
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/stories/initialize" element={<InitializeStoriesPage />} />
@@ -227,7 +247,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/modern-dashboard" element={<ModernAdminDashboard />} />
         <Route path="/admin/quizzes" element={<AdminQuizzesManager />} />
-        <Route path="/admin/puzzles" element={<AdminPuzzlesManager />} />
+        <Route path="/admin/puzzles" element={<AdminQuizPuzzleManager />} />
         <Route path="/admin/categories" element={<CategoriesPage />} />
         <Route path="/admin/import" element={<ImportQuestionsPage />} />
         <Route path="/admin/ui-mode" element={<UiModeSettingsPage />} />

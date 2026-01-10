@@ -1,0 +1,363 @@
+/* Daily Challenges Page Styles - Layout Only */
+
+.daily-challenges-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 40px;
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+  width: 100%;
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid currentColor;
+  gap: 20px;
+}
+
+.challenge-header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
+  flex: 1;
+}
+
+.countdown-badge {
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.countdown-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.timer-icon {
+  font-size: 1.3rem;
+}
+
+/* Challenge Card */
+.challenge-card {
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid;
+}
+
+.challenge-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+.challenge-type-section {
+  margin-bottom: 20px;
+}
+
+.challenge-details {
+  margin-bottom: 25px;
+}
+
+.challenge-details h3 {
+  font-size: 1.3rem;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.challenge-details p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.difficulty-badge:hover {
+  transform: scale(1.05);
+}
+
+.puzzle-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 15px;
+}
+
+/* Rewards Section */
+.rewards-section {
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid;
+}
+
+.reward-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.reward-item:last-child {
+  margin-bottom: 0;
+}
+
+.reward-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.reward-item div {
+  flex: 1;
+}
+
+.reward-item p {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+}
+
+.reward-item strong {
+  font-size: 1.3rem;
+  display: block;
+}
+
+/* Streak Section */
+.streak-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-left: 4px solid currentColor;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.streak-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.streak-info p {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.streak-info-text {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Buttons */
+.start-challenge-btn {
+  width: 100%;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.start-challenge-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.start-challenge-btn:active {
+  transform: translateY(0);
+}
+
+.completed-badge {
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: 2px solid;
+}
+
+/* Streak Bonuses */
+.streak-bonuses-section {
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid;
+}
+
+.streak-bonuses-section h4 {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bonuses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+}
+
+.bonus-card {
+  padding: 15px;
+  border-radius: 12px;
+  border: 2px solid;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.bonus-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bonus-card p {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.bonus-reward {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: block;
+}
+
+/* Challenge History */
+.challenge-history-section {
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid;
+}
+
+.challenge-history-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.challenge-history-section p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid currentColor;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .daily-challenges-container {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .daily-challenges-container {
+    padding: 15px 20px;
+  }
+
+  .challenge-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .challenge-header h1 {
+    font-size: 2rem;
+  }
+
+  .countdown-badge {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .challenge-card {
+    padding: 20px;
+  }
+
+  .bonuses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .start-challenge-btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .daily-challenges-container {
+    padding: 10px;
+  }
+
+  .challenge-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .challenge-card {
+    padding: 15px;
+  }
+
+  .bonuses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .challenge-details h3 {
+    font-size: 1.1rem;
+  }
+
+  .streak-info {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

@@ -7,6 +7,9 @@ import OrderingQuestion from './question-types/OrderingQuestion';
 import ImageSelectQuestion from './question-types/ImageSelectQuestion';
 import MultiSelectQuestion from './question-types/MultiSelectQuestion';
 import DragDropQuestion from './question-types/DragDropQuestion';
+import CrosswordRenderer from './puzzles/CrosswordRenderer';
+import WordSearchRenderer from './puzzles/WordSearchRenderer';
+import SudokuRenderer from './puzzles/SudokuRenderer';
 
 /**
  * QuestionRenderer - Renders different question types
@@ -131,6 +134,15 @@ export default function QuestionRenderer({
         return <MultiSelectQuestion {...commonProps} />;
       case 'drag-drop':
         return <DragDropQuestion {...commonProps} />;
+      case 'crossword':
+      case 'CROSSWORD':
+        return <CrosswordRenderer {...commonProps} />;
+      case 'word-search':
+      case 'WORD_SEARCH':
+        return <WordSearchRenderer {...commonProps} />;
+      case 'sudoku':
+      case 'SUDOKU':
+        return <SudokuRenderer {...commonProps} />;
       default:
         return <MultipleChoiceQuestion {...commonProps} />;
     }

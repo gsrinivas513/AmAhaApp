@@ -3,7 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { db } from '../../firebase/firebaseConfig';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 
-export default function PuzzleTemplateModal({ isOpen, onClose }) {
+export default function PuzzleTemplateModal({ isOpen, onClose, baseTemplates = [] }) {
   const { theme } = useTheme();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -69,12 +69,20 @@ export default function PuzzleTemplateModal({ isOpen, onClose }) {
         isBuiltIn: false,
       }));
       
-      // Combine built-in and custom templates
+      // Prepare base templates from props with proper IDs
+      const baseTemplatesWithIds = baseTemplates.map((template, index) => ({
+        id: `base-${template.typeKey || index}`,
+        ...template,
+        isBuiltIn: true,
+      }));
+      
+      // Combine built-in (from BUILT_IN_TEMPLATES), base (from props), and custom templates
       const allTemplates = [
         ...Object.entries(BUILT_IN_TEMPLATES).map(([key, value]) => ({
           id: key,
           ...value,
         })),
+        ...baseTemplatesWithIds,
         ...customTemplates,
       ];
       

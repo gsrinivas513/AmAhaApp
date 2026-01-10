@@ -1,0 +1,281 @@
+/* Practice Mode Page Styles - Layout Only */
+
+.practice-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 40px;
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+  width: 100%;
+}
+
+.practice-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 3px solid currentColor;
+}
+
+.practice-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.practice-header p {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.session-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.session-option {
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.session-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.session-option.active {
+  background: currentColor;
+  color: white;
+}
+
+.session-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.session-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+.session-description {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.practice-section {
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid;
+  margin-bottom: 30px;
+}
+
+.practice-section h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-value {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.stat-card-label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+
+.puzzles-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.puzzle-item {
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.puzzle-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.puzzle-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.puzzle-info {
+  flex: 1;
+}
+
+.puzzle-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 4px 0;
+}
+
+.puzzle-difficulty {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.puzzle-status {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.start-button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.start-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.progress-tracker {
+  width: 100%;
+  margin-top: 25px;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, currentColor, currentColor);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .practice-container {
+    padding: 20px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .practice-container {
+    padding: 15px 20px;
+  }
+
+  .practice-header h1 {
+    font-size: 2rem;
+  }
+
+  .session-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .puzzle-item {
+    flex-direction: column;
+  }
+
+  .puzzle-status {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .practice-container {
+    padding: 10px;
+  }
+
+  .practice-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .session-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .practice-section {
+    padding: 15px;
+  }
+
+  .puzzle-item {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .puzzle-icon {
+    font-size: 1.5rem;
+  }
+
+  .start-button {
+    padding: 6px 15px;
+    font-size: 0.8rem;
+  }
+}

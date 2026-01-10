@@ -1,3 +1,153 @@
 /* Badge Card Styles */
 
-.badge-card {\n  padding: 20px;\n  border-radius: 12px;\n  border: 2px solid rgba(255, 102, 0, 0.2);\n  background: white;\n  cursor: pointer;\n  transition: all 0.3s ease;\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  position: relative;\n  text-align: center;\n  min-height: 220px;\n  align-items: center;\n  justify-content: center;\n}\n\n.badge-card.dark {\n  background-color: #2a2a2a;\n}\n\n.badge-card.locked {\n  opacity: 0.5;\n  filter: grayscale(100%);\n}\n\n.badge-card:hover {\n  transform: scale(1.05) rotateY(5deg);\n  border-color: #ff6600;\n  box-shadow: 0 12px 24px rgba(255, 102, 0, 0.2);\n}\n\n/* Badge Icon */\n.badge-icon {\n  position: relative;\n  font-size: 4rem;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 80px;\n  width: 80px;\n  border-radius: 12px;\n  background: linear-gradient(135deg, rgba(255, 102, 0, 0.1) 0%, rgba(255, 136, 51, 0.1) 100%);\n  animation: badgeFloat 3s ease-in-out infinite;\n}\n\n@keyframes badgeFloat {\n  0%,\n  100% {\n    transform: translateY(0);\n  }\n  50% {\n    transform: translateY(-10px);\n  }\n}\n\n.badge-emoji {\n  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));\n}\n\n.badge-crown {\n  position: absolute;\n  top: -5px;\n  right: -5px;\n  font-size: 1.5rem;\n  animation: spin 3s linear infinite;\n}\n\n@keyframes spin {\n  from {\n    transform: rotate(0deg);\n  }\n  to {\n    transform: rotate(360deg);\n  }\n}\n\n/* Badge Title */\n.badge-title {\n  margin: 0 0 8px 0;\n  font-size: 1.2rem;\n  font-weight: 700;\n  color: inherit;\n}\n\n/* Badge Description */\n.badge-description {\n  margin: 0 0 10px 0;\n  font-size: 0.9rem;\n  opacity: 0.7;\n  line-height: 1.4;\n}\n\n/* Badge Date */\n.badge-date {\n  margin: 10px 0 0 0;\n  font-size: 0.8rem;\n  opacity: 0.5;\n  font-style: italic;\n}\n\n/* Share Button */\n.share-badge-button {\n  padding: 8px 16px;\n  margin-top: 10px;\n  background-color: #ff6600;\n  color: white;\n  border: none;\n  border-radius: 6px;\n  font-weight: 600;\n  cursor: pointer;\n  transition: all 0.3s ease;\n  font-size: 0.9rem;\n}\n\n.share-badge-button:hover {\n  background-color: #e55a00;\n  transform: scale(1.05);\n}\n\n/* Locked Badge */\n.badge-locked {\n  position: absolute;\n  top: 50%;\n  left: 50%;\n  transform: translate(-50%, -50%);\n  font-size: 2.5rem;\n  opacity: 0.8;\n}\n\n/* Responsive */\n@media (max-width: 480px) {\n  .badge-card {\n    padding: 15px;\n    min-height: 180px;\n  }\n\n  .badge-icon {\n    font-size: 3rem;\n    height: 70px;\n    width: 70px;\n  }\n\n  .badge-title {\n    font-size: 1rem;\n  }\n\n  .badge-description {\n    font-size: 0.85rem;\n  }\n}\n
+.badge-card {
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 102, 0, 0.2);
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  text-align: center;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-card.dark {
+  background-color: #2a2a2a;
+}
+
+.badge-card.locked {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.badge-card:hover {
+  transform: scale(1.05) rotateY(5deg);
+  border-color: #ff6600;
+  box-shadow: 0 12px 24px rgba(255, 102, 0, 0.2);
+}
+
+/* Badge Icon */
+.badge-icon {
+  position: relative;
+  font-size: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  width: 80px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 102, 0, 0.1) 0%, rgba(255, 136, 51, 0.1) 100%);
+  animation: badgeFloat 3s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.badge-emoji {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.badge-crown {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 1.5rem;
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Badge Title */
+.badge-title {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Badge Description */
+.badge-description {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+/* Badge Date */
+.badge-date {
+  margin: 10px 0 0 0;
+  font-size: 0.8rem;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+/* Share Button */
+.share-badge-button {
+  padding: 8px 16px;
+  margin-top: 10px;
+  background-color: #ff6600;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.share-badge-button:hover {
+  background-color: #e55a00;
+  transform: scale(1.05);
+}
+
+/* Locked Badge */
+.badge-locked {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .badge-card {
+    padding: 15px;
+    min-height: 180px;
+  }
+
+  .badge-icon {
+    font-size: 3rem;
+    height: 70px;
+    width: 70px;
+  }
+
+  .badge-title {
+    font-size: 1rem;
+  }
+
+  .badge-description {
+    font-size: 0.85rem;
+  }
+}
