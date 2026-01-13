@@ -6,8 +6,6 @@ import AudienceSelector, { AUDIENCES } from '../components/AudienceSelector';
 import { seedQuizzesWithVariants } from '../scripts/seedQuizzesWithVariants';
 import { setupTestQuizzes } from './utils/setupTestQuizzesAPI';
 import { useAppIntegration } from '../hooks/useAppIntegration';
-import QuizBuilder from '../quiz/components/QuizBuilder';
-import AnalyticsDashboard from '../dashboard/AnalyticsDashboard';
 import { useAuth } from '../components/AuthProvider';
 import PictureWordEditor from './puzzle-editors/PictureWordEditor';
 import SpotDifferenceEditor from './puzzle-editors/SpotDifferenceEditor';
@@ -36,6 +34,7 @@ import SearchFilterBar from './components/SearchFilterBar';
 import ImprovedFeaturesHierarchyManager from './components/ImprovedFeaturesHierarchyManager';
 import StatusBadge from '../components/badges/StatusBadge';
 import AdminQuizBuilder from '../quizzes/admin/AdminQuizBuilder';
+import AdminPuzzleBuilder from './AdminPuzzleBuilder';
 import VisibilityBadge from '../components/badges/VisibilityBadge';
 import FeaturedBadge from '../components/badges/FeaturedBadge';
 import AdminStatusFilter from './components/AdminStatusFilter';
@@ -43,6 +42,17 @@ import ChartBarSvg from './components/ChartBarSvg';
 import { BASE_PUZZLE_TEMPLATES } from './dashboard-constants';
 import { STORY_TEMPLATES, SAMPLE_QUIZZES } from './dashboard-data';
 import { SETUP_DATA, ADMIN_TABS, DASHBOARD_STATS, RECENT_ACTIVITIES } from './dashboard-setup';
+import AdminOverviewTab from './tabs/AdminOverviewTab';
+import AdminQuizzesTab from './tabs/AdminQuizzesTab';
+import AdminPuzzlesTab from './tabs/AdminPuzzlesTab';
+import AdminStoriesTab from './tabs/AdminStoriesTab';
+import AdminArtsTab from './tabs/AdminArtsTab';
+import AdminDocumentsTab from './tabs/AdminDocumentsTab';
+import AdminStudiesTab from './tabs/AdminStudiesTab';
+import AdminWorksheetsTab from './tabs/AdminWorksheetsTab';
+import AdminUsersTab from './tabs/AdminUsersTab';
+import AdminFeaturesTab from './tabs/AdminFeaturesTab';
+import AdminSettingsTab from './tabs/AdminSettingsTab';
 
 // ===== EXTRACTED CONSTANTS =====
 // STORY_TEMPLATES imported from dashboard-data.js
@@ -68,6 +78,8 @@ export default function ModernAdminDashboard() {
   const [showBulkImportQuiz, setShowBulkImportQuiz] = useState(false);
   const [bulkImportData, setBulkImportData] = useState('');
   const [showAddPuzzleForm, setShowAddPuzzleForm] = useState(false);
+  const [showUniversalPuzzleBuilder, setShowUniversalPuzzleBuilder] = useState(false);
+  const [editingPuzzleData, setEditingPuzzleData] = useState(null);
   const [showAddStoryForm, setShowAddStoryForm] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showCreateTemplateModal, setShowCreateTemplateModal] = useState(false);
@@ -80,6 +92,31 @@ export default function ModernAdminDashboard() {
   const [quizFormData, setQuizFormData] = useState({ title: '', category: '', audience: '', questions: '', difficulty: '' });
   const [puzzleFormData, setPuzzleFormData] = useState({ displayLabel: '', name: '', type: '', audience: '', pieces: '', difficulty: '' });
   const [storyFormData, setStoryFormData] = useState({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
+
+  // Hash-based routing for tabs
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove '#'
+      if (hash && ADMIN_TABS.some(tab => tab.id === hash)) {
+        setActiveTab(hash);
+      } else if (!hash) {
+        setActiveTab('overview');
+      }
+    };
+
+    // Set initial tab from hash on mount
+    handleHashChange();
+
+    // Listen for hash changes (browser back/forward)
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update hash when tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    window.location.hash = tabId;
+  };
 
   // Story templates imported from dashboard-data.js
 
@@ -99,9 +136,9 @@ export default function ModernAdminDashboard() {
   const [visibilityFilter, setVisibilityFilter] = useState('all');
   const [featuredFilter, setFeaturedFilter] = useState(false);
   const [limitRows, setLimitRows] = useState(30);
-  const [setupLoading, setSetupLoading] = useState(false);
-  const [setupMessage, setSetupMessage] = useState('');
-  const [setupError, setSetupError] = useState('');
+  const [activitiesSortBy, setActivitiesSortBy] = useState('time'); // 'time', 'type', 'action'
+  const [activitiesTypeFilter, setActivitiesTypeFilter] = useState('all'); // 'all', 'quiz', 'puzzle', 'story', 'art', 'document', 'study', 'worksheet', 'user'
+  const [activitiesLimitRows, setActivitiesLimitRows] = useState(20);
   const [addingSampleQuizzes, setAddingSampleQuizzes] = useState(false);
   const [seedingQuizzes, setSeedingQuizzes] = useState(false);
   const [seedProgress, setSeedProgress] = useState(null);
@@ -205,6 +242,18 @@ export default function ModernAdminDashboard() {
       console.warn('Failed to load subtopics', e);
     }
   }, []);
+
+  // Map visual types to their Firestore typeKey
+  const typeKeyFor = (editorType) => ({
+    'find-pair': 'findPairs',
+    'picture-word': 'pictureWordMatching',
+    'picture-shadow': 'pictureShadow',
+    'word-search': 'wordSearch',
+    'spot-difference': 'spotDifference',
+    'ordering': 'ordering',
+    'jigsaw': 'jigsaw',
+  }[editorType] || '');
+
   // Load templates for Create New Puzzle when a visual type is chosen
   useEffect(() => {
     const run = async () => {
@@ -236,16 +285,6 @@ export default function ModernAdminDashboard() {
       loadCategories();
     }
   }, [quickCreateType, loadCategories]);
-
-  const typeKeyFor = (editorType) => ({
-    'find-pair': 'findPairs',
-    'picture-word': 'pictureWordMatching',
-    'picture-shadow': 'pictureShadow',
-    'word-search': 'wordSearch',
-    'spot-difference': 'spotDifference',
-    'ordering': 'ordering',
-    'jigsaw': 'jigsaw',
-  }[editorType] || '');
 
   useEffect(() => {
     const loadQuickTemplates = async () => {
@@ -457,7 +496,8 @@ export default function ModernAdminDashboard() {
     const shorter = s1.length > s2.length ? s2 : s1;
     
     const editDistance = getLevenshteinDistance(longer, shorter);
-    return (longer.length - editDistance) / longer.length;
+  
+  return (longer.length - editDistance) / longer.length;
   };
 
   // Levenshtein distance for fuzzy matching
@@ -697,152 +737,6 @@ export default function ModernAdminDashboard() {
   };
 
   // Setup new collections for 4 feature types
-  const handleSetupNewCollections = async () => {
-    setSetupLoading(true);
-    setSetupMessage('');
-    setSetupError('');
-
-    try {
-      console.log('🚀 Starting Firestore collection setup...\n');
-
-      const setupData = {
-        features: [
-          {
-            id: 'arts',
-            name: 'Arts',
-            label: 'Arts & Creative',
-            icon: '🎨',
-            type: 'arts',
-            featureId: 'arts',
-            description: 'Explore creative and artistic content including visual exercises, patterns, and design challenges',
-            status: 'published',
-            visibility: 'public',
-            enabled: true,
-            order: 5,
-            showInMenu: true,
-          },
-          {
-            id: 'documents',
-            name: 'Documents',
-            label: 'Educational Documents',
-            icon: '📄',
-            type: 'documents',
-            featureId: 'documents',
-            description: 'Learn through educational documents, reading materials, and reference guides',
-            status: 'published',
-            visibility: 'public',
-            enabled: true,
-            order: 6,
-            showInMenu: true,
-          },
-          {
-            id: 'studies',
-            name: 'Studies',
-            label: 'Study Guides',
-            icon: '📚',
-            type: 'studies',
-            featureId: 'studies',
-            description: 'Comprehensive study guides and learning paths for programming and technical topics',
-            status: 'published',
-            visibility: 'public',
-            enabled: true,
-            order: 7,
-            showInMenu: true,
-          },
-          {
-            id: 'worksheets',
-            name: 'Worksheets',
-            label: 'Practice Worksheets',
-            icon: '📋',
-            type: 'worksheets',
-            featureId: 'worksheets',
-            description: 'Interactive worksheets for hands-on practice and skill development',
-            status: 'published',
-            visibility: 'public',
-            enabled: true,
-            order: 8,
-            showInMenu: true,
-          },
-        ],
-        categories: [
-          { collection: 'documentCategories', data: { id: 'educational-kids', name: 'Kids Learning', label: 'Kids Learning', featureId: 'documents', icon: '👶', description: 'Fun and educational documents for children', color: '#10b981', status: 'published', visibility: 'public', order: 1 } },
-          { collection: 'studiesCategories', data: { id: 'programming-java', name: 'Java Programming', label: 'Java Programming', featureId: 'studies', icon: '☕', description: 'Complete Java programming study materials', color: '#f59e0b', status: 'published', visibility: 'public', order: 1 } },
-          { collection: 'worksheetCategories', data: { id: 'logic-puzzles-ws', name: 'Logic Puzzles', label: 'Logic Puzzles', featureId: 'worksheets', icon: '🧩', description: 'Logic puzzle worksheets for problem-solving', color: '#8b5cf6', status: 'published', visibility: 'public', order: 1 } },
-          { collection: 'artCategories', data: { id: 'visual-arts', name: 'Visual Arts', label: 'Visual Arts & Design', featureId: 'arts', icon: '🎨', description: 'Visual exercises, patterns, and design challenges', color: '#ec4899', status: 'published', visibility: 'public', order: 1 } },
-        ],
-        documents: [
-          { id: 'doc-math-kids', title: 'Simple Math Guide', description: 'Learn basic math operations', categoryId: 'educational-kids', featureId: 'documents', topic: 'Math', difficulty: 'easy', icon: '📐', status: 'published', visibility: 'public', order: 1 },
-          { id: 'doc-animals-kids', title: 'Animals Learning Guide', description: 'Discover different animals', categoryId: 'educational-kids', featureId: 'documents', topic: 'Animals', difficulty: 'easy', icon: '🦁', status: 'published', visibility: 'public', order: 2 },
-          { id: 'doc-body-kids', title: 'Human Body Guide', description: 'Learn body parts and functions', categoryId: 'educational-kids', featureId: 'documents', topic: 'Body', difficulty: 'easy', icon: '🫀', status: 'published', visibility: 'public', order: 3 },
-          { id: 'doc-food-kids', title: 'Fruits & Vegetables Guide', description: 'Explore food groups', categoryId: 'educational-kids', featureId: 'documents', topic: 'Food', difficulty: 'easy', icon: '🥗', status: 'published', visibility: 'public', order: 4 },
-        ],
-        studies: [
-          { id: 'study-java-basics', title: 'Java Basics Study Guide', description: 'Master Java fundamentals', categoryId: 'programming-java', featureId: 'studies', topic: 'java', subtopic: 'basics', difficulty: 'medium', icon: '☕', status: 'published', visibility: 'public', order: 1, lessons: 5, quizzes: 10 },
-          { id: 'study-java-arrays', title: 'Arrays in Java Study Guide', description: 'Deep dive into arrays', categoryId: 'programming-java', featureId: 'studies', topic: 'java', subtopic: 'arrays', difficulty: 'medium', icon: '📚', status: 'published', visibility: 'public', order: 2, lessons: 4, quizzes: 5 },
-          { id: 'study-java-strings', title: 'String Handling in Java', description: 'Complete string guide', categoryId: 'programming-java', featureId: 'studies', topic: 'java', subtopic: 'strings', difficulty: 'medium', icon: '📝', status: 'published', visibility: 'public', order: 3, lessons: 4, quizzes: 5 },
-        ],
-        worksheets: [
-          { id: 'ws-matching-pairs', title: 'Matching Pairs Practice', description: 'Visual recognition exercises', categoryId: 'logic-puzzles-ws', featureId: 'worksheets', topic: 'matching-pairs', difficulty: 'easy', icon: '🧩', status: 'published', visibility: 'public', order: 1, exercises: 10 },
-          { id: 'ws-jigsaw-puzzles', title: 'Jigsaw Puzzles Workshop', description: 'Jigsaw puzzle challenges', categoryId: 'logic-puzzles-ws', featureId: 'worksheets', topic: 'jigsaw-puzzles', difficulty: 'medium', icon: '🧩', status: 'published', visibility: 'public', order: 2, exercises: 5 },
-          { id: 'ws-word-search', title: 'Word Search Challenge', description: 'Find hidden words', categoryId: 'logic-puzzles-ws', featureId: 'worksheets', topic: 'word-search', difficulty: 'easy', icon: '🔤', status: 'published', visibility: 'public', order: 3, exercises: 8 },
-          { id: 'ws-sudoku', title: 'Sudoku Practice Sheets', description: 'Logic puzzles', categoryId: 'logic-puzzles-ws', featureId: 'worksheets', topic: 'sudoku-style', difficulty: 'medium', icon: '🔢', status: 'published', visibility: 'public', order: 4, exercises: 6 },
-        ],
-        arts: [
-          { id: 'art-visual-patterns', title: 'Visual Patterns Art', description: 'Create visual patterns', categoryId: 'visual-arts', featureId: 'arts', topic: 'visual-patterns', difficulty: 'easy', icon: '🎨', status: 'published', visibility: 'public', order: 1 },
-          { id: 'art-spot-difference', title: 'Spot the Difference Challenge', description: 'Observation skills', categoryId: 'visual-arts', featureId: 'arts', topic: 'spot-difference', difficulty: 'medium', icon: '🔍', status: 'published', visibility: 'public', order: 2 },
-          { id: 'art-color-sequences', title: 'Color Sequence Art', description: 'Color theory', categoryId: 'visual-arts', featureId: 'arts', topic: 'color-patterns', difficulty: 'easy', icon: '🌈', status: 'published', visibility: 'public', order: 3 },
-          { id: 'art-shape-puzzles', title: 'Shape & Form Art', description: 'Shapes and forms', categoryId: 'visual-arts', featureId: 'arts', topic: 'shape-patterns', difficulty: 'medium', icon: '🟢', status: 'published', visibility: 'public', order: 4 },
-        ],
-      };
-
-      let created = 0;
-
-      // Create features
-      for (const feature of setupData.features) {
-        await setDoc(doc(db, 'features', feature.id), feature, { merge: true });
-        created++;
-        setSetupMessage(`Created feature: ${feature.name} ✅`);
-      }
-
-      // Create categories
-      for (const cat of setupData.categories) {
-        await setDoc(doc(db, cat.collection, cat.data.id), cat.data, { merge: true });
-        created++;
-      }
-
-      // Create documents
-      for (const doc_item of setupData.documents) {
-        await setDoc(doc(db, 'documents', doc_item.id), doc_item);
-        created++;
-      }
-
-      // Create studies
-      for (const study of setupData.studies) {
-        await setDoc(doc(db, 'studies', study.id), study);
-        created++;
-      }
-
-      // Create worksheets
-      for (const ws of setupData.worksheets) {
-        await setDoc(doc(db, 'worksheets', ws.id), ws);
-        created++;
-      }
-
-      // Create arts
-      for (const art of setupData.arts) {
-        await setDoc(doc(db, 'arts', art.id), art);
-        created++;
-      }
-
-      setSetupMessage(`✨ Setup Complete! Created ${created} documents across 4 new feature collections.`);
-    } catch (error) {
-      console.error('❌ Setup error:', error);
-      setSetupError(`Setup failed: ${error.message}`);
-    } finally {
-      setSetupLoading(false);
-    }
-  };
-
   // ADMIN_TABS imported from dashboard-setup.js
 
   // DASHBOARD_STATS imported from dashboard-setup.js as a function
@@ -1739,47 +1633,107 @@ export default function ModernAdminDashboard() {
             </p>
           </div>
 
-          {/* Tab Navigation */}
+          {/* Tab Navigation - Vertical Sidebar (Compact with Icons & Text) */}
           <div style={{
             display: 'flex',
-            gap: '8px',
-            flexWrap: 'wrap',
-            marginBottom: '40px',
-            borderBottom: `2px solid ${theme.border}`,
-            paddingBottom: '16px',
+            gap: '0',
+            minHeight: 'calc(100vh - 400px)',
           }}>
-            {ADMIN_TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding: '12px 24px',
-                  background: activeTab === tab.id ? `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})` : 'transparent',
-                  color: activeTab === tab.id ? '#fff' : theme.textPrimary,
-                  border: `2px solid ${activeTab === tab.id ? 'transparent' : theme.border}`,
-                  borderRadius: '12px',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                }}
-                onMouseOver={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.target.style.borderColor = theme.accentPrimary;
-                    e.target.style.background = `${theme.accentPrimary}15`;
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (activeTab !== tab.id) {
-                    e.target.style.borderColor = theme.border;
-                    e.target.style.background = 'transparent';
-                  }
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+            {/* Compact Sidebar with Icons + Text */}
+            <div style={{
+              width: '220px',
+              background: theme.surfacePrimary,
+              border: `2px solid ${theme.border}`,
+              borderRadius: '16px 0 0 16px',
+              padding: '20px 12px',
+              overflowY: 'auto',
+              position: 'sticky',
+              top: '20px',
+              height: 'fit-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}>
+              {/* Group the tabs */}
+              {['Dashboard', 'Content Management', 'Administration'].map((groupName, groupIdx) => {
+                const groupTabs = ADMIN_TABS.filter(tab => tab.group === groupName);
+                if (groupTabs.length === 0) return null;
+
+                return (
+                  <div key={groupName} style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    marginBottom: groupIdx < 2 ? '12px' : '0',
+                    paddingBottom: groupIdx < 2 ? '12px' : '0',
+                    borderBottom: groupIdx < 2 ? `1px solid ${theme.border}` : 'none',
+                  }}>
+                    {/* Group Label */}
+                    <div style={{
+                      paddingLeft: '12px',
+                      marginBottom: '4px',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: theme.textSecondary,
+                    }}>
+                      {groupName}
+                    </div>
+                    
+                    {/* Group Tabs */}
+                    {groupTabs.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        style={{
+                          padding: '10px 12px',
+                          background: activeTab === tab.id ? `${theme.accentPrimary}20` : 'transparent',
+                          color: activeTab === tab.id ? theme.accentPrimary : theme.textPrimary,
+                          border: activeTab === tab.id ? `2px solid ${theme.accentPrimary}` : '2px solid transparent',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: activeTab === tab.id ? '600' : '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        onMouseOver={(e) => {
+                          if (activeTab !== tab.id) {
+                            e.currentTarget.style.background = `${theme.accentPrimary}10`;
+                            e.currentTarget.style.color = theme.accentPrimary;
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (activeTab !== tab.id) {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = theme.textPrimary;
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: '16px', flexShrink: 0 }}>{tab.icon}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {tab.label.split(' ').slice(1).join(' ')}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Content Area */}
+            <div style={{
+              flex: 1,
+              paddingLeft: '24px',
+              paddingRight: '24px',
+            }}>
 
           {/* Overview Tab */}
           {activeTab === 'overview' && (
@@ -1787,8 +1741,8 @@ export default function ModernAdminDashboard() {
               {/* Stats Cards */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '20px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gap: '12px',
                 marginBottom: '40px',
               }}>
                 {dashboardStats.map((stat, idx) => (
@@ -1801,169 +1755,45 @@ export default function ModernAdminDashboard() {
                       flexDirection: 'column',
                       background: theme.surfacePrimary,
                       border: `2px solid ${theme.border}`,
-                      borderRadius: '16px',
-                      padding: '24px',
+                      borderRadius: '12px',
+                      padding: '16px',
                       backdropFilter: 'blur(10px)',
                       transition: 'all 0.3s ease',
-                      transform: hoveredCard === `stat-${idx}` ? 'translateY(-8px)' : 'translateY(0)',
+                      transform: hoveredCard === `stat-${idx}` ? 'translateY(-4px)' : 'translateY(0)',
                       borderColor: hoveredCard === `stat-${idx}` ? stat.color : theme.border,
-                      boxShadow: hoveredCard === `stat-${idx}` ? `0 12px 24px ${stat.color}25` : 'none',
+                      boxShadow: hoveredCard === `stat-${idx}` ? `0 8px 16px ${stat.color}20` : 'none',
                     }}
                   >
                     <div style={{
-                      fontSize: '32px',
-                      marginBottom: '12px',
+                      fontSize: '24px',
+                      marginBottom: '8px',
                     }}>
                       {stat.icon}
                     </div>
                     <div style={{
                       color: theme.textSecondary,
-                      fontSize: '14px',
+                      fontSize: '12px',
                       fontWeight: '500',
-                      marginBottom: '8px',
+                      marginBottom: '6px',
                     }}>
                       {stat.label}
                     </div>
                     <div style={{
                       color: stat.color,
-                      fontSize: '32px',
+                      fontSize: '22px',
                       fontWeight: '800',
-                      marginBottom: '8px',
+                      marginBottom: '4px',
                     }}>
                       {stat.value}
                     </div>
                     <div style={{
                       color: theme.textSecondary,
-                      fontSize: '12px',
+                      fontSize: '11px',
                     }}>
                       {stat.change}
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Quick Actions */}
-              <div style={{
-                marginBottom: '40px',
-              }}>
-                <h2 style={{
-                  color: theme.textPrimary,
-                  fontSize: '22px',
-                  fontWeight: '700',
-                  marginBottom: '20px',
-                }}>
-                  ⚡ Quick Actions
-                </h2>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '16px',
-                }}>
-                  <button
-                    onClick={() => setShowAddPuzzleForm(!showAddPuzzleForm)}
-                    style={{
-                      padding: '20px',
-                      background: '#FFE66D20',
-                      border: `2px solid #FFE66D`,
-                      borderRadius: '12px',
-                      color: '#FFE66D',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#FFE66D40';
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#FFE66D20';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    ➕ Add Puzzle
-                  </button>
-
-                  <button
-                    onClick={() => setShowAddStoryForm(!showAddStoryForm)}
-                    style={{
-                      padding: '20px',
-                      background: '#FF85A220',
-                      border: `2px solid #FF85A2`,
-                      borderRadius: '12px',
-                      color: '#FF85A2',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#FF85A240';
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#FF85A220';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    ➕ Add Story
-                  </button>
-
-                  <button
-                    style={{
-                      padding: '20px',
-                      background: '#95E1D320',
-                      border: `2px solid #95E1D3`,
-                      borderRadius: '12px',
-                      color: '#95E1D3',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.background = '#95E1D340';
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.background = '#95E1D320';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    📈 View Analytics
-                  </button>
-
-                  <button
-                    onClick={addSampleQuizzes}
-                    disabled={addingSampleQuizzes}
-                    style={{
-                      padding: '20px',
-                      background: '#FF85A220',
-                      border: `2px solid #FF85A2`,
-                      borderRadius: '12px',
-                      color: '#FF85A2',
-                      fontSize: '15px',
-                      fontWeight: '600',
-                      cursor: addingSampleQuizzes ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.3s ease',
-                      opacity: addingSampleQuizzes ? 0.6 : 1,
-                    }}
-                    onMouseOver={(e) => {
-                      if (!addingSampleQuizzes) {
-                        e.currentTarget.style.background = '#FF85A240';
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!addingSampleQuizzes) {
-                        e.currentTarget.style.background = '#FF85A220';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }
-                    }}
-                  >
-                    {addingSampleQuizzes ? '⏳ Adding...' : '🧪 Add Sample Quizzes'}
-                  </button>
-                </div>
               </div>
 
               {/* Database Statistics Section */}
@@ -2654,61 +2484,291 @@ export default function ModernAdminDashboard() {
                 }}>
                   📋 Recent Activities
                 </h2>
+
+                {/* Activities Table */}
                 <div style={{
                   background: theme.surfacePrimary,
                   border: `2px solid ${theme.border}`,
                   borderRadius: '16px',
                   overflow: 'hidden',
                 }}>
-                  {RECENT_ACTIVITIES.map((activity, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: '16px 24px',
-                        borderBottom: idx !== RECENT_ACTIVITIES.length - 1 ? `1px solid ${theme.border}` : 'none',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        gap: '16px',
-                        alignItems: 'center',
-                        flex: 1,
-                      }}>
+                  {(() => {
+                    let filtered = RECENT_ACTIVITIES.filter(act => 
+                      activitiesTypeFilter === 'all' || act.type === activitiesTypeFilter
+                    );
+
+                    // Sort
+                    if (activitiesSortBy === 'type') {
+                      filtered = filtered.sort((a, b) => a.type.localeCompare(b.type));
+                    } else if (activitiesSortBy === 'action') {
+                      filtered = filtered.sort((a, b) => a.action.localeCompare(b.action));
+                    }
+
+                    return (
+                      <>
+                        {/* Table Grid */}
                         <div style={{
-                          fontSize: '24px',
+                          display: 'grid',
+                          gridTemplateColumns: '0.5fr 2fr 1fr 1fr 1fr 1fr',
+                          gap: '0',
+                          minWidth: '100%',
+                          width: '100%',
                         }}>
-                          {activity.type === 'quiz' ? '❓' : activity.type === 'puzzle' ? '🧩' : activity.type === 'story' ? '📖' : '👤'}
-                        </div>
-                        <div style={{
-                          flex: 1,
-                        }}>
+                          {/* Header - Type */}
                           <div style={{
-                            color: theme.textPrimary,
-                            fontSize: '15px',
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
                             fontWeight: '600',
-                            marginBottom: '4px',
-                          }}>
-                            {activity.action} {activity.title}
-                          </div>
-                          <div style={{
-                            color: theme.textSecondary,
+                            color: theme.textPrimary,
                             fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                           }}>
-                            by {activity.user}
+                            Type
+                            <select
+                              value={activitiesTypeFilter}
+                              onChange={(e) => setActivitiesTypeFilter(e.target.value)}
+                              style={{
+                                padding: '2px 6px',
+                                background: theme.background,
+                                border: `1px solid ${theme.border}`,
+                                borderRadius: '4px',
+                                color: theme.textSecondary,
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <option value="all">All</option>
+                              <option value="quiz">Quiz</option>
+                              <option value="puzzle">Puzzle</option>
+                              <option value="story">Story</option>
+                              <option value="art">Art</option>
+                              <option value="document">Doc</option>
+                              <option value="study">Study</option>
+                              <option value="worksheet">Work</option>
+                              <option value="user">User</option>
+                            </select>
                           </div>
+
+                          {/* Header - Title */}
+                          <div style={{
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                          }}>
+                            Title
+                          </div>
+
+                          {/* Header - Action */}
+                          <div style={{
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onClick={() => setActivitiesSortBy(activitiesSortBy === 'action' ? 'time' : 'action')}
+                          onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                          onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                          >
+                            Action
+                            <span style={{ fontSize: '10px', opacity: 0.6 }}>
+                              {activitiesSortBy === 'action' ? '↑' : ''}
+                            </span>
+                          </div>
+
+                          {/* Header - User */}
+                          <div style={{
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                          }}>
+                            User
+                          </div>
+
+                          {/* Header - Time */}
+                          <div style={{
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onClick={() => setActivitiesSortBy(activitiesSortBy === 'time' ? 'type' : 'time')}
+                          onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                          onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                          >
+                            Time
+                            <span style={{ fontSize: '10px', opacity: 0.6 }}>
+                              {activitiesSortBy === 'time' ? '↑' : ''}
+                            </span>
+                          </div>
+
+                          {/* Header - Status */}
+                          <div style={{
+                            background: `${theme.accentPrimary}15`,
+                            padding: '12px 16px',
+                            fontWeight: '600',
+                            color: theme.textPrimary,
+                            fontSize: '12px',
+                            textTransform: 'uppercase',
+                            borderBottom: `2px solid ${theme.border}`,
+                          }}>
+                            Status
+                          </div>
+
+                          {/* Rows */}
+                          {filtered.slice(0, activitiesLimitRows).map((activity, idx) => (
+                            <React.Fragment key={idx}>
+                              <div style={{
+                                padding: '12px 16px',
+                                fontSize: '18px',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                              }}>
+                                {activity.type === 'quiz' ? '❓' : activity.type === 'puzzle' ? '🧩' : activity.type === 'story' ? '📖' : activity.type === 'art' ? '🎨' : activity.type === 'document' ? '📄' : activity.type === 'study' ? '📚' : activity.type === 'worksheet' ? '📋' : '👤'}
+                              </div>
+                              <div style={{
+                                padding: '12px 16px',
+                                color: theme.textPrimary,
+                                fontWeight: '500',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}>
+                                {activity.title}
+                              </div>
+                              <div style={{
+                                padding: '12px 16px',
+                                color: theme.textSecondary,
+                                fontSize: '13px',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                              }}>
+                                <span style={{
+                                  background: activity.action === 'Added' ? '#10B98120' : activity.action === 'Updated' ? '#3B82F620' : activity.action === 'Published' ? '#EC489920' : '#95E1D320',
+                                  color: activity.action === 'Added' ? '#10B981' : activity.action === 'Updated' ? '#3B82F6' : activity.action === 'Published' ? '#EC4899' : '#95E1D3',
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                }}>
+                                  {activity.action}
+                                </span>
+                              </div>
+                              <div style={{
+                                padding: '12px 16px',
+                                color: theme.textPrimary,
+                                fontSize: '13px',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                              }}>
+                                {activity.user}
+                              </div>
+                              <div style={{
+                                padding: '12px 16px',
+                                color: theme.textSecondary,
+                                fontSize: '12px',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                              }}>
+                                {activity.time}
+                              </div>
+                              <div style={{
+                                padding: '12px 16px',
+                                borderBottom: idx < Math.min(activitiesLimitRows, filtered.length) - 1 ? `1px solid ${theme.border}` : 'none',
+                              }}>
+                                <span style={{
+                                  background: '#10B98120',
+                                  color: '#10B981',
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                }}>
+                                  ✓ Completed
+                                </span>
+                              </div>
+                            </React.Fragment>
+                          ))}
                         </div>
-                      </div>
-                      <div style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                      }}>
-                        {activity.time}
-                      </div>
-                    </div>
-                  ))}
+
+                        {/* Pagination Controls */}
+                        {filtered.length > 0 && (
+                          <div style={{
+                            padding: '16px 24px',
+                            borderTop: `1px solid ${theme.border}`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: theme.background,
+                          }}>
+                            <div style={{
+                              color: theme.textSecondary,
+                              fontSize: '12px',
+                            }}>
+                              Showing {Math.min(filtered.length, activitiesLimitRows)} of {filtered.length}
+                            </div>
+                            <div style={{
+                              display: 'flex',
+                              gap: '8px',
+                            }}>
+                              <button
+                                onClick={() => setActivitiesLimitRows((n) => Math.max(10, n - 5))}
+                                style={{
+                                  padding: '6px 10px',
+                                  background: theme.background,
+                                  border: `2px solid ${theme.border}`,
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  color: theme.textPrimary,
+                                  fontWeight: '600',
+                                }}
+                              >
+                                −
+                              </button>
+                              <button
+                                onClick={() => setActivitiesLimitRows((n) => n + 5)}
+                                style={{
+                                  padding: '6px 10px',
+                                  background: theme.background,
+                                  border: `2px solid ${theme.border}`,
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  color: theme.textPrimary,
+                                  fontWeight: '600',
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </>
@@ -2716,2732 +2776,177 @@ export default function ModernAdminDashboard() {
 
           {/* Quizzes Tab */}
           {activeTab === 'quizzes' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    ❓ Manage Quizzes
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create, edit, and manage quiz content
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowUniversalQuizBuilder(!showUniversalQuizBuilder)}
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #4ECDC4, #FFE66D)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  🚀 Create New Quiz
-                </button>
-                <button
-                  onClick={() => setShowBulkImport('quiz')}
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #FF6B6B, #FF8E72)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  📤 Bulk Import Quizzes
-                </button>
-                <button
-                  onClick={handleSeedQuizzes}
-                  disabled={seedingQuizzes}
-                  style={{
-                    padding: '12px 24px',
-                    background: seedingQuizzes ? '#ccc' : `linear-gradient(135deg, #9B59B6, #8E44AD)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: seedingQuizzes ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.3s ease',
-                    opacity: seedingQuizzes ? 0.7 : 1,
-                  }}
-                  onMouseOver={(e) => !seedingQuizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                  onMouseOut={(e) => !seedingQuizzes && (e.currentTarget.style.transform = 'translateY(0)')}
-                >
-                  {seedingQuizzes ? '🌱 Seeding...' : '🌱 Seed Sample Quizzes'}
-                </button>
-                <button
-                  onClick={handleCreatePhase1Quizzes}
-                  disabled={creatingPhase1Quizzes}
-                  style={{
-                    padding: '12px 24px',
-                    background: creatingPhase1Quizzes ? '#ccc' : `linear-gradient(135deg, #27AE60, #229954)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: creatingPhase1Quizzes ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.3s ease',
-                    opacity: creatingPhase1Quizzes ? 0.7 : 1,
-                  }}
-                  onMouseOver={(e) => !creatingPhase1Quizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                  onMouseOut={(e) => !creatingPhase1Quizzes && (e.currentTarget.style.transform = 'translateY(0)')}
-                  title="Create 9 test quizzes for Phase 1 testing (all 8 question types)"
-                >
-                  {creatingPhase1Quizzes ? '⏳ Creating Phase 1 Tests...' : '🧪 Create Phase 1 Test Quizzes'}
-                </button>
-                <button
-                  onClick={handleDeleteAllQuizzes}
-                  disabled={deletingQuizzes}
-                  style={{
-                    padding: '12px 24px',
-                    background: deletingQuizzes ? '#ccc' : `linear-gradient(135deg, #E74C3C, #C0392B)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: deletingQuizzes ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.3s ease',
-                    opacity: deletingQuizzes ? 0.7 : 1,
-                  }}
-                  onMouseOver={(e) => !deletingQuizzes && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                  onMouseOut={(e) => !deletingQuizzes && (e.currentTarget.style.transform = 'translateY(0)')}
-                >
-                  {deletingQuizzes ? '🗑️ Deleting...' : '🗑️ Delete All Quizzes'}
-                </button>
-              </div>
-
-              {/* Seed Progress Display */}
-              {seedProgress && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid #9B59B6`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: '#9B59B6',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    🌱 Seeding Progress
-                  </h3>
-                  <p style={{
-                    color: theme.textSecondary,
-                    marginBottom: '10px',
-                  }}>
-                    {seedProgress.current} / {seedProgress.total} - {seedProgress.title}
-                  </p>
-                  <div style={{
-                    width: '100%',
-                    height: '8px',
-                    background: theme.border,
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${(seedProgress.current / seedProgress.total) * 100}%`,
-                      background: seedProgress.status === 'success' ? '#27AE60' : '#E74C3C',
-                      transition: 'width 0.3s ease',
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Seed Results Display */}
-              {seedResults && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${seedResults.failed > 0 ? '#E74C3C' : '#27AE60'}`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: seedResults.failed > 0 ? '#E74C3C' : '#27AE60',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    {seedResults.failed > 0 ? '❌ Seeding Complete with Errors' : '✅ Seeding Complete'}
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '15px',
-                    marginBottom: '15px',
-                  }}>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #27AE60`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ✅ Created
-                      </p>
-                      <p style={{
-                        color: '#27AE60',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {seedResults.success}
-                      </p>
-                    </div>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #E74C3C`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ❌ Failed
-                      </p>
-                      <p style={{
-                        color: '#E74C3C',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {seedResults.failed}
-                      </p>
-                    </div>
-                  </div>
-                  {seedResults.errors && seedResults.errors.length > 0 && (
-                    <div style={{
-                      background: theme.background,
-                      padding: '15px',
-                      borderRadius: '8px',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        margin: '0 0 10px 0',
-                      }}>
-                        Errors:
-                      </p>
-                      {seedResults.errors.map((err, idx) => (
-                        <p key={idx} style={{
-                          color: '#E74C3C',
-                          fontSize: '12px',
-                          margin: '5px 0',
-                        }}>
-                          • {err.title}: {err.error}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Phase 1 Progress Display */}
-              {phase1Progress && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid #27AE60`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: '#27AE60',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    🧪 Creating Phase 1 Test Quizzes
-                  </h3>
-                  <div style={{
-                    width: '100%',
-                    height: '24px',
-                    background: theme.background,
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    marginBottom: '10px',
-                  }}>
-                    <div style={{
-                      width: `${(phase1Progress.current / phase1Progress.total) * 100}%`,
-                      height: '100%',
-                      background: `linear-gradient(90deg, #27AE60, #229954)`,
-                      transition: 'width 0.3s ease',
-                    }}></div>
-                  </div>
-                  <p style={{
-                    color: theme.textSecondary,
-                    fontSize: '14px',
-                    margin: '0',
-                  }}>
-                    {phase1Progress.message} ({phase1Progress.current}/{phase1Progress.total})
-                  </p>
-                </div>
-              )}
-
-              {/* Phase 1 Results Display */}
-              {phase1Results && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${phase1Results.failed > 0 ? '#E74C3C' : '#27AE60'}`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: phase1Results.failed > 0 ? '#E74C3C' : '#27AE60',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    {phase1Results.failed > 0 ? '❌ Phase 1 Setup Complete with Errors' : '✅ Phase 1 Test Quizzes Created'}
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '15px',
-                    marginBottom: '15px',
-                  }}>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #27AE60`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ✅ Created
-                      </p>
-                      <p style={{
-                        color: '#27AE60',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {phase1Results.success}
-                      </p>
-                    </div>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #E74C3C`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ❌ Failed
-                      </p>
-                      <p style={{
-                        color: '#E74C3C',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {phase1Results.failed}
-                      </p>
-                    </div>
-                  </div>
-                  {phase1Results.failed === 0 && (
-                    <div style={{
-                      background: '#E8F8F5',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      border: '2px solid #27AE60',
-                    }}>
-                      <p style={{
-                        color: '#27AE60',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        margin: '0 0 10px 0',
-                      }}>
-                        🎉 All 9 test quizzes created successfully!
-                      </p>
-                      <p style={{
-                        color: '#229954',
-                        fontSize: '13px',
-                        margin: '5px 0',
-                      }}>
-                        • Multiple Choice (2 quizzes)
-                      </p>
-                      <p style={{
-                        color: '#229954',
-                        fontSize: '13px',
-                        margin: '5px 0',
-                      }}>
-                        • True/False, Fill Blank, Matching, Ordering, Image Select, Multi-Select, Drag & Drop
-                      </p>
-                      <p style={{
-                        color: '#229954',
-                        fontSize: '13px',
-                        margin: '5px 0',
-                      }}>
-                        • Plus one quiz with all question types combined
-                      </p>
-                      <p style={{
-                        color: '#229954',
-                        fontSize: '13px',
-                        margin: '5px 0',
-                      }}>
-                        <strong>→ Ready to test at http://localhost:3001/quizzes</strong>
-                      </p>
-                    </div>
-                  )}
-                  {phase1Results.errors && phase1Results.errors.length > 0 && (
-                    <div style={{
-                      background: theme.background,
-                      padding: '15px',
-                      borderRadius: '8px',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        margin: '0 0 10px 0',
-                      }}>
-                        Errors:
-                      </p>
-                      {phase1Results.errors.map((err, idx) => (
-                        <p key={idx} style={{
-                          color: '#E74C3C',
-                          fontSize: '12px',
-                          margin: '5px 0',
-                        }}>
-                          • {err.error || JSON.stringify(err)}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Delete Progress Display */}
-              {deleteProgress && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid #E74C3C`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: '#E74C3C',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    🗑️ Deletion Progress
-                  </h3>
-                  <p style={{
-                    color: theme.textSecondary,
-                    marginBottom: '10px',
-                  }}>
-                    {deleteProgress.current} / {deleteProgress.total} quizzes deleted
-                  </p>
-                  <div style={{
-                    width: '100%',
-                    height: '8px',
-                    background: theme.border,
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                  }}>
-                    <div style={{
-                      height: '100%',
-                      width: `${(deleteProgress.current / deleteProgress.total) * 100}%`,
-                      background: '#E74C3C',
-                      transition: 'width 0.3s ease',
-                    }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Delete Results Display */}
-              {deleteResults && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${deleteResults.failed > 0 ? '#E74C3C' : '#27AE60'}`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                }}>
-                  <h3 style={{
-                    color: deleteResults.failed > 0 ? '#E74C3C' : '#27AE60',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '15px',
-                  }}>
-                    {deleteResults.failed > 0 ? '❌ Deletion Complete with Errors' : '✅ Deletion Complete'}
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '15px',
-                    marginBottom: '15px',
-                  }}>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #27AE60`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ✅ Deleted
-                      </p>
-                      <p style={{
-                        color: '#27AE60',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {deleteResults.success}
-                      </p>
-                    </div>
-                    <div style={{
-                      background: theme.background,
-                      padding: '12px',
-                      borderRadius: '8px',
-                      border: `2px solid #E74C3C`,
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        margin: '0 0 5px 0',
-                      }}>
-                        ❌ Failed
-                      </p>
-                      <p style={{
-                        color: '#E74C3C',
-                        fontSize: '24px',
-                        fontWeight: '700',
-                        margin: '0',
-                      }}>
-                        {deleteResults.failed}
-                      </p>
-                    </div>
-                  </div>
-                  {deleteResults.errors && deleteResults.errors.length > 0 && (
-                    <div style={{
-                      background: theme.background,
-                      padding: '15px',
-                      borderRadius: '8px',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }}>
-                      <p style={{
-                        color: theme.textSecondary,
-                        fontSize: '12px',
-                        fontWeight: '600',
-                        margin: '0 0 10px 0',
-                      }}>
-                        Errors:
-                      </p>
-                      {deleteResults.errors.map((err, idx) => (
-                        <p key={idx} style={{
-                          color: '#E74C3C',
-                          fontSize: '12px',
-                          margin: '5px 0',
-                        }}>
-                          • {err.id || 'Unknown'}: {err.error}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Add Quiz Form */}
-              {showAddQuizForm && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <h3 style={{
-                    color: theme.textPrimary,
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '20px',
-                  }}>
-                    Create New Quiz
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '12px',
-                    marginBottom: '16px',
-                  }}>
-                    <input
-                      type="text"
-                      placeholder="Quiz Title"
-                      value={quizFormData.title}
-                      onChange={(e) => setQuizFormData({ ...quizFormData, title: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                    <select
-                      value={quizFormData.category}
-                      onChange={(e) => setQuizFormData({ ...quizFormData, category: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Category</option>
-                      {CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={quizFormData.audience}
-                      onChange={(e) => setQuizFormData({ ...quizFormData, audience: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Audience</option>
-                      {AUDIENCES.map(aud => (
-                        <option key={aud} value={aud}>{aud}</option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      placeholder="Questions"
-                      value={quizFormData.questions}
-                      onChange={(e) => setQuizFormData({ ...quizFormData, questions: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                    <select
-                      value={quizFormData.difficulty}
-                      onChange={(e) => setQuizFormData({ ...quizFormData, difficulty: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Difficulty</option>
-                      {DIFFICULTIES.map(diff => (
-                        <option key={diff} value={diff}>{diff}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                  }}>
-                    <button
-                      onClick={handleAddQuiz}
-                      style={{
-                        padding: '10px 20px',
-                        background: `linear-gradient(135deg, #4ECDC4, #FFE66D)`,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddQuizForm(false);
-                        setQuizFormData({ title: '', category: '', audience: '', questions: '', difficulty: '' });
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        background: 'transparent',
-                        color: theme.textPrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Universal Quiz Builder Modal - Opens as Popup */}
-              {showUniversalQuizBuilder && (
-                <div style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'rgba(0, 0, 0, 0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 10000,
-                  padding: '20px',
-                  overflowY: 'auto',
-                }}>
-                  <div style={{
-                    background: theme.surfacePrimary,
-                    border: `2px solid ${theme.accentPrimary}`,
-                    borderRadius: '16px',
-                    padding: '20px',
-                    boxShadow: `0 8px 24px ${theme.accentPrimary}40`,
-                    width: '100%',
-                    maxWidth: '1000px',
-                    maxHeight: '90vh',
-                    overflowY: 'auto',
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '20px',
-                      paddingBottom: '16px',
-                      borderBottom: `2px solid ${theme.border}`,
-                      position: 'sticky',
-                      top: 0,
-                      background: theme.surfacePrimary,
-                      zIndex: 1,
-                    }}>
-                      <h3 style={{
-                        color: theme.textPrimary,
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        margin: 0,
-                      }}>
-                        🚀 Quiz Builder
-                      </h3>
-                      <button
-                        onClick={() => {
-                          setShowUniversalQuizBuilder(false);
-                          setEditingQuizData(null);
-                        }}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: theme.textSecondary,
-                          fontSize: '24px',
-                          cursor: 'pointer',
-                          padding: '0',
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <AdminQuizBuilder 
-                      theme={theme}
-                      initialData={editingQuizData}
-                      onSave={(quizData) => {
-                        handleSaveUniversalQuiz(quizData);
-                        setEditingQuizData(null);
-                      }}
-                      onClose={() => {
-                        setShowUniversalQuizBuilder(false);
-                        setEditingQuizData(null);
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Bulk Import Modal - NEW */}
-              {showBulkImportQuiz && (
-                <div style={{
-                  marginBottom: '20px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid #FF8E72`,
-                  borderRadius: '16px',
-                  padding: '20px',
-                  boxShadow: `0 8px 24px rgba(255, 139, 114, 0.4)`,
-                  width: '100%',
-                  boxSizing: 'border-box',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '20px',
-                    paddingBottom: '16px',
-                    borderBottom: `2px solid ${theme.border}`,
-                  }}>
-                    <h3 style={{
-                      color: theme.textPrimary,
-                      fontSize: '18px',
-                      fontWeight: '700',
-                      margin: 0,
-                    }}>
-                      📤 Bulk Import Quizzes
-                    </h3>
-                    <button
-                      onClick={() => setShowBulkImportQuiz(false)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: theme.textSecondary,
-                        fontSize: '24px',
-                        cursor: 'pointer',
-                        padding: '0',
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  
-                  <div style={{ marginBottom: '16px', padding: '12px', background: theme.backgroundSecondary, borderRadius: '8px' }}>
-                    <p style={{ color: theme.textSecondary, fontSize: '13px', margin: 0 }}>
-                      ✨ <strong>Import complete quizzes</strong> with metadata, questions, options, correct answers, images, videos, and explanations!
-                    </p>
-                  </div>
-
-                  <div style={{ marginBottom: '16px' }}>
-                    <label style={{
-                      display: 'block',
-                      color: theme.textSecondary,
-                      fontSize: '13px',
-                      fontWeight: '500',
-                      marginBottom: '8px',
-                    }}>
-                      Paste JSON data with complete quiz structure:
-                    </label>
-                    <textarea
-                      value={bulkImportData}
-                      onChange={(e) => setBulkImportData(e.target.value)}
-                      placeholder={`[{
-  "title": "Biology Quiz",
-  "category": "Science",
-  "audience": "Students",
-  "level": "Intermediate",
-  "quizType": "multiple-choice",
-  "description": "Learn biology basics",
-  "timeLimit": 1800,
-  "passingScore": 70,
-  "attempts": 3,
-  "shuffle": true,
-  "partialScoring": true,
-  "showExplanation": true,
-  "levelVariant": "beginner",
-  "questions": [
-    {
-      "id": "q1",
-      "order": 1,
-      "text": "What is photosynthesis?",
-      "type": "multiple-choice",
-      "image": null,
-      "video": null,
-      "points": 1,
-      "difficulty": "medium",
-      "options": [
-        {
-          "id": "opt1",
-          "text": "Process of converting light to chemical energy",
-          "correct": true,
-          "image": null,
-          "video": null
-        },
-        {
-          "id": "opt2",
-          "text": "Process of breaking down glucose",
-          "correct": false,
-          "image": null,
-          "video": null
-        }
-      ],
-      "correctAnswers": ["opt1"],
-      "explanation": "Photosynthesis converts light energy into chemical energy stored in glucose.",
-      "explanationImage": null,
-      "explanationVideo": null,
-      "tags": ["biology", "plants"],
-      "hints": ["Think about plants and sunlight"]
-    }
-  ]
-}]`}
-                      style={{
-                        width: '100%',
-                        minHeight: '300px',
-                        padding: '12px',
-                        background: theme.backgroundSecondary,
-                        border: `1px solid ${theme.border}`,
-                        borderRadius: '8px',
-                        color: theme.textPrimary,
-                        fontFamily: 'monospace',
-                        fontSize: '12px',
-                        resize: 'vertical',
-                      }}
-                    />
-                  </div>
-
-                  <div style={{
-                    marginBottom: '16px',
-                    padding: '12px',
-                    background: theme.backgroundSecondary,
-                    borderRadius: '8px',
-                    borderLeft: `4px solid #FF8E72`,
-                  }}>
-                    <p style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 8px 0', fontWeight: '600' }}>
-                      📋 Required Fields:
-                    </p>
-                    <ul style={{ color: theme.textSecondary, fontSize: '12px', margin: '0 0 0 20px', paddingLeft: 0 }}>
-                      <li><strong>Quiz Level:</strong> title, category, quizType, level, audience</li>
-                      <li><strong>Settings:</strong> timeLimit, passingScore, attempts, shuffle, partialScoring, showExplanation</li>
-                      <li><strong>Questions:</strong> text, type (multiple-choice, true-false, etc.)</li>
-                      <li><strong>Options:</strong> text, correct (boolean), id</li>
-                      <li><strong>Answers:</strong> correctAnswers array with option IDs</li>
-                      <li><strong>Media:</strong> image, video, audio URLs (optional)</li>
-                      <li><strong>Explanations:</strong> explanation text + explanationImage/Video (optional)</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                    justifyContent: 'flex-end',
-                  }}>
-                    <button
-                      onClick={() => {
-                        setShowBulkImportQuiz(false);
-                        setBulkImportData('');
-                      }}
-                      style={{
-                        padding: '10px 24px',
-                        background: theme.surfaceSecondary,
-                        border: `1px solid ${theme.border}`,
-                        borderRadius: '8px',
-                        color: theme.textPrimary,
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleBulkImportQuiz}
-                      style={{
-                        padding: '10px 24px',
-                        background: `linear-gradient(135deg, #FF6B6B, #FF8E72)`,
-                        border: 'none',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                      }}
-                    >
-                      Import Quizzes
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Admin Status Filter */}
-              <AdminStatusFilter
-                onStatusChange={setStatusFilter}
-                onVisibilityChange={setVisibilityFilter}
-                onFeaturedChange={setFeaturedFilter}
-                onClearFilters={() => {
-                  setStatusFilter('all');
-                  setVisibilityFilter('all');
-                  setFeaturedFilter(false);
-                }}
-              />
-
-              {/* Search & Filter Bar for Quizzes */}
-              <SearchFilterBar
-                items={quizzes}
-                onFilter={setFilteredQuizzes}
-                searchPlaceholder="Search quizzes by title..."
-                categories={CATEGORIES}
-                difficulties={DIFFICULTIES}
-                showCategory={true}
-                showDifficulty={true}
-                showStatus={true}
-              />
-
-              {/* Quizzes List */}
-              {filteredQuizzes.length > 0 ? (
-                <div style={{
-                  display: 'grid',
-                  gap: '12px',
-                }}>
-                  {filteredQuizzes.map(quiz => (
-                    <div
-                      key={quiz.id}
-                      style={{
-                        background: theme.surfacePrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '10px',
-                        padding: '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: '200px' }}>
-                        <h3 style={{
-                          color: theme.textPrimary,
-                          fontSize: '15px',
-                          fontWeight: '600',
-                          margin: '0 0 6px 0',
-                        }}>
-                          {quiz.title}
-                        </h3>
-                        <div style={{
-                          display: 'flex',
-                          gap: '12px',
-                          fontSize: '12px',
-                          color: theme.textSecondary,
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                        }}>
-                          <span>📚 {Array.isArray(quiz.questions) ? quiz.questions.length : typeof quiz.questions === 'number' ? quiz.questions : 0} Q</span>
-                          <span>👥 {quiz.audience}</span>
-                          {quiz.difficulty && <span>⭐ {quiz.difficulty}</span>}
-                          {/* Status and Visibility Badges */}
-                          {quiz.status && <StatusBadge status={quiz.status} />}
-                          {quiz.visibility && <VisibilityBadge visibility={quiz.visibility} />}
-                          {quiz.featured && <FeaturedBadge featured={quiz.featured} />}
-                        </div>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '6px',
-                        flexWrap: 'wrap',
-                      }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                        }}>
-                          {quiz.category}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setEditingQuizData(quiz);
-                          setShowUniversalQuizBuilder(true);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          border: `1px solid ${theme.accentPrimary}`,
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => setViewingQuiz(quiz)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#667eea25',
-                          color: '#667eea',
-                          border: '1px solid #667eea',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        👁️ View
-                      </button>
-                      <button
-                        onClick={() => handleDeleteQuiz(quiz.id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#FF6B6B25',
-                          color: '#FF6B6B',
-                          border: '1px solid #FF6B6B',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: theme.textSecondary,
-                }}>
-                  <p>
-                    {quizzes.length > 0
-                      ? 'No quizzes match your filters. Try adjusting your search or filters.'
-                      : 'No quizzes created yet. Click "➕ Add New Quiz" to get started!'}
-                  </p>
-                </div>
-              )}
-            </div>
+            <AdminQuizzesTab 
+              theme={theme}
+              quizzes={quizzes}
+              filteredQuizzes={filteredQuizzes}
+              setFilteredQuizzes={setFilteredQuizzes}
+              CATEGORIES={CATEGORIES}
+              AUDIENCES={AUDIENCES}
+              DIFFICULTIES={DIFFICULTIES}
+              showAddQuizForm={showAddQuizForm}
+              setShowAddQuizForm={setShowAddQuizForm}
+              quizFormData={quizFormData}
+              setQuizFormData={setQuizFormData}
+              showUniversalQuizBuilder={showUniversalQuizBuilder}
+              setShowUniversalQuizBuilder={setShowUniversalQuizBuilder}
+              editingQuizData={editingQuizData}
+              setEditingQuizData={setEditingQuizData}
+              seedingQuizzes={seedingQuizzes}
+              seedProgress={seedProgress}
+              seedResults={seedResults}
+              handleSeedQuizzes={handleSeedQuizzes}
+              phase1Progress={phase1Progress}
+              phase1Results={phase1Results}
+              creatingPhase1Quizzes={creatingPhase1Quizzes}
+              handleCreatePhase1Quizzes={handleCreatePhase1Quizzes}
+              deleteProgress={deleteProgress}
+              deleteResults={deleteResults}
+              deletingQuizzes={deletingQuizzes}
+              handleDeleteAllQuizzes={handleDeleteAllQuizzes}
+              showBulkImportQuiz={showBulkImportQuiz}
+              setShowBulkImportQuiz={setShowBulkImportQuiz}
+              bulkImportData={bulkImportData}
+              setBulkImportData={setBulkImportData}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              visibilityFilter={visibilityFilter}
+              setVisibilityFilter={setVisibilityFilter}
+              featuredFilter={featuredFilter}
+              setFeaturedFilter={setFeaturedFilter}
+              handleAddQuiz={handleAddQuiz}
+              handleSaveUniversalQuiz={handleSaveUniversalQuiz}
+              handleDeleteQuiz={handleDeleteQuiz}
+              handleBulkImportQuiz={handleBulkImportQuiz}
+              setViewingQuiz={setViewingQuiz}
+            />
           )}
 
           {/* Puzzles Tab */}
           {activeTab === 'puzzles' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    🧩 Manage Puzzles
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage various puzzle types and complexity levels
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowAddPuzzleForm(!showAddPuzzleForm)}
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #667eea, #764ba2)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Puzzle
-                </button>
-                <button
-                  onClick={() => setShowBulkImport('puzzle')}
-                  style={{
-                    padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#667eea',
-                    border: '2px solid #667eea',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  📤 Bulk Import
-                </button>
-                <button
-                  onClick={() => setShowTemplateModal(true)}
-                  style={{
-                    padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#764ba2',
-                    border: '2px solid #764ba2',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  📋 Puzzle Templates
-                </button>
-                <button
-                  onClick={seedBasePuzzleTemplates}
-                  style={{
-                    padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#2FA84F',
-                    border: '2px solid #2FA84F',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                  title="Create missing generic templates for all puzzle types"
-                >
-                  🌱 Seed Base Templates
-                </button>
-                <button
-                  onClick={() => navigate('/admin/puzzle-duplicates')}
-                  style={{
-                    padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#FF6B6B',
-                    border: '2px solid #FF6B6B',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  🔍 Find Duplicates
-                </button>
-              </div>
-
-              {/* Quick Create (Modern) */}
-              <div style={{
-                marginBottom: '24px',
-                background: theme.surfacePrimary,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '16px',
-                padding: '24px',
-              }}>
-                <h3 style={{
-                  color: theme.textPrimary,
-                  fontSize: '18px',
-                  fontWeight: '700',
-                  margin: '0 0 16px 0',
-                }}>
-                  🧩 Template-Driven Create
-                </h3>
-                <p style={{ color: theme.textSecondary, margin: '0 0 16px 0' }}>
-                  Step 1: Choose a type, select a template, and preview/apply its content into the editor. Step 2: Add puzzle details and save.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                  {[
-                    { label: 'Find Pairs', icon: '🔍', type: 'find-pair' },
-                    { label: 'Ordering', icon: '🔢', type: 'ordering' },
-                    { label: 'Picture Shadow', icon: '🌙', type: 'picture-shadow' },
-                    { label: 'Picture Word Matching', icon: '🖼️', type: 'picture-word' },
-                    { label: 'Spot Difference', icon: '🔎', type: 'spot-difference' },
-                    { label: 'Word Search', icon: '🔤', type: 'word-search' },
-                    { label: 'Jigsaw Puzzles', icon: '🧩', type: 'jigsaw' },
-                  ].map(item => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      onClick={() => {
-                        setQuickCreateType(item.type);
-                        // Initialize with basic schema
-                        if (item.type === 'jigsaw') {
-                          setQuickCreateData({ imageUrl: '', rows: 3, cols: 4, variants: [ { label: 'Easy', rows: 3, cols: 4 }, { label: 'Medium', rows: 4, cols: 6 }, { label: 'Hard', rows: 6, cols: 8 } ] });
-                        } else if (item.type === 'find-pair') {
-                          setQuickCreateData({ pairs: [ { left: 'A', right: 'a' }, { left: 'B', right: 'b' } ] });
-                        } else if (item.type === 'ordering') {
-                          setQuickCreateData({ items: ['Item 1', 'Item 2', 'Item 3'] });
-                        } else if (item.type === 'picture-shadow') {
-                          setQuickCreateData({ imagePairs: [ { imageUrl: '', shadowUrl: '' } ] });
-                        } else if (item.type === 'picture-word') {
-                          setQuickCreateData({ pairs: [ { imageUrl: '', word: '' } ] });
-                        } else if (item.type === 'spot-difference') {
-                          setQuickCreateData({ baseImageUrl: '', alteredImageUrl: '', differencePoints: [] });
-                        } else if (item.type === 'word-search') {
-                          setQuickCreateData({ gridRows: [], words: [] });
-                        }
-                      }}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
-                        background: theme.background, border: `2px solid ${theme.border}`, borderRadius: 10,
-                        color: theme.textPrimary, fontSize: '14px', fontWeight: 600, cursor: 'pointer',
-                      }}
-                    >
-                      <span style={{ fontSize: 20 }}>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {quickCreateType && (
-                    <div style={{ marginTop: 16, background: theme.surfacePrimary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      {showQuickDetails && (<h4 style={{ margin: 0, color: theme.textPrimary }}>Inline Editor: {quickCreateType}</h4>)}
-                      <button type="button" onClick={resetQuickCreate} style={{ padding: '8px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfaceSecondary, color: theme.textPrimary, cursor: 'pointer' }}>Close</button>
-                    </div>
-
-                    {/* Template selection + preview */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <label style={{ fontWeight: 600, color: theme.textSecondary }}>Template</label>
-                        <select
-                          value={selectedQuickTemplateId}
-                          onChange={(e) => setSelectedQuickTemplateId(e.target.value)}
-                          disabled={quickTemplatesLoading || quickTemplates.length === 0}
-                          style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, minWidth: 240 }}
-                        >
-                          <option value="">{quickTemplatesLoading ? 'Loading…' : 'Choose a template'}</option>
-                          {quickTemplates.map(t => (
-                            <option key={t.id} value={t.id}>{t.name}</option>
-                          ))}
-                        </select>
-                        {/* Jigsaw configuration moved to appear after template apply (within details/editor) */}
-                        <button type="button" onClick={() => setShowQuickPreview(true)} disabled={!selectedQuickTemplateId} style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfaceSecondary, color: theme.textPrimary, cursor: !selectedQuickTemplateId ? 'not-allowed' : 'pointer' }}>Preview</button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const tpl = quickTemplates.find(t => t.id === selectedQuickTemplateId);
-                            if (!tpl) return;
-                            const editorKind = quickCreateType;
-                            const sanitized = sanitizeTemplateForEditor(tpl, editorKind);
-                            // Map sanitized content into editor data shape
-                            if (editorKind === 'picture-word') {
-                              const newPairs = (sanitized.pairs || []).map((p, idx) => ({ id: `pair-${Date.now()}-${idx}`, image: p.imageUrl || '', word: p.word || '' }));
-                              setQuickCreateData({ pairs: newPairs, layout: 'grid-2x2' });
-                            } else if (editorKind === 'picture-shadow') {
-                              const newPairs = (sanitized.pairs || []).map((p, idx) => ({ id: `pair-${Date.now()}-${idx}`, imageUrl: p.imageUrl || '', shadowUrl: p.shadowUrl || '' }));
-                              setQuickCreateData({ pairs: newPairs });
-                            } else if (editorKind === 'find-pair') {
-                              const newPairs = (sanitized.pairs || []).map((p) => ({ left: p.left || '', right: p.right || '', leftImageUrl: p.leftImageUrl || '', rightImageUrl: p.rightImageUrl || '' }));
-                              setQuickCreateData({ pairs: newPairs });
-                            } else if (editorKind === 'word-search') {
-                              setQuickCreateData({ gridRows: sanitized.gridRows || [], words: sanitized.words || [] });
-                            } else if (editorKind === 'spot-difference') {
-                              setQuickCreateData({ baseImageUrl: sanitized.baseImageUrl || '', alteredImageUrl: sanitized.alteredImageUrl || '', differencePoints: sanitized.differencePoints || [] });
-                            } else if (editorKind === 'ordering') {
-                              setQuickCreateData({ items: (sanitized.items || []).map(it => (typeof it === 'string' ? it : (it.label || ''))) });
-                            } else if (editorKind === 'jigsaw') {
-                              const rows = sanitized.rows || 3;
-                              const cols = sanitized.cols || 4;
-                              const imageUrl = sanitized.imageUrl || '';
-                              setQuickCreateData({ imageUrl, rows, cols, variants: [ { label: 'Default', rows, cols } ] });
-                            }
-                            setShowQuickDetails(true);
-                          }}
-                          disabled={!selectedQuickTemplateId}
-                          style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, cursor: !selectedQuickTemplateId ? 'not-allowed' : 'pointer', fontWeight: 700 }}
-                        >
-                          Apply to Editor
-                        </button>
-                      </div>
-                    </div>
-                    {showQuickDetails && quickCreateType === 'picture-word' && (
-                      <PictureWordEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'spot-difference' && (
-                      <SpotDifferenceEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'find-pair' && (
-                      <FindPairEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'picture-shadow' && (
-                      <PictureShadowEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'ordering' && (
-                      <OrderingEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'word-search' && (
-                      <WordSearchEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-                    {showQuickDetails && quickCreateType === 'jigsaw' && (
-                      <JigsawEditor data={quickCreateData} onChange={setQuickCreateData} />
-                    )}
-
-                    {/* Preview Modal for selected template */}
-                    <AdminTemplatePreviewModal
-                      open={showQuickPreview}
-                      onClose={() => setShowQuickPreview(false)}
-                      template={quickTemplates.find(t => t.id === selectedQuickTemplateId)}
-                      editorKind={quickCreateType}
-                      currentData={quickCreateData}
-                    />
-
-                    {/* Puzzle Details (shown after template applied) */}
-                    {showQuickDetails && (
-                    <div style={{ marginTop: 16, background: theme.background, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 12 }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Title *</label>
-                          <input value={qcTitle} onChange={(e) => setQcTitle(e.target.value)} placeholder="e.g., Panda Patrol Jigsaw" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }} />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Difficulty</label>
-                          <select value={qcDifficulty} onChange={(e) => setQcDifficulty(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
-                            {['easy','medium','hard'].map(d => (<option key={d} value={d}>{d}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Age Group</label>
-                          <select value={qcAgeGroup} onChange={(e) => setQcAgeGroup(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
-                            {['4-5','5-6','6-7','6-8','7-8','8-9'].map(a => (<option key={a} value={a}>{a} years</option>))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Category *</label>
-                          <select value={qcCategoryId} onChange={(e) => { setQcCategoryId(e.target.value); const cat = categoriesList.find(c => c.id === e.target.value); setQcCategoryName(cat?.name || ''); setQcTopicId(''); setQcTopicName(''); setQcSubtopicId(''); setQcSubtopicName(''); loadTopicsForCategory(e.target.value); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
-                            <option value="">Select Category</option>
-                            {categoriesList.map(c => (<option key={c.id} value={c.id}>{c.name}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Topic *</label>
-                          <select value={qcTopicId} disabled={!qcCategoryId} onChange={(e) => { setQcTopicId(e.target.value); const t = topicsList.find(t => t.id === e.target.value); setQcTopicName(t?.name || ''); setQcSubtopicId(''); setQcSubtopicName(''); loadSubtopicsForTopic(e.target.value); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
-                            <option value="">Select Topic</option>
-                            {topicsList.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, color: theme.textPrimary }}>Subtopic *</label>
-                          <select value={qcSubtopicId} disabled={!qcTopicId} onChange={(e) => { setQcSubtopicId(e.target.value); const s = subtopicsList.find(s => s.id === e.target.value); setQcSubtopicName(s?.name || ''); }} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}>
-                            <option value="">Select Subtopic</option>
-                            {subtopicsList.map(s => (<option key={s.id} value={s.id}>{s.name}</option>))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12 }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: theme.textPrimary }}>
-                          <input type="checkbox" checked={qcIsPublished} onChange={(e) => setQcIsPublished(e.target.checked)} />
-                          Publish
-                        </label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ color: theme.textSecondary }}>XP</span>
-                          <input type="number" min={1} max={100} value={qcXpReward} onChange={(e) => setQcXpReward(Number(e.target.value) || 10)} style={{ width: 90, padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }} />
-                        </div>
-
-                        <button type="button" onClick={async () => {
-                          // Basic validation
-                          if (!qcTitle.trim() || !qcCategoryId || !qcTopicId || !qcSubtopicId) {
-                            alert('Please fill Title, Category, Topic, and Subtopic');
-                            return;
-                          }
-                          try {
-                            if (['find-pair','picture-word','spot-difference','picture-shadow','ordering','word-search'].includes(quickCreateType)) {
-                              const payload = {
-                                title: qcTitle,
-                                description: qcDescription,
-                                type: quickCreateType,
-                                difficulty: qcDifficulty,
-                                ageGroup: qcAgeGroup,
-                                categoryId: qcCategoryId,
-                                categoryName: qcCategoryName,
-                                topicId: qcTopicId,
-                                topicName: qcTopicName,
-                                subtopicId: qcSubtopicId,
-                                subtopicName: qcSubtopicName,
-                                xpReward: qcXpReward,
-                                isPublished: qcIsPublished,
-                                data: quickCreateData,
-                              };
-                              await createVisualPuzzle(payload);
-                            } else if (quickCreateType === 'jigsaw') {
-                              await addDoc(collection(db, 'puzzles'), {
-                                title: qcTitle,
-                                description: qcDescription,
-                                type: 'jigsaw',
-                                puzzleType: 'traditional',
-                                difficulty: qcDifficulty,
-                                ageGroup: qcAgeGroup,
-                                categoryId: qcCategoryId,
-                                categoryName: qcCategoryName,
-                                topicId: qcTopicId,
-                                topicName: qcTopicName,
-                                subtopicId: qcSubtopicId,
-                                subtopicName: qcSubtopicName,
-                                xpReward: qcXpReward,
-                                isPublished: qcIsPublished || false,
-                                data: quickCreateData,
-                                featureId: 'puzzles',
-                                createdAt: serverTimestamp(),
-                                updatedAt: serverTimestamp(),
-                              });
-                            }
-                            resetQuickCreate();
-                            alert('✅ Puzzle created successfully');
-                          } catch (err) {
-                            console.error('Save error', err);
-                            alert('❌ Error saving puzzle: ' + (err.message || 'Unknown error'));
-                          }
-                        }} style={{ marginLeft: 'auto', padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, cursor: 'pointer', fontWeight: 700 }}>Save Puzzle</button>
-                      </div>
-                    </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Add Puzzle Form */}
-              {showAddPuzzleForm && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <h3 style={{
-                    color: theme.textPrimary,
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '20px',
-                  }}>
-                    Create New Puzzle
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '12px',
-                    marginBottom: '16px',
-                  }}>
-                    <input
-                      type="text"
-                      placeholder="Puzzle Title"
-                      value={puzzleFormData.title}
-                      onChange={(e) => setPuzzleFormData({ ...puzzleFormData, title: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                    <select
-                      value={puzzleFormData.audience}
-                      onChange={(e) => setPuzzleFormData({ ...puzzleFormData, audience: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Audience</option>
-                      {AUDIENCES.map(aud => (
-                        <option key={aud} value={aud}>{aud}</option>
-                      ))}
-                    </select>
-
-                  </div>
-                  {/* Unified Template-First (Visual) for Create New Puzzle */}
-                  <div style={{ marginTop: 12, background: theme.surfaceSecondary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 12 }}>
-                    <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>📋 Puzzle Creation (Template-Driven)</h4>
-
-                    {/* Step 1: Select Visual Type & Template */}
-                    {!cnEditorData && (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, alignItems: 'start' }}>
-                        <div>
-                          <div style={{ fontWeight: 600, color: theme.textSecondary, marginBottom: 6 }}>Visual Type</div>
-                          <select
-                            value={cnVisualType}
-                            onChange={(e) => {
-                              setCnVisualType(e.target.value);
-                              setCnSelectedTemplateId('');
-                              setCnShowInputForm(false);
-                              setCnTemplateInputs(null);
-                              setCnExecutionResult(null);
-                              setCnEditorData(null);
-                            }}
-                            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}
-                          >
-                            <option value="">Choose visual type</option>
-                            <option value="find-pair">Find Pairs</option>
-                            <option value="ordering">Ordering</option>
-                            <option value="picture-shadow">Picture Shadow</option>
-                            <option value="picture-word">Picture Word Matching</option>
-                            <option value="spot-difference">Spot Difference</option>
-                            <option value="word-search">Word Search</option>
-                            <option value="jigsaw">Jigsaw</option>
-                          </select>
-                        </div>
-
-                        {cnVisualType && (
-                          <div>
-                            <div style={{ fontWeight: 600, color: theme.textSecondary, marginBottom: 6 }}>Template</div>
-                            <select
-                              value={cnSelectedTemplateId}
-                              onChange={(e) => {
-                                setCnSelectedTemplateId(e.target.value);
-                                setCnShowInputForm(true);
-                                setCnTemplateInputs(null);
-                                setCnExecutionResult(null);
-                              }}
-                              disabled={cnTemplatesLoading || cnTemplates.length === 0}
-                              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary }}
-                            >
-                              <option value="">{cnTemplatesLoading ? 'Loading…' : 'Choose a template'}</option>
-                              {cnTemplates.map(t => (<option key={t.id} value={t.id}>{t.name}</option>))}
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Step 2: Show Input Form (based on template schema) */}
-                    {cnShowInputForm && cnSelectedTemplateId && (
-                      <>
-                        <TemplateInputForm
-                          template={cnTemplates.find(t => t.id === cnSelectedTemplateId)}
-                          typeKey={cnVisualType}
-                          onInputsReady={async (inputs) => {
-                            setCnTemplateInputs(inputs);
-                            setCnExecutionLoading(true);
-                            setCnExecutionError('');
-                            try {
-                              const tpl = cnTemplates.find(t => t.id === cnSelectedTemplateId);
-                              console.log('🎯 [TemplateExecute] Running template with inputs:', inputs);
-                              const result = await runTemplate(cnVisualType, tpl.schema, inputs);
-                              console.log('🎯 [TemplateExecute] Template result:', result);
-                              if (!result.ok) {
-                                setCnExecutionError(result.error || 'Template execution failed');
-                                return;
-                              }
-                              console.log('✅ [TemplateExecute] Execution successful, result:', result.result);
-                              setCnExecutionResult(result.result);
-                            } catch (e) {
-                              console.error('❌ [TemplateExecute] Error:', e);
-                              setCnExecutionError(e.message || 'Execution error');
-                            } finally {
-                              setCnExecutionLoading(false);
-                            }
-                          }}
-                          onLoading={(loading) => setCnExecutionLoading(loading)}
-                        />
-                      </>
-                    )}
-
-                    {/* Step 3: Show Execution Preview */}
-                    {cnExecutionResult && (
-                      <div style={{ background: theme.surfacePrimary, border: `2px solid ${theme.border}`, borderRadius: 12, padding: 16, marginTop: 12 }}>
-                        <h4 style={{ margin: '0 0 12px 0', color: theme.textPrimary }}>✓ Template Executed</h4>
-                        <p style={{ margin: '0 0 16px 0', color: theme.textSecondary }}>Preview all difficulty variants:</p>
-
-                        {cnVisualType === 'jigsaw' && cnExecutionResult && cnExecutionResult.variants && (
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16, marginBottom: 16 }}>
-                            {cnExecutionResult.variants.map((variant, vidx) => (
-                              <div key={vidx} style={{
-                                background: theme.surfaceSecondary,
-                                border: `2px solid ${theme.border}`,
-                                borderRadius: 10,
-                                padding: 12,
-                              }}>
-                                <h5 style={{ margin: '0 0 8px 0', color: theme.textPrimary }}>
-                                  {variant.label} ({variant.rows} × {variant.cols} = {variant.rows * variant.cols} pieces)
-                                </h5>
-                                {!variant.error && variant.imageUrl && (
-                                  <div style={{ position: 'relative', width: '100%', paddingTop: '66%', background: '#f1f5f9', borderRadius: 8, overflow: 'hidden', border: `1px solid ${theme.border}` }}>
-                                    {/* Full image with GRID overlay showing interlocking piece boundaries */}
-                                    <img src={variant.imageUrl} alt={`variant-${variant.label}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    
-                                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
-                                      {/* Grid overlay with interlocking puzzle piece boundaries */}
-                                      {Array.from({ length: variant.rows }).map((_, row) =>
-                                        Array.from({ length: variant.cols }).map((_, col) => {
-                                          const pieceWidth = 400 / variant.cols;
-                                          const pieceHeight = 300 / variant.rows;
-                                          const tabDepth = Math.min(pieceWidth, pieceHeight) * 0.5;
-                                          const x0 = col * pieceWidth;
-                                          const y0 = row * pieceHeight;
-                                          const x1 = (col + 1) * pieceWidth;
-                                          const y1 = (row + 1) * pieceHeight;
-                                          
-                                          let path = `M ${x0} ${y0}`;
-                                          
-                                          // Top
-                                          if (row === 0) {
-                                            path += ` L ${x1} ${y0}`;
-                                          } else {
-                                            path += ` L ${x0 + pieceWidth * 0.1} ${y0}`;
-                                            if ((col + row) % 2 === 0) {
-                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y0 - tabDepth}, ${x0 + pieceWidth * 0.9} ${y0}`;
-                                            } else {
-                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y0 + tabDepth}, ${x0 + pieceWidth * 0.9} ${y0}`;
-                                            }
-                                            path += ` L ${x1} ${y0}`;
-                                          }
-                                          
-                                          // Right
-                                          if (col === variant.cols - 1) {
-                                            path += ` L ${x1} ${y1}`;
-                                          } else {
-                                            path += ` L ${x1} ${y0 + pieceHeight * 0.1}`;
-                                            if ((col + row + 1) % 2 === 0) {
-                                              path += ` Q ${x1 + tabDepth} ${y0 + pieceHeight * 0.5}, ${x1} ${y0 + pieceHeight * 0.9}`;
-                                            } else {
-                                              path += ` Q ${x1 - tabDepth} ${y0 + pieceHeight * 0.5}, ${x1} ${y0 + pieceHeight * 0.9}`;
-                                            }
-                                            path += ` L ${x1} ${y1}`;
-                                          }
-                                          
-                                          // Bottom
-                                          if (row === variant.rows - 1) {
-                                            path += ` L ${x0} ${y1}`;
-                                          } else {
-                                            path += ` L ${x0 + pieceWidth * 0.9} ${y1}`;
-                                            if ((col + row) % 2 === 0) {
-                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y1 + tabDepth}, ${x0 + pieceWidth * 0.1} ${y1}`;
-                                            } else {
-                                              path += ` Q ${x0 + pieceWidth * 0.5} ${y1 - tabDepth}, ${x0 + pieceWidth * 0.1} ${y1}`;
-                                            }
-                                            path += ` L ${x0} ${y1}`;
-                                          }
-                                          
-                                          // Left
-                                          if (col === 0) {
-                                            path += ` L ${x0} ${y0}`;
-                                          } else {
-                                            path += ` L ${x0} ${y0 + pieceHeight * 0.9}`;
-                                            if ((col + row + 1) % 2 === 0) {
-                                              path += ` Q ${x0 - tabDepth} ${y0 + pieceHeight * 0.5}, ${x0} ${y0 + pieceHeight * 0.1}`;
-                                            } else {
-                                              path += ` Q ${x0 + tabDepth} ${y0 + pieceHeight * 0.5}, ${x0} ${y0 + pieceHeight * 0.1}`;
-                                            }
-                                            path += ` L ${x0} ${y0}`;
-                                          }
-                                          
-                                          return (
-                                            <path
-                                              key={`grid-${row}-${col}`}
-                                              d={path}
-                                              fill="none"
-                                              stroke="#1a1a2e"
-                                              strokeWidth="0.8"
-                                              opacity="0.8"
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                            />
-                                          );
-                                        })
-                                      )}
-                                    </svg>
-                                  </div>
-                                )}
-                                {variant.error && (
-                                  <p style={{ margin: 0, color: '#991b1b', fontSize: 12 }}>⚠️ {variant.error}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (!puzzleFormData.title?.trim()) { alert('Please enter Title'); return; }
-                              try {
-                                // For Jigsaw, ONLY save: imageUrl and minimal variant config
-                                let contentToSave = null;
-                                let variantsToSave = null;
-                                
-                                console.log('💾 [SavePuzzle] cnExecutionResult:', cnExecutionResult);
-                                console.log('💾 [SavePuzzle] cnVisualType:', cnVisualType);
-                                
-                                if (cnVisualType === 'jigsaw' && cnExecutionResult?.variants) {
-                                  // Extract ONLY label, rows, cols from each variant
-                                  variantsToSave = cnExecutionResult.variants.map(v => ({
-                                    label: v.label,
-                                    rows: v.rows,
-                                    cols: v.cols,
-                                  }));
-                                  contentToSave = {
-                                    imageUrl: cnExecutionResult.imageUrl,
-                                    variants: variantsToSave,
-                                  };
-                                } else {
-                                  contentToSave = cnExecutionResult;
-                                }
-
-                                const puzzleDoc = {
-                                  title: puzzleFormData.title,
-                                  description: puzzleFormData.description || '',
-                                  type: cnVisualType,
-                                  difficulty: puzzleFormData.difficulty || 'Easy',
-                                  ageGroup: puzzleFormData.ageGroup || '',
-                                  audience: puzzleFormData.audience || 'all',
-                                  content: contentToSave,
-                                  // For Jigsaw, also store at top level
-                                  imageUrl: cnVisualType === 'jigsaw' ? cnExecutionResult?.imageUrl : undefined,
-                                  variants: variantsToSave || undefined,
-                                  categoryId: puzzleFormData.categoryId || '',
-                                  topicId: puzzleFormData.topicId || '',
-                                  subtopicId: puzzleFormData.subtopicId || '',
-                                  isPublished: puzzleFormData.isPublished || false,
-                                  xpReward: Number(puzzleFormData.xpReward) || 10,
-                                  createdAt: serverTimestamp(),
-                                };
-                                await addDoc(collection(db, 'puzzles'), puzzleDoc);
-                                alert('✓ Puzzle saved!');
-                                // Reset form
-                                setPuzzleFormData({ title: '', type: '', audience: '', pieces: '', difficulty: '' });
-                                setCnVisualType('');
-                                setCnSelectedTemplateId('');
-                                setCnShowInputForm(false);
-                                setCnTemplateInputs(null);
-                                setCnExecutionResult(null);
-                              } catch (e) {
-                                console.error('Save error details:', e);
-                                alert('Save error: ' + e.message);
-                              }
-                            }}
-                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.primary, color: theme.onPrimary, fontWeight: 700, cursor: 'pointer' }}
-                          >
-                            💾 Save Puzzle
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setCnShowInputForm(false);
-                              setCnTemplateInputs(null);
-                              setCnExecutionResult(null);
-                              setCnExecutionError('');
-                            }}
-                            style={{ padding: '10px 14px', borderRadius: 8, border: `2px solid ${theme.border}`, background: theme.surfacePrimary, color: theme.textPrimary, cursor: 'pointer' }}
-                          >
-                            ← Back
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {cnExecutionError && (
-                      <div style={{ background: '#fee2e2', border: '2px solid #fca5a5', borderRadius: 12, padding: 12, marginTop: 12, color: '#991b1b' }}>
-                        ⚠️ {cnExecutionError}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                  }}>
-                    <button
-                      onClick={handleAddPuzzle}
-                      style={{
-                        padding: '10px 20px',
-                        background: `linear-gradient(135deg, #667eea, #764ba2)`,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddPuzzleForm(false);
-                        setPuzzleFormData({ title: '', type: '', audience: '', pieces: '', difficulty: '' });
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        background: 'transparent',
-                        color: theme.textPrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Search & Filter Bar for Puzzles */}
-              <SearchFilterBar
-                items={puzzles}
-                onFilter={setFilteredPuzzles}
-                searchPlaceholder="Search puzzles by title, category, or ID..."
-                categories={PUZZLE_TYPES}
-                difficulties={DIFFICULTIES}
-                showCategory={true}
-                showDifficulty={true}
-                showStatus={true}
-              />
-
-              {/* Puzzles List */}
-              {filteredPuzzles.length > 0 ? (
-                <div style={{
-                  display: 'grid',
-                  gap: '12px',
-                }}>
-                  {filteredPuzzles.map(puzzle => (
-                    <div
-                      key={puzzle.id}
-                      style={{
-                        background: theme.surfacePrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '10px',
-                        padding: '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: '200px' }}>
-                        <h3 style={{
-                          color: theme.textPrimary,
-                          fontSize: '15px',
-                          fontWeight: '600',
-                          margin: '0 0 6px 0',
-                        }}>
-                          🧩 {puzzle.title}
-                        </h3>
-                        <div style={{
-                          display: 'flex',
-                          gap: '12px',
-                          fontSize: '12px',
-                          color: theme.textSecondary,
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                          marginBottom: '6px',
-                        }}>
-                          <span>📋 ID: {puzzle.id}</span>
-                          {puzzle.category && <span>🏷️ {puzzle.category}</span>}
-                          <span>🔧 {Array.isArray(puzzle.pieces) ? puzzle.pieces.length : typeof puzzle.pieces === 'number' ? puzzle.pieces : 0} Pieces</span>
-                          <span>👥 {puzzle.audience}</span>
-                          {puzzle.difficulty && <span>⭐ {puzzle.difficulty}</span>}
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          gap: '12px',
-                          fontSize: '11px',
-                          color: theme.textSecondary,
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                          marginBottom: '6px',
-                          paddingTop: '4px',
-                          borderTop: `1px solid ${theme.border}`,
-                        }}>
-                          <span title={formatFullDateTime(puzzle.createdAt)}>📅 Created: {formatDate(puzzle.createdAt)}</span>
-                          {puzzle.updatedAt && <span title={formatFullDateTime(puzzle.updatedAt)}>✏️ Updated: {formatDate(puzzle.updatedAt)}</span>}
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          gap: '8px',
-                          fontSize: '11px',
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                        }}>
-                          {/* Status and Visibility Badges */}
-                          {puzzle.status && <StatusBadge status={puzzle.status} />}
-                          {puzzle.visibility && <VisibilityBadge visibility={puzzle.visibility} />}
-                          {puzzle.featured && <FeaturedBadge featured={puzzle.featured} />}
-                        </div>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '6px',
-                        flexWrap: 'wrap',
-                      }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                        }}>
-                          {puzzle.type}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setEditingPuzzle(puzzle)}
-                        style={{
-                          padding: '6px 12px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          border: `1px solid ${theme.accentPrimary}`,
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => setViewingPuzzle(puzzle)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#667eea25',
-                          color: '#667eea',
-                          border: '1px solid #667eea',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        👁️ View
-                      </button>
-                      <button
-                        onClick={() => handleDeletePuzzle(puzzle.id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#FF6B6B25',
-                          color: '#FF6B6B',
-                          border: '1px solid #FF6B6B',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: theme.textSecondary,
-                }}>
-                  <p>
-                    {puzzles.length > 0
-                      ? 'No puzzles match your filters. Try adjusting your search or filters.'
-                      : 'No puzzles created yet. Click "➕ Add New Puzzle" to get started!'}
-                  </p>
-                </div>
-              )}
-            </div>
+            <AdminPuzzlesTab
+              theme={theme}
+              puzzles={puzzles}
+              filteredPuzzles={filteredPuzzles}
+              setFilteredPuzzles={setFilteredPuzzles}
+              showAddPuzzleForm={showAddPuzzleForm}
+              setShowAddPuzzleForm={setShowAddPuzzleForm}
+              AUDIENCES={AUDIENCES}
+              DIFFICULTIES={DIFFICULTIES}
+              PUZZLE_TYPES={PUZZLE_TYPES}
+              setEditingPuzzle={setEditingPuzzle}
+              setViewingPuzzle={setViewingPuzzle}
+              handleDeletePuzzle={handleDeletePuzzle}
+              handleAddPuzzle={handleAddPuzzle}
+              puzzleFormData={puzzleFormData}
+              setPuzzleFormData={setPuzzleFormData}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              visibilityFilter={visibilityFilter}
+              setVisibilityFilter={setVisibilityFilter}
+              featuredFilter={featuredFilter}
+              setFeaturedFilter={setFeaturedFilter}
+              quickCreateType={quickCreateType}
+              setQuickCreateType={setQuickCreateType}
+              quickCreateData={quickCreateData}
+              setQuickCreateData={setQuickCreateData}
+              showQuickDetails={showQuickDetails}
+              setShowQuickDetails={setShowQuickDetails}
+              selectedQuickTemplateId={selectedQuickTemplateId}
+              setSelectedQuickTemplateId={setSelectedQuickTemplateId}
+              quickTemplates={quickTemplates}
+              quickTemplatesLoading={quickTemplatesLoading}
+              showQuickPreview={showQuickPreview}
+              setShowQuickPreview={setShowQuickPreview}
+              sanitizeTemplateForEditor={sanitizeTemplateForEditor}
+              AdminTemplatePreviewModal={AdminTemplatePreviewModal}
+              resetQuickCreate={resetQuickCreate}
+              qcTitle={qcTitle}
+              setQcTitle={setQcTitle}
+              qcDifficulty={qcDifficulty}
+              setQcDifficulty={setQcDifficulty}
+              qcAgeGroup={qcAgeGroup}
+              setQcAgeGroup={setQcAgeGroup}
+              qcDescription={qcDescription}
+              setQcDescription={setQcDescription}
+              qcCategoryId={qcCategoryId}
+              setQcCategoryId={setQcCategoryId}
+              qcCategoryName={qcCategoryName}
+              setQcCategoryName={setQcCategoryName}
+              qcTopicId={qcTopicId}
+              setQcTopicId={setQcTopicId}
+              qcTopicName={qcTopicName}
+              setQcTopicName={setQcTopicName}
+              qcSubtopicId={qcSubtopicId}
+              setQcSubtopicId={setQcSubtopicId}
+              qcSubtopicName={qcSubtopicName}
+              setQcSubtopicName={setQcSubtopicName}
+              qcIsPublished={qcIsPublished}
+              setQcIsPublished={setQcIsPublished}
+              qcXpReward={qcXpReward}
+              setQcXpReward={setQcXpReward}
+              categoriesList={categoriesList}
+              topicsList={topicsList}
+              subtopicsList={subtopicsList}
+              cnVisualType={cnVisualType}
+              setCnVisualType={setCnVisualType}
+              cnSelectedTemplateId={cnSelectedTemplateId}
+              setCnSelectedTemplateId={setCnSelectedTemplateId}
+              cnShowInputForm={cnShowInputForm}
+              setCnShowInputForm={setCnShowInputForm}
+              cnTemplateInputs={cnTemplateInputs}
+              setCnTemplateInputs={setCnTemplateInputs}
+              cnExecutionResult={cnExecutionResult}
+              setCnExecutionResult={setCnExecutionResult}
+              cnExecutionError={cnExecutionError}
+              setCnExecutionError={setCnExecutionError}
+              cnExecutionLoading={cnExecutionLoading}
+              setCnExecutionLoading={setCnExecutionLoading}
+              cnTemplates={cnTemplates}
+              cnTemplatesLoading={cnTemplatesLoading}
+              TemplateInputForm={TemplateInputForm}
+              runTemplate={runTemplate}
+              createVisualPuzzle={createVisualPuzzle}
+              loadTopicsForCategory={loadTopicsForCategory}
+              formatDate={formatDate}
+              formatFullDateTime={formatFullDateTime}
+              setShowTemplateModal={setShowTemplateModal}
+              showUniversalPuzzleBuilder={showUniversalPuzzleBuilder}
+              setShowUniversalPuzzleBuilder={setShowUniversalPuzzleBuilder}
+              editingPuzzleData={editingPuzzleData}
+              setEditingPuzzleData={setEditingPuzzleData}
+            />
           )}
 
           {/* Stories Tab */}
           {activeTab === 'stories' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    📖 Manage Stories
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage stories with chapter management
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowAddStoryForm(!showAddStoryForm)}
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #f093fb, #f5576c)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Story
-                </button>
-                <button
-                  onClick={() => setShowBulkImport('story')}
-                  style={{
-                    padding: '12px 24px',
-                    background: `transparent`,
-                    color: '#f093fb',
-                    border: '2px solid #f093fb',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  📤 Bulk Import
-                </button>
-              </div>
-
-              {/* Add Story Form */}
-              {showAddStoryForm && (
-                <div style={{
-                  marginBottom: '30px',
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
-                  <h3 style={{
-                    color: theme.textPrimary,
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    marginBottom: '20px',
-                  }}>
-                    Create New Story
-                  </h3>
-
-                  {/* Basic Form Fields */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '12px',
-                    marginBottom: '24px',
-                  }}>
-                    <input
-                      type="text"
-                      placeholder="Story Title"
-                      value={storyFormData.title}
-                      onChange={(e) => setStoryFormData({ ...storyFormData, title: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    />
-                    <select
-                      value={storyFormData.category}
-                      onChange={(e) => setStoryFormData({ ...storyFormData, category: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Category</option>
-                      {STORY_CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={storyFormData.audience}
-                      onChange={(e) => setStoryFormData({ ...storyFormData, audience: e.target.value })}
-                      style={{
-                        padding: '10px 12px',
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <option value="">Audience</option>
-                      {AUDIENCES.map(aud => (
-                        <option key={aud} value={aud}>{aud}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Template Selection Section */}
-                  <div style={{
-                    marginBottom: '24px',
-                    paddingTop: '16px',
-                    borderTop: `2px solid ${theme.border}`,
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '12px',
-                    }}>
-                      <h4 style={{
-                        color: theme.textPrimary,
-                        fontSize: '14px',
-                        fontWeight: '700',
-                        margin: 0,
-                      }}>
-                        📋 Select a Story Template
-                      </h4>
-                      <button
-                        onClick={() => setShowCreateTemplateModal(true)}
-                        style={{
-                          padding: '6px 12px',
-                          background: theme.accentSecondary,
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ➕ Create New Template
-                      </button>
-                    </div>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                      gap: '12px',
-                      marginBottom: '16px',
-                    }}>
-                      {STORY_TEMPLATES.map((template) => (
-                        <div
-                          key={template.id}
-                          onClick={() => setStoryFormData({ ...storyFormData, selectedTemplate: template.id, chapters: template.chapters })}
-                          style={{
-                            padding: '14px',
-                            background: theme.background,
-                            border: storyFormData.selectedTemplate === template.id ? `3px solid ${template.color}` : `2px solid ${theme.border}`,
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            opacity: storyFormData.selectedTemplate === template.id ? 1 : 0.7,
-                            boxShadow: storyFormData.selectedTemplate === template.id ? `0 0 12px ${template.color}40` : 'none',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: template.color }} />
-                            <span style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700' }}>{template.title}</span>
-                          </div>
-                          <div style={{ color: theme.textSecondary, fontSize: '12px', marginBottom: '8px' }}>
-                            {template.description}
-                          </div>
-                          <div style={{ color: theme.accentPrimary, fontSize: '11px', fontWeight: '600' }}>
-                            📖 {template.chapters} chapters
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Template Preview Section */}
-                    {storyFormData.selectedTemplate && (
-                      <div style={{
-                        background: theme.background,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '10px',
-                        padding: '16px',
-                        marginTop: '16px',
-                      }}>
-                        {(() => {
-                          const selectedTemplate = STORY_TEMPLATES.find(t => t.id === storyFormData.selectedTemplate);
-                          if (!selectedTemplate) return null;
-                          return (
-                            <>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                marginBottom: '12px',
-                              }}>
-                                <div style={{
-                                  width: '20px',
-                                  height: '20px',
-                                  borderRadius: '3px',
-                                  background: selectedTemplate.color,
-                                }} />
-                                <h5 style={{
-                                  color: theme.textPrimary,
-                                  fontSize: '14px',
-                                  fontWeight: '700',
-                                  margin: 0,
-                                }}>
-                                  Template Preview: {selectedTemplate.title}
-                                </h5>
-                              </div>
-                              <div style={{
-                                color: theme.textSecondary,
-                                fontSize: '12px',
-                                marginBottom: '12px',
-                                lineHeight: '1.5',
-                              }}>
-                                {selectedTemplate.fullDescription}
-                              </div>
-                              <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                                gap: '8px',
-                              }}>
-                                <div style={{
-                                  padding: '8px',
-                                  background: theme.surfaceSecondary,
-                                  borderRadius: '6px',
-                                  borderLeft: `4px solid ${selectedTemplate.color}`,
-                                }}>
-                                  <div style={{ color: theme.textSecondary, fontSize: '11px', fontWeight: '600' }}>TARGET AUDIENCE</div>
-                                  <div style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700', marginTop: '4px' }}>
-                                    {selectedTemplate.targetAudience}
-                                  </div>
-                                </div>
-                                <div style={{
-                                  padding: '8px',
-                                  background: theme.surfaceSecondary,
-                                  borderRadius: '6px',
-                                  borderLeft: `4px solid ${selectedTemplate.color}`,
-                                }}>
-                                  <div style={{ color: theme.textSecondary, fontSize: '11px', fontWeight: '600' }}>TOTAL CHAPTERS</div>
-                                  <div style={{ color: theme.textPrimary, fontSize: '13px', fontWeight: '700', marginTop: '4px' }}>
-                                    {selectedTemplate.chapters}
-                                  </div>
-                                </div>
-                              </div>
-                              <div style={{ marginTop: '12px' }}>
-                                <div style={{
-                                  color: theme.textSecondary,
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  marginBottom: '8px',
-                                }}>
-                                  CHAPTER STRUCTURE:
-                                </div>
-                                <div style={{
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: '6px',
-                                }}>
-                                  {selectedTemplate.chapterDetails.map((chapter, idx) => (
-                                    <div key={idx} style={{
-                                      padding: '8px',
-                                      background: theme.surfaceSecondary,
-                                      borderRadius: '6px',
-                                      paddingLeft: '10px',
-                                      borderLeft: `3px solid ${selectedTemplate.color}`,
-                                    }}>
-                                      <div style={{
-                                        color: theme.textPrimary,
-                                        fontSize: '12px',
-                                        fontWeight: '600',
-                                      }}>
-                                        Ch. {idx + 1}: {chapter.title}
-                                      </div>
-                                      <div style={{
-                                        color: theme.textSecondary,
-                                        fontSize: '11px',
-                                        marginTop: '3px',
-                                      }}>
-                                        {chapter.description}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </div>
-                    )}
-
-                    {/* Next Steps Information Panel */}
-                    <div style={{
-                      background: `${theme.accentPrimary}15`,
-                      border: `2px solid ${theme.accentPrimary}40`,
-                      borderRadius: '10px',
-                      padding: '16px',
-                      marginTop: '16px',
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                      }}>
-                        <span style={{ fontSize: '24px' }}>💡</span>
-                        <div>
-                          <h5 style={{
-                            color: theme.textPrimary,
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            margin: '0 0 8px 0',
-                          }}>
-                            After Creating Your Story
-                          </h5>
-                          <div style={{
-                            color: theme.textSecondary,
-                            fontSize: '12px',
-                            lineHeight: '1.6',
-                          }}>
-                            <p style={{ margin: '0 0 8px 0' }}>
-                              Once you click "Save", the story structure will be created. You'll then need to:
-                            </p>
-                            <ul style={{ margin: '0', paddingLeft: '20px' }}>
-                              <li style={{ marginBottom: '4px' }}>
-                                <strong>Edit the story</strong> to add chapter content, images, and text
-                              </li>
-                              <li style={{ marginBottom: '4px' }}>
-                                <strong>Add images</strong> using Cloudinary image URLs in each chapter
-                              </li>
-                              <li style={{ marginBottom: '4px' }}>
-                                <strong>Link quizzes/puzzles</strong> to chapters as assessments (optional)
-                              </li>
-                              <li>
-                                <strong>Publish</strong> when ready to make it visible to users
-                              </li>
-                            </ul>
-                            <div style={{
-                              marginTop: '12px',
-                              padding: '8px 12px',
-                              background: theme.surfaceSecondary,
-                              borderRadius: '6px',
-                              borderLeft: `3px solid ${theme.accentPrimary}`,
-                            }}>
-                              <strong>📝 Tip:</strong> After saving, click the "✏️ Edit" button next to your story to open the Chapter Editor where you can add all content, images, and quizzes.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                  }}>
-                    <button
-                      onClick={handleAddStory}
-                      style={{
-                        padding: '10px 20px',
-                        background: `linear-gradient(135deg, #f093fb, #f5576c)`,
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddStoryForm(false);
-                        setStoryFormData({ title: '', category: '', audience: '', chapters: '', selectedTemplate: '' });
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        background: 'transparent',
-                        color: theme.textPrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Admin Status Filter */}
-              <AdminStatusFilter
-                onStatusChange={setStatusFilter}
-                onVisibilityChange={setVisibilityFilter}
-                onFeaturedChange={setFeaturedFilter}
-                onClearFilters={() => {
-                  setStatusFilter('all');
-                  setVisibilityFilter('all');
-                  setFeaturedFilter(false);
-                }}
-              />
-
-              {/* Search & Filter Bar for Stories */}
-              <SearchFilterBar
-                items={stories}
-                onFilter={setFilteredStories}
-                searchPlaceholder="Search stories by title..."
-                categories={STORY_CATEGORIES}
-                difficulties={[]}
-                showCategory={true}
-                showDifficulty={false}
-                showStatus={true}
-              />
-
-              {/* Stories List */}
-              {filteredStories.length > 0 ? (
-                <div style={{
-                  display: 'grid',
-                  gap: '12px',
-                }}>
-                  {filteredStories.map(story => (
-                    <div
-                      key={story.id}
-                      style={{
-                        background: theme.surfacePrimary,
-                        border: `2px solid ${theme.border}`,
-                        borderRadius: '10px',
-                        padding: '16px',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: '200px' }}>
-                        <h3 style={{
-                          color: theme.textPrimary,
-                          fontSize: '15px',
-                          fontWeight: '600',
-                          margin: '0 0 6px 0',
-                        }}>
-                          📖 {story.title}
-                        </h3>
-                        <div style={{
-                          display: 'flex',
-                          gap: '12px',
-                          fontSize: '12px',
-                          color: theme.textSecondary,
-                          flexWrap: 'wrap',
-                          alignItems: 'center',
-                        }}>
-                          <span>📚 {Array.isArray(story.chapters) ? story.chapters.length : typeof story.chapters === 'number' ? story.chapters : 0} Chapters</span>
-                          <span>👥 {story.audience}</span>
-                          {/* Status and Visibility Badges */}
-                          {story.status && <StatusBadge status={story.status} />}
-                          {story.visibility && <VisibilityBadge visibility={story.visibility} />}
-                          {story.featured && <FeaturedBadge featured={story.featured} />}
-                        </div>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '6px',
-                        flexWrap: 'wrap',
-                      }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          background: `${theme.accentPrimary}25`,
-                          color: theme.accentPrimary,
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                        }}>
-                          {story.category}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => setEditingStory(story)}
-                        style={{
-                          padding: '6px 12px',
-                          background: `linear-gradient(135deg, #f093fb, #f5576c)`,
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        ✏️ Edit Story
-                      </button>
-                      <button
-                        onClick={() => setViewingStory(story)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#667eea25',
-                          color: '#667eea',
-                          border: '1px solid #667eea',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        👁️ View
-                      </button>
-                      <button
-                        onClick={() => handleDeleteStory(story.id)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#FF6B6B25',
-                          color: '#FF6B6B',
-                          border: '1px solid #FF6B6B',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{
-                  background: theme.surfacePrimary,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: theme.textSecondary,
-                }}>
-                  <p>
-                    {stories.length > 0
-                      ? 'No stories match your filters. Try adjusting your search or filters.'
-                      : 'No stories created yet. Click "➕ Add New Story" to get started!'}
-                  </p>
-                </div>
-              )}
-            </div>
+            <AdminStoriesTab
+              theme={theme}
+              stories={stories}
+              filteredStories={filteredStories}
+              setFilteredStories={setFilteredStories}
+              showAddStoryForm={showAddStoryForm}
+              setShowAddStoryForm={setShowAddStoryForm}
+              storyFormData={storyFormData}
+              setStoryFormData={setStoryFormData}
+              STORY_CATEGORIES={STORY_CATEGORIES}
+              AUDIENCES={AUDIENCES}
+              STORY_TEMPLATES={STORY_TEMPLATES}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              visibilityFilter={visibilityFilter}
+              setVisibilityFilter={setVisibilityFilter}
+              featuredFilter={featuredFilter}
+              setFeaturedFilter={setFeaturedFilter}
+              setEditingStory={setEditingStory}
+              setViewingStory={setViewingStory}
+              handleDeleteStory={handleDeleteStory}
+              handleAddStory={handleAddStory}
+            />
           )}
 
           {/* Arts Tab */}
-          {activeTab === 'arts' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    🎨 Manage Arts
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage arts content including drawings, paintings, and digital art
-                  </p>
-                </div>
-                <button
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #EC4899, #F97316)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Art
-                </button>
-              </div>
-              <div style={{
-                background: theme.surfacePrimary,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '40px',
-                textAlign: 'center',
-                color: theme.textSecondary,
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎨</div>
-                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Arts Management Coming Soon</p>
-                <p>This section will allow you to manage all arts content including drawings, paintings, and digital art</p>
-              </div>
-            </div>
-          )}
+          {activeTab === 'arts' && (<AdminArtsTab theme={theme} />)}
 
           {/* Arts Tab */}
           {activeTab === 'arts' && (
@@ -5796,824 +3301,39 @@ export default function ModernAdminDashboard() {
           )}
 
           {/* Documents Tab */}
-          {activeTab === 'documents' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    📄 Manage Documents
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage educational documents and reading materials
-                  </p>
-                </div>
-                <button
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #3B82F6, #2563EB)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Document
-                </button>
-              </div>
-              <div style={{
-                background: theme.surfacePrimary,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '40px',
-                textAlign: 'center',
-                color: theme.textSecondary,
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
-                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Documents Management Coming Soon</p>
-                <p>This section will allow you to manage all documents including textbooks, reading materials, and reference documents</p>
-              </div>
-            </div>
-          )}
+          {activeTab === 'documents' && (<AdminDocumentsTab theme={theme} />)}
 
           {/* Studies Tab */}
-          {activeTab === 'studies' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    📚 Manage Studies
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage study guides and structured learning materials
-                  </p>
-                </div>
-                <button
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #10B981, #059669)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Study Guide
-                </button>
-              </div>
-              <div style={{
-                background: theme.surfacePrimary,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '40px',
-                textAlign: 'center',
-                color: theme.textSecondary,
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
-                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Studies Management Coming Soon</p>
-                <p>This section will allow you to manage all study guides including chapters, difficulty levels, and learning paths</p>
-              </div>
-            </div>
-          )}
+          {activeTab === 'studies' && (<AdminStudiesTab theme={theme} />)}
 
           {/* Worksheets Tab */}
-          {activeTab === 'worksheets' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '30px',
-                flexWrap: 'wrap',
-                gap: '16px',
-              }}>
-                <div>
-                  <h2 style={{
-                    color: theme.textPrimary,
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    margin: '0 0 8px 0',
-                  }}>
-                    📋 Manage Worksheets
-                  </h2>
-                  <p style={{
-                    color: theme.textSecondary,
-                    margin: '0',
-                  }}>
-                    Create and manage practice worksheets and exercises
-                  </p>
-                </div>
-                <button
-                  style={{
-                    padding: '12px 24px',
-                    background: `linear-gradient(135deg, #F59E0B, #D97706)`,
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ➕ Add New Worksheet
-                </button>
-              </div>
-              <div style={{
-                background: theme.surfacePrimary,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '40px',
-                textAlign: 'center',
-                color: theme.textSecondary,
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
-                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Worksheets Management Coming Soon</p>
-                <p>This section will allow you to manage all worksheets including problem sets, exercises, and practice materials</p>
-              </div>
-            </div>
-          )}
+          {activeTab === 'worksheets' && (<AdminWorksheetsTab theme={theme} />)}
 
           {/* Users & Analytics Tab */}
           {activeTab === 'users' && (
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `2px solid ${theme.border}`,
-              borderRadius: '16px',
-              padding: '40px',
-            }}>
-              <h2 style={{
-                color: theme.textPrimary,
-                fontSize: '24px',
-                fontWeight: '700',
-                marginBottom: '16px',
-              }}>
-                👥 Users & Analytics
-              </h2>
-              <p style={{
-                color: theme.textSecondary,
-                marginBottom: '24px',
-              }}>
-                View user data, engagement metrics, and performance analytics
-              </p>
-
-              {/* Stats Cards */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                gap: '16px',
-                marginBottom: '32px',
-              }}>
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '16px',
-                  textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div>
-                  <div style={{ color: theme.textPrimary, fontSize: '18px', fontWeight: '600' }}>
-                    {scores.length}
-                  </div>
-                  <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Total Attempts</div>
-                </div>
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '16px',
-                  textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>❓</div>
-                  <div style={{ color: theme.textPrimary, fontSize: '18px', fontWeight: '600' }}>
-                    {dbStats?.collections.quizzes || 0}
-                  </div>
-                  <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Quiz Attempts</div>
-                </div>
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '16px',
-                  textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>⭐</div>
-                  <div style={{ color: theme.textPrimary, fontSize: '18px', fontWeight: '600' }}>
-                    {scores.length > 0 ? Math.round(scores.reduce((a, b) => a + (Number(b.score) || 0), 0) / scores.length) : 0}
-                  </div>
-                  <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Avg Score</div>
-                </div>
-              </div>
-
-              {/* Category Filter & Controls */}
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                marginBottom: '20px',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-              }}>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  style={{
-                    padding: '8px 12px',
-                    background: theme.background,
-                    border: `2px solid ${theme.border}`,
-                    borderRadius: '8px',
-                    color: theme.textPrimary,
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <option value="all">All Categories</option>
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={exportCSV}
-                  style={{
-                    padding: '8px 16px',
-                    background: `${theme.accentPrimary}25`,
-                    color: theme.accentPrimary,
-                    border: `2px solid ${theme.accentPrimary}`,
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                  }}
-                >
-                  📥 Export CSV
-                </button>
-              </div>
-
-              {/* Attempts per Category Chart */}
-              {attemptsData.length > 0 && (
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '20px',
-                }}>
-                  <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>Attempts per Category</h3>
-                  <ChartBarSvg data={attemptsData} color={theme.accentPrimary} />
-                </div>
-              )}
-
-              {/* Average Score per Category Chart */}
-              {avgData.length > 0 && (
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '20px',
-                }}>
-                  <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>Average Score per Category</h3>
-                  <ChartBarSvg data={avgData} color="#4CAF50" isFloat={true} />
-                </div>
-              )}
-
-              {/* Recent Scores Table */}
-              <div style={{
-                background: theme.background,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '20px',
-                overflow: 'auto',
-              }}>
-                <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>Recent Scores (showing {Math.min(filteredScores.length, limitRows)} of {filteredScores.length})</h3>
-                {filteredScores.length === 0 ? (
-                  <p style={{ color: theme.textSecondary }}>No scores recorded yet</p>
-                ) : (
-                  <>
-                    <table style={{
-                      width: '100%',
-                      borderCollapse: 'collapse',
-                      minWidth: '600px',
-                    }}>
-                      <thead style={{ background: `${theme.accentPrimary}15` }}>
-                        <tr>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>#</th>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>Category</th>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>Level</th>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>Score</th>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>Total</th>
-                          <th style={{ padding: '12px', textAlign: 'left', color: theme.textPrimary, fontWeight: '600', borderBottom: `2px solid ${theme.border}` }}>When</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredScores.slice(0, limitRows).map((s, i) => (
-                          <tr key={s.id} style={{ borderBottom: `1px solid ${theme.border}` }}>
-                            <td style={{ padding: '12px', color: theme.textSecondary }}>{i + 1}</td>
-                            <td style={{ padding: '12px', color: theme.textPrimary, fontWeight: '500' }}>{s.category}</td>
-                            <td style={{ padding: '12px', color: theme.textSecondary }}>{s.level || '-'}</td>
-                            <td style={{ padding: '12px', color: theme.accentPrimary, fontWeight: '600' }}>{s.score}</td>
-                            <td style={{ padding: '12px', color: theme.textSecondary }}>{s.total}</td>
-                            <td style={{ padding: '12px', color: theme.textSecondary, fontSize: '12px' }}>
-                              {s.createdAt?.toDate ? s.createdAt.toDate().toLocaleString() : (s.createdAt || '-')}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginTop: '16px',
-                    }}>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>
-                        Showing {Math.min(filteredScores.length, limitRows)} of {filteredScores.length}
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                          onClick={() => setLimitRows((n) => Math.max(5, n - 5))}
-                          style={{
-                            padding: '6px 10px',
-                            background: theme.background,
-                            border: `2px solid ${theme.border}`,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            color: theme.textPrimary,
-                            fontWeight: '600',
-                          }}
-                        >
-                          −
-                        </button>
-                        <button
-                          onClick={() => setLimitRows((n) => n + 5)}
-                          style={{
-                            padding: '6px 10px',
-                            background: theme.background,
-                            border: `2px solid ${theme.border}`,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            color: theme.textPrimary,
-                            fontWeight: '600',
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+            <AdminUsersTab
+              theme={theme}
+              scores={scores}
+              dbStats={dbStats}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+              exportCSV={exportCSV}
+              attemptsData={attemptsData}
+              avgData={avgData}
+              filteredScores={filteredScores}
+              limitRows={limitRows}
+              setLimitRows={setLimitRows}
+              CATEGORIES={CATEGORIES}
+            />
           )}
-
-          {/* Setup New Collections Section */}
-          <div style={{
-            background: theme.surfacePrimary,
-            border: `2px solid ${theme.border}`,
-            borderRadius: '16px',
-            padding: '32px',
-            marginBottom: '24px',
-            marginTop: '24px',
-          }}>
-            <h3 style={{
-              color: theme.accentPrimary,
-              fontSize: '20px',
-              fontWeight: '700',
-              marginBottom: '16px',
-            }}>
-              🚀 Initialize New Feature Collections
-            </h3>
-            <p style={{
-              color: theme.textSecondary,
-              marginBottom: '20px',
-            }}>
-              Create 4 new feature collections (Arts, Documents, Studies, Worksheets) with sample data from existing quiz and puzzle content.
-            </p>
-            
-            {setupMessage && (
-              <div style={{
-                background: '#d1fae5',
-                color: '#065f46',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                marginBottom: '16px',
-                borderLeft: '4px solid #10b981',
-              }}>
-                ✅ {setupMessage}
-              </div>
-            )}
-            
-            {setupError && (
-              <div style={{
-                background: '#fee2e2',
-                color: '#991b1b',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                marginBottom: '16px',
-                borderLeft: '4px solid #ef4444',
-              }}>
-                ❌ {setupError}
-              </div>
-            )}
-
-            <button
-              onClick={handleSetupNewCollections}
-              disabled={setupLoading}
-              style={{
-                background: setupLoading ? theme.border : theme.accentPrimary,
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: setupLoading ? 'not-allowed' : 'pointer',
-                opacity: setupLoading ? 0.6 : 1,
-              }}
-            >
-              {setupLoading ? '⏳ Setting up...' : '✨ Setup Collections'}
-            </button>
-            
-            <div style={{
-              marginTop: '20px',
-              padding: '16px',
-              background: theme.background,
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: theme.textSecondary,
-            }}>
-              <strong>What this does:</strong>
-              <ul style={{ marginTop: '8px', marginBottom: 0 }}>
-                <li>✅ Creates 4 new features: Arts, Documents, Studies, Worksheets</li>
-                <li>✅ Creates category collections for each new type</li>
-                <li>✅ Adds 4 sample documents from educational content</li>
-                <li>✅ Adds 3 sample studies from programming quizzes</li>
-                <li>✅ Adds 4 sample worksheets from puzzle exercises</li>
-                <li>✅ Adds 4 sample arts from visual content</li>
-              </ul>
-            </div>
-          </div>
 
           {/* Features Tab */}
-          {activeTab === 'features' && (
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `2px solid ${theme.border}`,
-              borderRadius: '16px',
-              padding: '40px',
-            }}>
-              <div style={{ marginBottom: '24px' }}>
-                <h2 style={{
-                  color: theme.textPrimary,
-                  fontSize: '28px',
-                  fontWeight: '700',
-                  marginBottom: '8px',
-                }}>
-                  ✨ Features & Hierarchy
-                </h2>
-                <p style={{
-                  color: theme.textSecondary,
-                  fontSize: '14px',
-                  margin: 0,
-                }}>
-                  Manage your content hierarchy with an intuitive tree view
-                </p>
-              </div>
-              <ImprovedFeaturesHierarchyManager theme={theme} />
-            </div>
-          )}
+          {activeTab === 'features' && (<AdminFeaturesTab theme={theme} />)}
 
           {/* Settings Tab */}
-          {activeTab === 'settings' && (
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `2px solid ${theme.border}`,
-              borderRadius: '16px',
-              padding: '40px',
-            }}>
-              <h2 style={{
-                color: theme.textPrimary,
-                fontSize: '24px',
-                fontWeight: '700',
-                marginBottom: '16px',
-              }}>
-                ⚙️ Platform Settings & Database Tools
-              </h2>
-              <p style={{
-                color: theme.textSecondary,
-                marginBottom: '32px',
-              }}>
-                Configure system settings and manage database health
-              </p>
-
-              {/* Database Statistics */}
-              {dbStats && (
-                <div style={{
-                  background: theme.background,
-                  border: `2px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '24px',
-                  marginBottom: '32px',
-                }}>
-                  <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>📊 Database Statistics</h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                    gap: '12px',
-                  }}>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.features}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Features</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.categories}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Categories</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.topics}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Topics</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.subtopics}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Subtopics</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.puzzles.valid}/{dbStats.puzzles.total}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Puzzles (valid)</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.questions}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Questions</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.quizzes}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Quizzes</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.collections.stories}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Stories</div>
-                    </div>
-                    <div style={{ textAlign: 'center', padding: '12px' }}>
-                      <div style={{ color: theme.accentPrimary, fontSize: '24px', fontWeight: '700' }}>
-                        {dbStats.totalDocuments}
-                      </div>
-                      <div style={{ color: theme.textSecondary, fontSize: '12px' }}>Total Documents</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Database Tools */}
-              <div style={{
-                background: theme.background,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '24px',
-                marginBottom: '32px',
-              }}>
-                <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>🔧 Database Tools & Maintenance</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                  gap: '12px',
-                }}>
-                  <button
-                    onClick={() => navigate('/admin/database-audit')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#0284c725',
-                      color: '#0284c7',
-                      border: '2px solid #0284c7',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    🔍 Run Audit
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/standardize-features')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#05966925',
-                      color: '#059669',
-                      border: '2px solid #059669',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    ⚡ Standardize Features
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/fix-feature-mismatch')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#d9770625',
-                      color: '#d97706',
-                      border: '2px solid #d97706',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    🔗 Fix Mismatch
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/fix-orphaned-puzzles')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#dc262625',
-                      color: '#dc2626',
-                      border: '2px solid #dc2626',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    🗑️ Delete Broken
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/fix-generic-puzzle-types')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#933326a25',
-                      color: '#9333ea',
-                      border: '2px solid #9333ea',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    🔧 Fix Generic Types
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/populate-missing-puzzle-data')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#1e40af25',
-                      color: '#1e40af',
-                      border: '2px solid #1e40af',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    📊 Check Data
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/delete-incomplete-puzzles')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#dc262625',
-                      color: '#dc2626',
-                      border: '2px solid #dc2626',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    🗑️ Delete Incomplete
-                  </button>
-                  <button
-                    onClick={() => navigate('/admin/validate-puzzle-data')}
-                    style={{
-                      padding: '12px 16px',
-                      background: '#0d948825',
-                      color: '#0d9488',
-                      border: '2px solid #0d9488',
-                      borderRadius: '8px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                    }}
-                  >
-                    ✅ Validate All
-                  </button>
-                </div>
-              </div>
-
-              {/* General Settings */}
-              <div style={{
-                background: theme.background,
-                border: `2px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '24px',
-              }}>
-                <h3 style={{ color: theme.textPrimary, marginTop: 0 }}>⚙️ General Settings</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '12px',
-                }}>
-                  {['Maintenance Mode', 'Email Notifications', 'Auto Backup', 'Debug Mode'].map((setting) => (
-                    <div key={setting} style={{
-                      background: theme.surfacePrimary,
-                      border: `2px solid ${theme.border}`,
-                      borderRadius: '8px',
-                      padding: '12px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}>
-                      <label style={{
-                        color: theme.textPrimary,
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                      }}>
-                        {setting}
-                      </label>
-                      <input
-                        type="checkbox"
-                        style={{
-                          cursor: 'pointer',
-                          width: '18px',
-                          height: '18px',
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {activeTab === 'settings' && (<AdminSettingsTab theme={theme} dbStats={dbStats} navigate={navigate} />)}
             </div>
-          )}
-
-          {/* Quiz Builder Tab */}
-          {activeTab === 'quiz-builder' && (
-            <QuizBuilder
-              onSaveQuiz={handleSaveQuizFromBuilder}
-              theme={currentTheme}
-              breakpoints={{ isMobile: window.innerWidth < 768 }}
-              getResponsivePadding={() => '16px'}
-            />
-          )}
-
-          {/* Analytics Tab */}
-          {activeTab === 'analytics' && (
-            <AnalyticsDashboard
-              userId={user?.uid}
-              theme={currentTheme}
-              breakpoints={{ isMobile: window.innerWidth < 768 }}
-              getResponsivePadding={() => '16px'}
-            />
-          )}
+          </div>
         </div>
         )}
       </div>

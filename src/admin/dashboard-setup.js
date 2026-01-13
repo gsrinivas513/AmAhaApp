@@ -92,19 +92,22 @@ export const SETUP_DATA = {
 };
 
 export const ADMIN_TABS = [
-  { id: 'overview', label: '📊 Overview', icon: '📊' },
-  { id: 'quizzes', label: '❓ Manage Quizzes', icon: '❓' },
-  { id: 'quiz-builder', label: '🏗️ Quiz Builder', icon: '🏗️' },
-  { id: 'puzzles', label: '🧩 Manage Puzzles', icon: '🧩' },
-  { id: 'stories', label: '📖 Manage Stories', icon: '📖' },
-  { id: 'arts', label: '🎨 Manage Arts', icon: '🎨' },
-  { id: 'documents', label: '📄 Manage Documents', icon: '📄' },
-  { id: 'studies', label: '📚 Manage Studies', icon: '📚' },
-  { id: 'worksheets', label: '📋 Manage Worksheets', icon: '📋' },
-  { id: 'features', label: '✨ Features & Categories', icon: '✨' },
-  { id: 'analytics', label: '📈 Analytics', icon: '📈' },
-  { id: 'users', label: '👥 Users & Analytics', icon: '👥' },
-  { id: 'settings', label: '⚙️ Settings', icon: '⚙️' },
+  // Dashboard
+  { id: 'overview', label: '📊 Overview', icon: '📊', group: 'Dashboard' },
+  
+  // Content Management
+  { id: 'quizzes', label: '❓ Manage Quizzes', icon: '❓', group: 'Content Management' },
+  { id: 'puzzles', label: '🧩 Manage Puzzles', icon: '🧩', group: 'Content Management' },
+  { id: 'stories', label: '📖 Manage Stories', icon: '📖', group: 'Content Management' },
+  { id: 'arts', label: '🎨 Manage Arts', icon: '🎨', group: 'Content Management' },
+  { id: 'documents', label: '📄 Manage Documents', icon: '📄', group: 'Content Management' },
+  { id: 'studies', label: '📚 Manage Studies', icon: '📚', group: 'Content Management' },
+  { id: 'worksheets', label: '📋 Manage Worksheets', icon: '📋', group: 'Content Management' },
+  
+  // Administration
+  { id: 'features', label: '✨ Features & Categories', icon: '✨', group: 'Administration' },
+  { id: 'users', label: '👥 Users & Analytics', icon: '👥', group: 'Administration' },
+  { id: 'settings', label: '⚙️ Settings', icon: '⚙️', group: 'Administration' },
 ];
 
 export const DASHBOARD_STATS = (quizzes, puzzles, stories) => [

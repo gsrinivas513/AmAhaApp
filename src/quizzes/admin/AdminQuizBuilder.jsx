@@ -2100,7 +2100,7 @@ export const AdminQuizBuilder = ({ initialQuiz = null, initialData = null, theme
   };
 
   return (
-    <div className="admin-quiz-builder" style={{ color: theme?.textPrimary }}>
+    <div className="admin-quiz-builder" style={{ color: theme?.textPrimary, backgroundColor: theme?.surfacePrimary || theme?.cardBg || '#fff' }}>
       {/* Loading Indicator */}
       {loadingFullData && (
         <div style={{
@@ -2210,7 +2210,7 @@ export const AdminQuizBuilder = ({ initialQuiz = null, initialData = null, theme
           className="btn-prev"
           onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
           disabled={currentStep === 1}
-          style={{ backgroundColor: theme?.border }}
+          style={{ backgroundColor: theme?.border, color: '#fff' }}
         >
           ← Previous
         </button>
@@ -2222,6 +2222,7 @@ export const AdminQuizBuilder = ({ initialQuiz = null, initialData = null, theme
             disabled={!canGoNext()}
             style={{
               backgroundColor: canGoNext() ? theme?.accentPrimary : theme?.border,
+              color: '#fff',
             }}
           >
             Next →

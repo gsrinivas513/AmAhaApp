@@ -125,15 +125,6 @@ export default function ImprovedFeaturesHierarchyManager() {
           gap: '16px',
         }}
       >
-        <div>
-          <h2 style={{ color: theme.textPrimary, margin: '0 0 8px 0' }}>
-            ✨ Features & Hierarchy
-          </h2>
-          <p style={{ color: theme.textSecondary, margin: 0, fontSize: '14px' }}>
-            Manage your content hierarchy and structure
-          </p>
-        </div>
-
         {/* View Mode Toggles */}
         <div style={{ display: 'flex', gap: '8px' }}>
           {['overview', 'table', 'tree'].map(mode => (

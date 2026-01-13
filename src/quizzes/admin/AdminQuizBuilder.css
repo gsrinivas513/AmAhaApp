@@ -90,6 +90,7 @@
   color: white;
   font-weight: 600;
   user-select: none;
+  background: rgba(100, 100, 150, 0.3);
 }
 
 .step:hover {
@@ -108,8 +109,10 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(100, 100, 150, 0.6);
   font-size: 12px;
+  font-weight: 700;
+  color: white;
 }
 
 .step-label {
@@ -118,7 +121,7 @@
 
 /* Content Sections */
 .builder-content {
-  background: var(--card-bg);
+  background: transparent !important;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 24px;

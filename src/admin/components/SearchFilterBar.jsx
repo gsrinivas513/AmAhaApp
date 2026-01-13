@@ -11,6 +11,11 @@ const SearchFilterBar = ({
   showStatus = true,
   showDifficulty = true,
   showCategory = true,
+  visibilityFilter = 'all',
+  onVisibilityChange = () => {},
+  featuredFilter = false,
+  onFeaturedChange = () => {},
+  onClearFilters = () => {},
 }) => {
   const { theme } = useContext(ThemeContext);
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +23,8 @@ const SearchFilterBar = ({
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [sortBy, setSortBy] = useState('title'); // title, createdAt, updatedAt
+  const [localVisibility, setLocalVisibility] = useState(visibilityFilter);
+  const [localFeatured, setLocalFeatured] = useState(featuredFilter);
 
   // Perform filtering
   useMemo(() => {
@@ -78,18 +85,15 @@ const SearchFilterBar = ({
     setSelectedDifficulty('');
     setSelectedStatus('');
     setSortBy('title');
+    setLocalVisibility('all');
+    setLocalFeatured(false);
+    onClearFilters();
   };
 
-  const hasActiveFilters = searchTerm || selectedCategory || selectedDifficulty || selectedStatus || sortBy !== 'title';
+  const hasActiveFilters = searchTerm || selectedCategory || selectedDifficulty || selectedStatus || sortBy !== 'title' || localVisibility !== 'all' || localFeatured;
 
   return (
-    <div style={{
-      background: theme.surfacePrimary,
-      border: `2px solid ${theme.border}`,
-      borderRadius: '12px',
-      padding: '20px',
-      marginBottom: '20px',
-    }}>
+    <div>
       {/* Title */}
       <h3 style={{
         color: theme.textPrimary,
@@ -291,6 +295,74 @@ const SearchFilterBar = ({
             <option value="createdAt">Created (Newest)</option>
             <option value="updatedAt">Updated (Newest)</option>
           </select>
+        </div>
+
+        {/* Visibility Filter */}
+        <div>
+          <label style={{
+            display: 'block',
+            color: theme.textSecondary,
+            fontSize: '11px',
+            fontWeight: '600',
+            marginBottom: '6px',
+            textTransform: 'uppercase',
+          }}>
+            👁️ Visibility
+          </label>
+          <select
+            value={localVisibility}
+            onChange={(e) => {
+              setLocalVisibility(e.target.value);
+              onVisibilityChange(e.target.value);
+            }}
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              background: theme.background,
+              border: `2px solid ${localVisibility !== 'all' ? theme.accentPrimary : theme.border}`,
+              borderRadius: '6px',
+              color: theme.textPrimary,
+              fontSize: '12px',
+              fontFamily: 'inherit',
+              cursor: 'pointer',
+              transition: 'border-color 0.2s',
+            }}
+          >
+            <option value="all">All</option>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        {/* Featured Filter */}
+        <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            padding: '10px 12px',
+            background: localFeatured ? `${theme.accentPrimary}25` : theme.background,
+            border: `2px solid ${localFeatured ? theme.accentPrimary : theme.border}`,
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '12px',
+            color: localFeatured ? theme.accentPrimary : theme.textPrimary,
+            transition: 'all 0.2s',
+            width: '100%',
+            justifyContent: 'center',
+          }}>
+            <input
+              type="checkbox"
+              checked={localFeatured}
+              onChange={(e) => {
+                setLocalFeatured(e.target.checked);
+                onFeaturedChange(e.target.checked);
+              }}
+              style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+            />
+            <span>⭐ Featured Only</span>
+          </label>
         </div>
       </div>
 
