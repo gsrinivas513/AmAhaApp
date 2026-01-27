@@ -105,6 +105,8 @@ export const ADMIN_TABS = [
   { id: 'worksheets', label: '📋 Manage Worksheets', icon: '📋', group: 'Content Management' },
   
   // Administration
+  { id: 'quiz-types', label: '🎯 Quiz Types', icon: '🎯', group: 'Administration' },
+  { id: 'puzzle-types', label: '🧩 Puzzle Types', icon: '🧩', group: 'Administration' },
   { id: 'features', label: '✨ Features & Categories', icon: '✨', group: 'Administration' },
   { id: 'users', label: '👥 Users & Analytics', icon: '👥', group: 'Administration' },
   { id: 'settings', label: '⚙️ Settings', icon: '⚙️', group: 'Administration' },

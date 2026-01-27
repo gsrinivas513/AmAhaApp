@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import SearchFilterBar from '../components/SearchFilterBar';
+import { TableColumnHeader, generateFilterOptions } from '../components/TableColumnHeader';
+import { sortData } from '../utils/tableUtils';
 import StatusBadge from '../../components/badges/StatusBadge';
 import VisibilityBadge from '../../components/badges/VisibilityBadge';
 import FeaturedBadge from '../../components/badges/FeaturedBadge';
 import PaginationControls from '../components/PaginationControls';
 import AdminPuzzleBuilder from '../AdminPuzzleBuilder';
-import PictureWordEditor from '../puzzle-editors/PictureWordEditor';
-import PictureShadowEditor from '../puzzle-editors/PictureShadowEditor';
-import FindPairEditor from '../puzzle-editors/FindPairEditor';
-import SpotDifferenceEditor from '../puzzle-editors/SpotDifferenceEditor';
-import OrderingEditor from '../puzzle-editors/OrderingEditor';
-import WordSearchEditor from '../puzzle-editors/WordSearchEditor';
-import JigsawEditor from '../puzzle-editors/JigsawEditor';
 
 // Import other components and utilities from parent as needed
 export default function PuzzlesTab({
@@ -116,10 +111,14 @@ export default function PuzzlesTab({
 }) {
   const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: 'title', direction: 'asc' });
+
+  // Apply column-level sorting and filtering
+  const sortedAndFilteredPuzzles = sortData(filteredPuzzles, sortConfig);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredPuzzles.length / ITEMS_PER_PAGE);
-  const paginatedPuzzles = filteredPuzzles.slice(
+  const totalPages = Math.ceil(sortedAndFilteredPuzzles.length / ITEMS_PER_PAGE);
+  const paginatedPuzzles = sortedAndFilteredPuzzles.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -272,12 +271,46 @@ export default function PuzzlesTab({
         {/* Puzzle Table & Pagination - All in one container */}
         {filteredPuzzles.length > 0 ? (
           <div>
-            {/* Table Header */}
+            {/* Table Header with Sortable Columns */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1.5fr', gap: '16px', padding: '14px 20px', background: `${theme.accentPrimary}15`, borderBottom: `2px solid ${theme.border}`, fontWeight: '700', color: theme.accentPrimary, fontSize: '13px', position: 'sticky', top: 0 }}>
-              <div>Title</div>
-              <div style={{ textAlign: 'center' }}>Type</div>
-              <div style={{ textAlign: 'center' }}>Difficulty</div>
-              <div style={{ textAlign: 'center' }}>Audience</div>
+              <TableColumnHeader
+                label="Title"
+                sortKey="title"
+                currentSort={sortConfig}
+                onSort={setSortConfig}
+                filterOptions={generateFilterOptions(filteredPuzzles, 'title')}
+                showFilter={false}
+              />
+              <div style={{ textAlign: 'center' }}>
+                <TableColumnHeader
+                  label="Type"
+                  sortKey="type"
+                  currentSort={sortConfig}
+                  onSort={setSortConfig}
+                  filterOptions={generateFilterOptions(filteredPuzzles, 'type')}
+                  showFilter={true}
+                />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <TableColumnHeader
+                  label="Difficulty"
+                  sortKey="difficulty"
+                  currentSort={sortConfig}
+                  onSort={setSortConfig}
+                  filterOptions={generateFilterOptions(filteredPuzzles, 'difficulty')}
+                  showFilter={true}
+                />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <TableColumnHeader
+                  label="Audience"
+                  sortKey="audience"
+                  currentSort={sortConfig}
+                  onSort={setSortConfig}
+                  filterOptions={generateFilterOptions(filteredPuzzles, 'audience')}
+                  showFilter={true}
+                />
+              </div>
               <div style={{ textAlign: 'center' }}>Status</div>
               <div style={{ textAlign: 'right' }}>Actions</div>
             </div>
@@ -344,7 +377,7 @@ export default function PuzzlesTab({
                 </button>
 
                 <span style={{ color: theme.textSecondary, fontSize: '12px', marginLeft: '12px' }}>
-                  ({(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredPuzzles.length)} of {filteredPuzzles.length})
+                  ({(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, sortedAndFilteredPuzzles.length)} of {sortedAndFilteredPuzzles.length})
                 </span>
               </div>
             )}

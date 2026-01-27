@@ -53,6 +53,8 @@ import AdminWorksheetsTab from './tabs/AdminWorksheetsTab';
 import AdminUsersTab from './tabs/AdminUsersTab';
 import AdminFeaturesTab from './tabs/AdminFeaturesTab';
 import AdminSettingsTab from './tabs/AdminSettingsTab';
+import AdminQuizTypesTab from './tabs/AdminQuizTypesTab';
+import AdminPuzzleTypesTab from './tabs/AdminPuzzleTypesTab';
 
 // ===== EXTRACTED CONSTANTS =====
 // STORY_TEMPLATES imported from dashboard-data.js
@@ -3326,6 +3328,12 @@ export default function ModernAdminDashboard() {
               CATEGORIES={CATEGORIES}
             />
           )}
+
+          {/* Quiz Types Tab */}
+          {activeTab === 'quiz-types' && (<AdminQuizTypesTab theme={theme} />)}
+
+          {/* Puzzle Types Tab */}
+          {activeTab === 'puzzle-types' && (<AdminPuzzleTypesTab theme={theme} />)}
 
           {/* Features Tab */}
           {activeTab === 'features' && (<AdminFeaturesTab theme={theme} />)}

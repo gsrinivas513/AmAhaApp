@@ -546,15 +546,19 @@ const AdminPuzzleBuilder = ({
               cursor: 'pointer',
               fontSize: '14px',
               transition: 'all 0.3s ease',
+              opacity: currentStep === idx + 1 ? 1 : 0.7,
+              transform: currentStep === idx + 1 ? 'scale(1)' : 'scale(0.98)',
             }}
             onMouseOver={(e) => {
               if (currentStep !== idx + 1) {
-                e.currentTarget.style.borderColor = theme.accentPrimary;
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'scale(1)';
               }
             }}
             onMouseOut={(e) => {
               if (currentStep !== idx + 1) {
-                e.currentTarget.style.borderColor = theme.border;
+                e.currentTarget.style.opacity = '0.7';
+                e.currentTarget.style.transform = 'scale(0.98)';
               }
             }}
           >

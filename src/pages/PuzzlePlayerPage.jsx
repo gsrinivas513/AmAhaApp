@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, where, addDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import SiteLayout from '../layouts/SiteLayout';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../components/AuthProvider';
 import OrderingPuzzle from '../puzzles/OrderingPuzzle';
 import MatchingPuzzle from '../puzzles/MatchingPuzzle';
 import DragPuzzle from '../puzzles/DragPuzzle';
 import JigsawPuzzle from '../puzzles/renderers/JigsawPuzzle';
-import PuzzleHeader from '../puzzles/components/PuzzleHeader';
+import FindPairPuzzle from '../puzzles/renderers/FindPairPuzzle';
+import PictureShadowPuzzle from '../puzzles/renderers/PictureShadowPuzzle';
+import PictureWordPuzzle from '../puzzles/renderers/PictureWordPuzzle';
+import SpotDifferencePuzzle from '../puzzles/renderers/SpotDifferencePuzzle';
+import WordSearchPuzzle from '../puzzles/renderers/WordSearchPuzzle';
+import CrosswordPuzzle from '../puzzles/renderers/CrosswordPuzzle';
+import SudokuPuzzle from '../puzzles/renderers/SudokuPuzzle';
 
 const styles = `
   @keyframes spin {
@@ -21,10 +28,17 @@ export default function PuzzlePlayerPage() {
   const { theme } = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [puzzle, setPuzzle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState('easy');
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
+  const [leaderboardByDifficulty, setLeaderboardByDifficulty] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState({ rating: 5, comment: '' });
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     const loadPuzzle = async () => {
@@ -56,6 +70,11 @@ export default function PuzzlePlayerPage() {
         }
         
         setPuzzle(puzzleData);
+        
+        // Load leaderboards and reviews
+        await loadLeaderboardByDifficulty(id);
+        await loadReviews(id);
+        
         setLoading(false);
       } catch (error) {
         console.error('❌ [PuzzlePlayerPage] Error loading puzzle:', error);
@@ -67,101 +86,140 @@ export default function PuzzlePlayerPage() {
     loadPuzzle();
   }, [id]);
 
-  if (loading) {
-    return (
-      <SiteLayout>
-        <style>{styles}</style>
-        <div style={{
-          background: theme.background,
-          minHeight: '100vh',
-          padding: '40px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px', animation: 'spin 2s linear infinite' }}>
-              🧩
-            </div>
-            <p style={{
-              color: theme.textPrimary,
-              fontSize: '20px',
-              fontWeight: '600',
-            }}>
-              Loading puzzle...
-            </p>
-          </div>
-        </div>
-      </SiteLayout>
-    );
-  }
+  const loadLeaderboardByDifficulty = async (puzzleId) => {
+    try {
+      const scoresRef = collection(db, 'puzzleScores');
+      const q = query(scoresRef, where('puzzleId', '==', puzzleId));
+      const snapshot = await getDocs(q);
+      
+      const allScores = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
 
-  if (error || !puzzle) {
-    return (
-      <SiteLayout>
-        <div style={{
-          background: theme.background,
-          minHeight: '100vh',
-          padding: '40px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <div style={{ textAlign: 'center', maxWidth: '600px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>❌</div>
-            <p style={{
-              color: theme.textPrimary,
-              fontSize: '20px',
-              fontWeight: '600',
-              marginBottom: '16px',
-            }}>
-              {error || 'Puzzle not found'}
-            </p>
-            <button
-              onClick={() => navigate('/puzzles')}
-              style={{
-                padding: '12px 32px',
-                background: `linear-gradient(135deg, ${theme.accentPrimary}, ${theme.accentSecondary})`,
-                color: '#fff',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseOver={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              Back to Puzzles
-            </button>
-          </div>
-        </div>
-      </SiteLayout>
-    );
-  }
+      const byDifficulty = {};
+      allScores.forEach(score => {
+        const diff = score.difficulty || 'easy';
+        if (!byDifficulty[diff]) byDifficulty[diff] = [];
+        byDifficulty[diff].push(score);
+      });
+
+      // Deduplicate: keep only the best score per user per difficulty
+      Object.keys(byDifficulty).forEach(diff => {
+        const userBestScores = {};
+        byDifficulty[diff].forEach(score => {
+          const userId = score.userId;
+          if (!userBestScores[userId] || score.score > userBestScores[userId].score || 
+              (score.score === userBestScores[userId].score && score.timeSpent < userBestScores[userId].timeSpent)) {
+            userBestScores[userId] = score;
+          }
+        });
+        
+        // Convert back to array and sort
+        byDifficulty[diff] = Object.values(userBestScores).sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return a.timeSpent - b.timeSpent;
+        });
+      });
+
+      setLeaderboardByDifficulty(byDifficulty);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+    }
+  };
+
+  const loadReviews = async (puzzleId) => {
+    try {
+      const reviewsRef = collection(db, 'puzzleReviews');
+      const q = query(reviewsRef, where('puzzleId', '==', puzzleId));
+      const snapshot = await getDocs(q);
+      
+      const reviewsData = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+      })).sort((a, b) => b.rating - a.rating).slice(0, 10);
+      
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!userReview.comment.trim()) {
+      alert('Please write a review comment');
+      return;
+    }
+
+    try {
+      const reviewData = {
+        puzzleId: id,
+        userId: user?.uid || 'anonymous',
+        userName: user?.displayName || 'Anonymous',
+        rating: userReview.rating,
+        comment: userReview.comment,
+        createdAt: new Date().toISOString(),
+      };
+
+      await addDoc(collection(db, 'puzzleReviews'), reviewData);
+      
+      alert('✅ Review submitted successfully!');
+      setUserReview({ rating: 5, comment: '' });
+      setShowReviewForm(false);
+      
+      await loadReviews(id);
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Error submitting review');
+    }
+  };
 
   // Render puzzle content based on type
   const renderPuzzleContent = () => {
-    switch (puzzle.type?.toLowerCase()) {
+    const puzzleType = puzzle.type?.toLowerCase();
+    
+    switch (puzzleType) {
       case 'jigsaw':
+        const variants = puzzle.variants || [
+          { label: 'Easy (3×4)', rows: 3, cols: 4 },
+          { label: 'Medium (4×5)', rows: 4, cols: 5 },
+          { label: 'Hard (6×6)', rows: 6, cols: 6 },
+        ];
+        
         const jigsawData = {
           data: {
             imageUrl: puzzle.imageUrl,
-            variants: puzzle.variants || [
-              { name: 'Easy (3×4)', cols: 3, rows: 4 },
-              { name: 'Medium (4×5)', cols: 4, rows: 5 },
-              { name: 'Hard (6×6)', cols: 6, rows: 6 },
-            ],
+            variants,
+            selectedVariant: variants[selectedVariantIdx] || variants[0],
+            allVariants: variants,
+            rows: puzzle.rows || 3,
+            cols: puzzle.cols || 4,
           },
           imageUrl: puzzle.imageUrl,
-          variants: puzzle.variants,
+          variants,
         };
-        return <JigsawPuzzle puzzle={jigsawData} />;
+        return <JigsawPuzzle puzzle={jigsawData} selectedVariantId={selectedVariantIdx} onVariantChange={setSelectedVariantIdx} />;
+
+      case 'find-pair':
+        return <FindPairPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'picture-shadow':
+        return <PictureShadowPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'picture-word':
+        return <PictureWordPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'spot-difference':
+        return <SpotDifferencePuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'word-search':
+        return <WordSearchPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'crossword':
+        return <CrosswordPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
+
+      case 'sudoku':
+        return <SudokuPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
 
       case 'ordering':
         return <OrderingPuzzle puzzle={puzzle} onComplete={() => {}} isInline={true} />;
@@ -196,254 +254,506 @@ export default function PuzzlePlayerPage() {
               lineHeight: '1.6',
               margin: '0',
             }}>
-              Puzzle type "<strong>{puzzle.type}</strong>" is not yet implemented.
+              Puzzle type "<strong>{puzzleType}</strong>" is not yet implemented.
             </p>
           </div>
         );
     }
   };
 
+  if (loading) {
+    return (
+      <SiteLayout>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          color: theme.textPrimary,
+          fontSize: '18px',
+        }}>
+          Loading puzzle...
+        </div>
+      </SiteLayout>
+    );
+  }
+
+  if (!puzzle) {
+    return (
+      <SiteLayout>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          color: theme.textSecondary,
+        }}>
+          {error || 'Puzzle not found.'} <a href="/puzzles" style={{ color: theme.accentPrimary, marginLeft: '8px' }}>Go back to puzzles</a>
+        </div>
+      </SiteLayout>
+    );
+  }
+
+  // Main puzzle playing view
   return (
     <SiteLayout>
       <style>{styles}</style>
-      <div style={{
-        background: theme.background,
-        minHeight: '100vh',
-        padding: '12px 12px 32px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        {/* Header - with breadcrumbs */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
+        {/* Breadcrumb Navigation */}
         <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          width: '100%',
-          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '32px',
+          color: theme.textSecondary,
+          fontSize: '14px',
         }}>
-          <PuzzleHeader puzzle={puzzle} onNavigate={(target) => {
-            if (target === 'home') navigate('/');
-            else if (target === 'puzzles') navigate('/puzzles');
-          }} />
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: theme.accentPrimary, cursor: 'pointer' }}>Home</button>
+          <span>›</span>
+          <button onClick={() => navigate('/puzzles')} style={{ background: 'none', border: 'none', color: theme.accentPrimary, cursor: 'pointer' }}>Puzzles</button>
+          <span>›</span>
+          <span style={{ color: theme.textPrimary }}>{puzzle.title}</span>
         </div>
 
-        {/* Main content area with two-column layout */}
+        {/* Title and Subtitle */}
         <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          width: '100%',
+          marginBottom: '24px',
+        }}>
+          <h1 style={{
+            color: theme.textPrimary,
+            fontSize: '48px',
+            fontWeight: '700',
+            marginBottom: '8px',
+            margin: '0 0 8px 0',
+          }}>
+            {puzzle.title}
+          </h1>
+          <p style={{
+            color: theme.textSecondary,
+            fontSize: '18px',
+            marginBottom: '0',
+            margin: '0',
+          }}>
+            {puzzle.description || 'Solve this puzzle and test your skills'}
+          </p>
+        </div>
+
+        {/* TWO COLUMN LAYOUT: Puzzle (LEFT) + Sidebar (RIGHT) */}
+        <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 280px',
-          gap: '24px',
-          flex: 1,
+          gap: '40px',
+          marginBottom: '48px',
         }}>
-          {/* Left: Puzzle Game Area */}
-          <div style={{
-            background: theme.surfacePrimary,
-            borderRadius: '12px',
-            padding: '24px',
-            minHeight: '600px',
-            border: `1px solid ${theme.border}`,
-          }}>
-            {renderPuzzleContent()}
+          {/* LEFT: Puzzle Playing Area */}
+          <div>
+            {/* Puzzle Canvas Card */}
+            <div style={{
+              background: theme.surfacePrimary,
+              border: `2px solid ${theme.accentPrimary}30`,
+              borderRadius: '16px',
+              padding: '32px',
+              marginBottom: '24px',
+              boxShadow: `0 12px 32px ${theme.accentPrimary}15`,
+              transition: 'all 0.3s ease',
+              minHeight: '600px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              {renderPuzzleContent()}
+            </div>
           </div>
 
-          {/* Right: Sidebar */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-          }}>
-            {/* Change Variant / Difficulty Card */}
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '12px',
-              padding: '16px',
+          {/* RIGHT: Sidebar */}
+          <div>
+            <h2 style={{
+              color: theme.textPrimary,
+              fontSize: '16px',
+              fontWeight: '700',
+              marginBottom: '8px',
+              margin: '0 0 8px 0',
             }}>
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: '700',
-                color: theme.textPrimary,
-                margin: '0 0 12px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
-                🎮 Difficulty
-              </h3>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-              }}>
-                {['easy', 'medium', 'hard'].map((difficulty) => {
-                  const isActive = selectedDifficulty === difficulty;
-                  const diffColors = {
-                    easy: { bg: '#bbf7d0', text: '#047857', border: '#6ee7b7' },
-                    medium: { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' },
-                    hard: { bg: '#fecaca', text: '#991b1b', border: '#fca5a5' },
-                  };
-                  const colors = diffColors[difficulty] || diffColors.medium;
-                  const emojis = {
-                    easy: '🟢',
-                    medium: '🟡',
-                    hard: '🔴',
-                  };
+              Change Difficulty
+            </h2>
+            <p style={{
+              color: theme.textSecondary,
+              fontSize: '13px',
+              marginBottom: '20px',
+              margin: '0 0 20px 0',
+            }}>
+              Select your difficulty
+            </p>
 
-                  return (
-                    <button
-                      key={difficulty}
-                      onClick={() => setSelectedDifficulty(difficulty)}
-                      style={{
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: isActive ? `2px solid ${colors.text}` : `1px solid ${theme.border}`,
-                        background: isActive ? colors.bg : theme.surfaceSecondary,
-                        color: colors.text,
-                        fontSize: '14px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textTransform: 'capitalize',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          e.target.style.borderColor = colors.text;
-                          e.target.style.background = `${colors.text}15`;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.target.style.borderColor = theme.border;
-                          e.target.style.background = theme.surfaceSecondary;
-                        }
-                      }}
-                    >
-                      {emojis[difficulty]} {difficulty}
-                    </button>
-                  );
-                })}
-              </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gap: '10px',
+              marginBottom: '24px',
+            }}>
+              {['easy', 'medium', 'hard'].map((difficulty, idx) => (
+                <button
+                  key={difficulty}
+                  onClick={() => {
+                    setSelectedVariantIdx(idx);
+                  }}
+                  style={{
+                    padding: '14px 12px',
+                    background: selectedVariantIdx === idx ? `linear-gradient(135deg, ${theme.accentPrimary}30, ${theme.accentSecondary}20)` : theme.surfacePrimary,
+                    color: theme.textPrimary,
+                    border: `2px solid ${selectedVariantIdx === idx ? theme.accentPrimary : theme.border}`,
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    textTransform: 'capitalize',
+                  }}
+                  onMouseOver={(e) => {
+                    if (selectedVariantIdx !== idx) {
+                      e.currentTarget.style.borderColor = theme.accentPrimary;
+                      e.currentTarget.style.background = theme.accentPrimary + '10';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (selectedVariantIdx !== idx) {
+                      e.currentTarget.style.borderColor = theme.border;
+                      e.currentTarget.style.background = theme.surfacePrimary;
+                    }
+                  }}
+                >
+                  {difficulty === 'easy' && '🟢'} {difficulty === 'medium' && '🟡'} {difficulty === 'hard' && '🔴'} {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                </button>
+              ))}
             </div>
 
-            {/* Puzzle Info Card */}
+            {/* Pro Tip Section */}
             <div style={{
-              background: theme.surfacePrimary,
-              border: `1px solid ${theme.border}`,
+              background: `linear-gradient(135deg, ${theme.accentPrimary}10, ${theme.accentSecondary}05)`,
+              border: `1px solid ${theme.accentPrimary}30`,
               borderRadius: '12px',
               padding: '16px',
             }}>
               <h3 style={{
-                fontSize: '14px',
+                color: theme.accentPrimary,
+                fontSize: '13px',
                 fontWeight: '700',
-                color: theme.textPrimary,
-                margin: '0 0 12px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
-                📋 Info
-              </h3>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-              }}>
-                {puzzle.ageGroup && (
-                  <div>
-                    <p style={{
-                      fontSize: '12px',
-                      color: theme.textSecondary,
-                      margin: '0 0 4px 0',
-                      fontWeight: '600',
-                    }}>
-                      Age Group
-                    </p>
-                    <p style={{
-                      fontSize: '14px',
-                      color: theme.textPrimary,
-                      margin: '0',
-                      fontWeight: '600',
-                    }}>
-                      {puzzle.ageGroup}
-                    </p>
-                  </div>
-                )}
-
-                {puzzle.type && (
-                  <div>
-                    <p style={{
-                      fontSize: '12px',
-                      color: theme.textSecondary,
-                      margin: '0 0 4px 0',
-                      fontWeight: '600',
-                    }}>
-                      Type
-                    </p>
-                    <p style={{
-                      fontSize: '14px',
-                      color: theme.textPrimary,
-                      margin: '0',
-                      fontWeight: '600',
-                    }}>
-                      {puzzle.type.charAt(0).toUpperCase() + puzzle.type.slice(1)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Leaderboards Preview */}
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '12px',
-              padding: '16px',
-            }}>
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: '700',
-                color: theme.textPrimary,
+                marginBottom: '8px',
                 margin: '0 0 8px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
               }}>
-                🏆 Leaderboards
+                💡 Pro Tip
               </h3>
               <p style={{
-                fontSize: '12px',
                 color: theme.textSecondary,
-                margin: '0',
+                fontSize: '12px',
                 lineHeight: '1.5',
+                marginBottom: '0',
+                margin: '0',
               }}>
-                Coming soon
+                Start with an easier difficulty to practice. You can always challenge yourself with harder variants!
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* LEADERBOARDS AND REVIEWS - FULL WIDTH BELOW */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gap: '40px',
+        }}>
+          {/* Leaderboards */}
+          <div>
+            <h2 style={{
+              color: theme.textPrimary,
+              fontSize: '28px',
+              fontWeight: '700',
+              marginBottom: '8px',
+            }}>
+              🏆 Leaderboards
+            </h2>
+            <p style={{
+              color: theme.textSecondary,
+              fontSize: '16px',
+              marginBottom: '32px',
+            }}>
+              See how you compare to others
+            </p>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '24px',
+            }}>
+              {['easy', 'medium', 'hard'].map(difficulty => (
+                <div key={difficulty} style={{ marginBottom: '0' }}>
+                  <h3 style={{
+                    color: theme.textPrimary,
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    marginBottom: '12px',
+                    paddingBottom: '8px',
+                    borderBottom: `1px solid ${theme.border}`,
+                    textTransform: 'capitalize',
+                  }}>
+                    {difficulty === 'easy' && '🟢'} {difficulty === 'medium' && '🟡'} {difficulty === 'hard' && '🔴'} {difficulty}
+                  </h3>
+
+                  {leaderboardByDifficulty[difficulty] && leaderboardByDifficulty[difficulty].length > 0 ? (
+                    <div style={{
+                      display: 'grid',
+                      gap: '6px',
+                    }}>
+                      {leaderboardByDifficulty[difficulty].slice(0, 5).map((entry, index) => (
+                        <div
+                          key={entry.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px',
+                            background: index === 0 ? `${theme.accentPrimary}15` : theme.background,
+                            border: `1px solid ${theme.border}`,
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1 }}>
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              background: theme.accentPrimary,
+                              color: '#fff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '700',
+                              fontSize: '10px',
+                              minWidth: '20px',
+                            }}>
+                              {index + 1}
+                            </div>
+                            <div style={{
+                              color: theme.textPrimary,
+                              fontWeight: '600',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              fontSize: '10px',
+                            }}>
+                              {entry.userName}
+                            </div>
+                          </div>
+                          <div style={{
+                            color: theme.accentPrimary,
+                            fontWeight: '700',
+                            fontSize: '10px',
+                          }}>
+                            {entry.score ? `${entry.score}pts` : '—'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{
+                      color: theme.textSecondary,
+                      fontSize: '10px',
+                      textAlign: 'center',
+                      padding: '8px 0',
+                    }}>
+                      No scores yet
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Reviews */}
+          <div>
+            <h2 style={{
+              color: theme.textPrimary,
+              fontSize: '28px',
+              fontWeight: '700',
+              marginBottom: '8px',
+            }}>
+              ⭐ Reviews
+            </h2>
+            <p style={{
+              color: theme.textSecondary,
+              fontSize: '16px',
+              marginBottom: '32px',
+            }}>
+              What players are saying about this puzzle
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                style={{
+                  padding: '10px 20px',
+                  background: theme.accentPrimary,
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `0 8px 16px ${theme.accentPrimary}40`;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {showReviewForm ? 'Cancel' : '✍️ Write Review'}
+              </button>
             </div>
 
-            {/* Reviews Preview */}
-            <div style={{
-              background: theme.surfacePrimary,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '12px',
-              padding: '16px',
-            }}>
-              <h3 style={{
-                fontSize: '14px',
-                fontWeight: '700',
-                color: theme.textPrimary,
-                margin: '0 0 8px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
+            {/* Review Form */}
+            {showReviewForm && (
+              <div style={{
+                background: theme.background,
+                border: `2px solid ${theme.border}`,
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '24px',
               }}>
-                ⭐ Reviews
-              </h3>
-              <p style={{
-                fontSize: '12px',
-                color: theme.textSecondary,
-                margin: '0',
-                lineHeight: '1.5',
-              }}>
-                Coming soon
-              </p>
-            </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: theme.textPrimary, fontWeight: '600' }}>
+                    Rating
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {[1, 2, 3, 4, 5].map(r => (
+                      <button
+                        key={r}
+                        onClick={() => setUserReview({ ...userReview, rating: r })}
+                        style={{
+                          fontSize: '28px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          opacity: userReview.rating >= r ? 1 : 0.3,
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.2)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', color: theme.textPrimary, fontWeight: '600' }}>
+                    Comment
+                  </label>
+                  <textarea
+                    value={userReview.comment}
+                    onChange={(e) => setUserReview({ ...userReview, comment: e.currentTarget.value })}
+                    placeholder="Share your thoughts about this puzzle..."
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: theme.surfacePrimary,
+                      border: `1px solid ${theme.border}`,
+                      borderRadius: '12px',
+                      color: theme.textPrimary,
+                      fontSize: '14px',
+                      minHeight: '100px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                      resize: 'vertical',
+                    }}
+                  />
+                </div>
+
+                <button
+                  onClick={handleSubmitReview}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: theme.accentPrimary,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = `0 8px 16px ${theme.accentPrimary}40`;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Submit Review
+                </button>
+              </div>
+            )}
+
+            {/* Reviews List */}
+            {reviews.length > 0 ? (
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    style={{
+                      background: theme.background,
+                      border: `1px solid ${theme.border}`,
+                      borderRadius: '12px',
+                      padding: '16px',
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      marginBottom: '8px',
+                    }}>
+                      <div>
+                        <div style={{ color: theme.textPrimary, fontWeight: '600', fontSize: '13px' }}>
+                          {review.userName}
+                        </div>
+                        <div style={{ color: theme.textSecondary, fontSize: '11px' }}>
+                          {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                        </div>
+                      </div>
+                      <div style={{ color: theme.textSecondary, fontSize: '11px' }}>
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <p style={{
+                      color: theme.textPrimary,
+                      fontSize: '13px',
+                      margin: '0',
+                      lineHeight: '1.5',
+                    }}>
+                      {review.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ color: theme.textSecondary, textAlign: 'center', padding: '32px 0' }}>
+                No reviews yet. Be the first to review!
+              </div>
+            )}
           </div>
         </div>
       </div>

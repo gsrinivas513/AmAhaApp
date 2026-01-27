@@ -233,6 +233,14 @@ export default function PuzzleTemplateModal({ isOpen, onClose, baseTemplates = [
       itemInput: '',
     });
     setShowAddForm(true);
+    
+    // Scroll to top of modal to show edit form
+    setTimeout(() => {
+      const modalContent = document.querySelector('[data-modal-content="true"]');
+      if (modalContent) {
+        modalContent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const resetForm = () => {
@@ -268,6 +276,7 @@ export default function PuzzleTemplateModal({ isOpen, onClose, baseTemplates = [
       onClick={onClose}
     >
       <div
+        data-modal-content="true"
         style={{
           background: theme.surfacePrimary,
           border: `2px solid ${theme.border}`,
@@ -331,15 +340,32 @@ export default function PuzzleTemplateModal({ isOpen, onClose, baseTemplates = [
         {/* Add/Edit Form */}
         {showAddForm && (
           <div style={{
-            background: theme.background,
-            border: `2px solid ${theme.border}`,
+            background: editingTemplate ? `linear-gradient(135deg, ${theme.accentPrimary}15, ${theme.accentSecondary}15)` : theme.background,
+            border: `2px solid ${editingTemplate ? theme.accentPrimary : theme.border}`,
             borderRadius: '12px',
             padding: '20px',
             marginBottom: '24px',
+            animation: editingTemplate ? 'pulse 0.5s ease-in-out' : 'none',
           }}>
             <h3 style={{ color: theme.textPrimary, fontSize: '16px', fontWeight: '700', marginBottom: '16px', margin: '0 0 16px 0' }}>
               {editingTemplate ? '✏️ Edit Template' : '➕ Create New Template'}
             </h3>
+            {editingTemplate && (
+              <div style={{
+                background: `${theme.accentPrimary}25`,
+                color: theme.accentPrimary,
+                padding: '8px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '600',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                ℹ️ Editing: {editingTemplate.name}
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {/* Name */}

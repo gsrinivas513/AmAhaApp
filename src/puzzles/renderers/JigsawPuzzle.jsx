@@ -17,144 +17,25 @@ export default function JigsawPuzzleRenderer({ puzzle: puzzleData, onComplete })
   const imageUrl = puzzleContent.imageUrl || puzzleData.imageUrl;
   const variants = puzzleContent.variants || puzzleData.variants || [];
 
-  // If variant not selected, show selection screen
-  if (!selectedVariant) {
-    return (
-      <div
-        style={{
-          background: theme.background || "#F3F4F6",
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "16px"
-        }}
-      >
-        <div
-          style={{
-            background: theme.surface || "#FFFFFF",
-            borderRadius: "12px",
-            padding: "32px",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            textAlign: "center",
-            maxWidth: "600px"
-          }}
-        >
-          <h1 style={{ color: theme.text || theme.textPrimary || "#1F2937", marginBottom: "24px" }}>
-            Select Puzzle Difficulty
-          </h1>
+  // Calculate piece count from variant
+  const getPieceCount = (variant) => {
+    if (!variant) return 0;
+    return (variant.rows || 4) * (variant.cols || 3);
+  };
 
-          {imageUrl && (
-            <img
-              src={imageUrl}
-              alt="Puzzle preview"
-              style={{
-                width: "100%",
-                height: "200px",
-                objectFit: "cover",
-                borderRadius: "8px",
-                marginBottom: "24px"
-              }}
-            />
-          )}
+  // Get difficulty level based on piece count
+  const getDifficultyLevel = (variant) => {
+    const count = getPieceCount(variant);
+    if (count <= 12) return { level: 'Easy', color: '#10B981', icon: '🟢' };
+    if (count <= 20) return { level: 'Medium', color: '#F59E0B', icon: '🟡' };
+    return { level: 'Hard', color: '#EF4444', icon: '🔴' };
+  };
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {variants && variants.length > 0 ? (
-              variants.map((variant, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedVariant(variant)}
-                  style={{
-                    background: theme.accent || theme.primary || "#4F46E5",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                    fontSize: "16px",
-                    transition: "all 0.2s"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.opacity = "0.8";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = "1";
-                    e.target.style.transform = "scale(1)";
-                  }}
-                >
-                  {variant.name || variant.label || `${variant.cols}×${variant.rows}`}
-                </button>
-              ))
-            ) : (
-              // Default variants if none provided
-              [
-                { name: "Easy (3×4)", cols: 3, rows: 4 },
-                { name: "Medium (4×5)", cols: 4, rows: 5 },
-                { name: "Hard (6×6)", cols: 6, rows: 6 }
-              ].map((variant, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedVariant(variant)}
-                  style={{
-                    background: theme.accent || theme.primary || "#4F46E5",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                    fontSize: "16px",
-                    transition: "all 0.2s"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.opacity = "0.8";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = "1";
-                    e.target.style.transform = "scale(1)";
-                  }}
-                >
-                  {variant.name}
-                </button>
-              ))
-            )}
-          </div>
+  // Default to Easy variant
+  const defaultVariant = variants && variants.length > 0 ? variants[0] : { label: 'Easy', cols: 3, rows: 4 };
+  const currentVariant = selectedVariant || defaultVariant;
 
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              marginTop: "16px",
-              background: "transparent",
-              color: theme.accent || theme.primary || "#4F46E5",
-              border: `2px solid ${theme.accent || theme.primary || "#4F46E5"}`,
-              borderRadius: "8px",
-              padding: "12px 24px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "14px",
-              transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = theme.accent || theme.primary || "#4F46E5";
-              e.target.style.color = "white";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "transparent";
-              e.target.style.color = theme.accent || theme.primary || "#4F46E5";
-            }}
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Render the actual game using PixiJS
+  // Render the game directly with variant selector overlay
   return (
     <JigsawGamePixi
       puzzle={{
@@ -162,7 +43,9 @@ export default function JigsawPuzzleRenderer({ puzzle: puzzleData, onComplete })
         data: {
           ...puzzleContent,
           imageUrl,
-          selectedVariant,
+          selectedVariant: currentVariant,
+          allVariants: variants,
+          onVariantChange: setSelectedVariant,
         }
       }}
       onComplete={onComplete}

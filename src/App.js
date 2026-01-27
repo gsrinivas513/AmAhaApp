@@ -62,7 +62,7 @@ import GamesPage from "./pages/GamesPage";
 /* ARTS COMPONENTS */
 import ArtsHome from "./arts/ArtsHome";
 import DrawCanvas from "./arts/DrawCanvas";
-import PaintCanvas from "./arts/PaintCanvas";
+import PaintStudio from "./arts/paint-studio/PaintStudio";
 import GuidedDrawing from "./arts/GuidedDrawing";
 import DigitalArt from "./arts/DigitalArt";
 import ArtGallery from "./arts/ArtGallery";
@@ -309,7 +309,7 @@ function App() {
         <Route path="/admin/stories" element={<StoryEditor />} />
         <Route path="/arts" element={<ArtsHome />} />
         <Route path="/arts/draw" element={<DrawCanvas />} />
-        <Route path="/arts/paint" element={<PaintCanvas />} />
+        <Route path="/arts/paint" element={<PaintStudio />} />
         <Route path="/arts/guided" element={<GuidedDrawing />} />
         <Route path="/arts/digital" element={<DigitalArt />} />
         <Route path="/arts/gallery" element={<ArtGallery />} />

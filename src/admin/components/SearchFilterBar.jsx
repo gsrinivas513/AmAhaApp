@@ -26,58 +26,97 @@ const SearchFilterBar = ({
   const [localVisibility, setLocalVisibility] = useState(visibilityFilter);
   const [localFeatured, setLocalFeatured] = useState(featuredFilter);
 
-  // Perform filtering
-  useMemo(() => {
-    let filtered = items;
+  // Perform filtering with proper dependency handling
+  const filteredAndSorted = useMemo(() => {
+    let filtered = items ? [...items] : [];
 
-    // Search filter
-    if (searchTerm.trim()) {
+    // Search filter - search across all relevant text fields
+    if (searchTerm && searchTerm.trim()) {
       const lowercaseSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(item =>
-        (item.title && item.title.toLowerCase().includes(lowercaseSearch)) ||
-        (item.description && item.description.toLowerCase().includes(lowercaseSearch)) ||
-        (item.category && item.category.toLowerCase().includes(lowercaseSearch)) ||
-        (item.id && item.id.toLowerCase().includes(lowercaseSearch))
-      );
+      filtered = filtered.filter(item => {
+        if (!item) return false;
+        const searchableFields = [
+          item.title || '',
+          item.name || '',
+          item.description || '',
+          item.category || '',
+          item.type || '',
+          item.id || '',
+          item.email || '',
+          item.status || '',
+          item.difficulty || '',
+        ];
+        return searchableFields.some(field => 
+          String(field).toLowerCase().includes(lowercaseSearch)
+        );
+      });
     }
 
     // Category filter
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory.trim()) {
       filtered = filtered.filter(item =>
-        (item.category === selectedCategory) ||
-        (item.type === selectedCategory)
+        item && (
+          (item.category === selectedCategory) ||
+          (item.type === selectedCategory) ||
+          (item.categoryName === selectedCategory)
+        )
       );
     }
 
     // Difficulty filter
-    if (selectedDifficulty) {
-      filtered = filtered.filter(item => item.difficulty === selectedDifficulty);
+    if (selectedDifficulty && selectedDifficulty.trim()) {
+      filtered = filtered.filter(item => 
+        item && item.difficulty === selectedDifficulty
+      );
     }
 
     // Status filter
-    if (selectedStatus) {
-      filtered = filtered.filter(item => (item.status || 'Draft') === selectedStatus);
+    if (selectedStatus && selectedStatus.trim()) {
+      filtered = filtered.filter(item => 
+        item && (item.status || 'Draft') === selectedStatus
+      );
     }
 
-    // Sorting
+    // Visibility filter
+    if (localVisibility && localVisibility !== 'all') {
+      filtered = filtered.filter(item =>
+        item && (item.visibility || item.published) === localVisibility
+      );
+    }
+
+    // Featured filter
+    if (localFeatured) {
+      filtered = filtered.filter(item =>
+        item && (item.featured === true || item.isFeatured === true)
+      );
+    }
+
+    // Sorting with proper date handling
     if (sortBy === 'title') {
-      filtered = filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      filtered.sort((a, b) => 
+        (a?.title || a?.name || '').localeCompare(b?.title || b?.name || '')
+      );
     } else if (sortBy === 'createdAt') {
-      filtered = filtered.sort((a, b) => {
-        const dateA = a.createdAt instanceof Date ? a.createdAt : a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.createdAt instanceof Date ? b.createdAt : b.createdAt?.toDate?.() || new Date(0);
-        return new Date(dateB) - new Date(dateA); // Newest first
+      filtered.sort((a, b) => {
+        const dateA = a?.createdAt instanceof Date ? a.createdAt : a?.createdAt?.toDate?.() || new Date(0);
+        const dateB = b?.createdAt instanceof Date ? b.createdAt : b?.createdAt?.toDate?.() || new Date(0);
+        return new Date(dateB) - new Date(dateA);
       });
     } else if (sortBy === 'updatedAt') {
-      filtered = filtered.sort((a, b) => {
-        const dateA = a.updatedAt instanceof Date ? a.updatedAt : a.updatedAt?.toDate?.() || a.createdAt instanceof Date ? a.createdAt : a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.updatedAt instanceof Date ? b.updatedAt : b.updatedAt?.toDate?.() || b.createdAt instanceof Date ? b.createdAt : b.createdAt?.toDate?.() || new Date(0);
-        return new Date(dateB) - new Date(dateA); // Newest first
+      filtered.sort((a, b) => {
+        const dateA = a?.updatedAt instanceof Date ? a.updatedAt : a?.updatedAt?.toDate?.() || a?.createdAt instanceof Date ? a.createdAt : a?.createdAt?.toDate?.() || new Date(0);
+        const dateB = b?.updatedAt instanceof Date ? b.updatedAt : b?.updatedAt?.toDate?.() || b?.createdAt instanceof Date ? b.createdAt : b?.createdAt?.toDate?.() || new Date(0);
+        return new Date(dateB) - new Date(dateA);
       });
     }
 
-    onFilter(filtered);
-  }, [searchTerm, selectedCategory, selectedDifficulty, selectedStatus, sortBy, items, onFilter]);
+    return filtered;
+  }, [searchTerm, selectedCategory, selectedDifficulty, selectedStatus, localVisibility, localFeatured, sortBy, items]);
+
+  // Call parent callback when filtered results change
+  useMemo(() => {
+    onFilter(filteredAndSorted);
+  }, [filteredAndSorted, onFilter]);
 
   const clearFilters = () => {
     setSearchTerm('');
